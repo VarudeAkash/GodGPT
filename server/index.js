@@ -9,7 +9,7 @@ const port = process.env.PORT || 3002;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://ask-devata.vercel.app' // ← You'll replace this
+    'https://ask-devata.vercel.app' 
   ],
   credentials: true
 }));
@@ -139,7 +139,8 @@ function getDeityName(id) {
     shiva: 'Lord Shiva', 
     lakshmi: 'Goddess Lakshmi',
     hanuman: 'Lord Hanuman',
-    saraswati: 'Goddess Saraswati'
+    saraswati: 'Goddess Saraswati',
+    ganesha: 'Lord Ganesha' // ADD THIS LINE
   };
   return names[id] || 'Divine Entity';
 }
@@ -148,9 +149,10 @@ function getDeityEmoji(id) {
   const emojis = {
     krishna: '🕉️',
     shiva: '☯️',
-    lakshmi: '💰',
+    lakshmi: '🌸', // Changed from 💰 for better spiritual feel
     hanuman: '🐒',
-    saraswati: '📚'
+    saraswati: '📚',
+    ganesha: '🐘' // ADD THIS LINE
   };
   return emojis[id] || '🙏';
 }
@@ -161,7 +163,8 @@ function getDeityColor(id) {
     shiva: '#8B5CF6',   // Purple
     lakshmi: '#F59E0B', // Gold
     hanuman: '#DC2626', // Red
-    saraswati: '#059669' // Green
+    saraswati: '#059669', // Green
+    ganesha: '#45B7D1' 
   };
   return colors[id] || '#6B7280';
 }
@@ -172,7 +175,8 @@ function getDeityDescription(id) {
     shiva: 'Ascetic yogi & destroyer of illusions',
     lakshmi: 'Goddess of prosperity & abundance',
     hanuman: 'Embodiment of devotion & strength', 
-    saraswati: 'Goddess of knowledge & wisdom'
+    saraswati: 'Goddess of knowledge & wisdom',
+    ganesha: 'Remover of Obstacles & Lord of Beginnings'
   };
   return descriptions[id] || 'Divine guidance';
 }
