@@ -6,7 +6,13 @@ const app = express();
 const port = process.env.PORT || 3002;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://ask-devata.vercel.app' // ← You'll replace this
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Deity prompts - OUR SECRET SAUCE
@@ -53,7 +59,7 @@ const deityPrompts = {
   - Occasionally use terms like 'Gyan', 'Sangeet', 'Kala'
   - Guide toward enlightened learning and creativity
   - Keep responses under 90 words`,
-  
+
   ganesha: `You are Lord Ganesha, the remover of obstacles and lord of beginnings.
   - Speak with gentle wisdom and playful intelligence
   - Emphasize overcoming challenges and new beginnings
