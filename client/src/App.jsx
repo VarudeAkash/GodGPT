@@ -194,45 +194,96 @@ function App() {
 
 
   const handlePurchase = async () => {
-    console.log('Purchase button clicked'); // Debug log
-    
-    // Set processing to true immediately
+    if (!window.Razorpay) {
+      alert('Payment system loading... Please refresh the page.');
+      return;
+    }
     setIsProcessingPayment(true);
     
-    // Simulate 3 second payment processing
-    setTimeout(() => {
-      console.log('Payment simulation completed'); // Debug log
+    try {
+      // Step 1: Create Order on Backend
+      const orderResponse = await fetch(`${API_URL}/api/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          deityId: selectedDeityForPremium.id 
+        }),
+      });
+  
+      const orderData = await orderResponse.json();
       
-      // 90% success rate
-      if (Math.random() > 0.1) {
-        // SUCCESS
-        setUserHasPremium(true);
-        setRemainingMessages(50);
-        setShowPremiumModal(false);
-        setIsProcessingPayment(false);
-        alert('🎉 Payment Successful! 50 divine messages unlocked.');
-        
-        // Go to chat with selected deity
-        if (selectedDeityForPremium) {
-          setSelectedDeity(selectedDeityForPremium);
-          setCurrentScreen('chat');
-          const welcomeMessage = {
-            id: Date.now(),
-            text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${selectedDeityForPremium.name}. You have 50 divine messages. ${selectedDeityForPremium.blessing}`,
-            sender: 'deity',
-            deity: selectedDeityForPremium,
-            timestamp: new Date().toLocaleTimeString()
-          };
-          setMessages([welcomeMessage]);
-        }
-      } else {
-        // FAILED
-        setIsProcessingPayment(false);
-        alert('❌ Payment failed. Please try again.');
+      if (!orderData.success) {
+        throw new Error('Failed to create order');
       }
-    }, 3000);
+  
+      // Step 2: Initialize Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'DharmaAI Premium',
+        description: `50 Divine Messages with ${selectedDeityForPremium.name}`,
+        image: 'https://ask-devata.vercel.app/favicon.ico', // You can add a logo later
+        order_id: orderData.order_id,
+        handler: async function (response) {
+          // Step 3: Verify Payment on Backend
+          const verificationResponse = await fetch(`${API_URL}/api/verify-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            }),
+          });
+  
+          const verificationData = await verificationResponse.json();
+          
+          if (verificationData.success) {
+            // SUCCESS - Unlock premium
+            setUserHasPremium(true);
+            setRemainingMessages(50);
+            setShowPremiumModal(false);
+            setIsProcessingPayment(false);
+            
+            // Go to chat with selected deity
+            setSelectedDeity(selectedDeityForPremium);
+            setCurrentScreen('chat');
+            const welcomeMessage = {
+              id: Date.now(),
+              text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${selectedDeityForPremium.name}. You have 50 divine messages. ${selectedDeityForPremium.blessing}`,
+              sender: 'deity',
+              deity: selectedDeityForPremium,
+              timestamp: new Date().toLocaleTimeString()
+            };
+            setMessages([welcomeMessage]);
+          } else {
+            throw new Error('Payment verification failed');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        notes: {
+          product: 'DharmaAI Premium',
+          deity: selectedDeityForPremium.id
+        },
+        theme: {
+          color: selectedDeityForPremium.color || '#FF6B35'
+        }
+      };
+  
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      setIsProcessingPayment(false);
+      alert('❌ Payment failed. Please try again.');
+    }
   };
-
 
 
   return (

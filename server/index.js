@@ -1,4 +1,5 @@
 const express = require('express');
+const Razorpay = require('razorpay');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -14,6 +15,12 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// ↓ ADD THIS RAZORPAY INITIALIZATION ↓
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // Deity prompts - OUR SECRET SAUCE
 const deityPrompts = {
@@ -68,6 +75,81 @@ const deityPrompts = {
   - Guide toward removing mental and spiritual obstacles
   - Keep responses under 90 words`
 };
+
+
+
+
+// Create Payment Order
+app.post('/api/create-order', async (req, res) => {
+  try {
+    const options = {
+      amount: 1500, // ₹15 in paise (15 * 100)
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}`,
+      payment_capture: 1, // Auto capture payment
+      notes: {
+        product: 'DharmaAI Premium',
+        deity: req.body.deityId,
+        messages: 50
+      }
+    };
+
+    const order = await razorpay.orders.create(options);
+    
+    res.json({
+      success: true,
+      order_id: order.id,
+      amount: order.amount,
+      currency: order.currency
+    });
+
+  } catch (error) {
+    console.error('Razorpay order error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Payment initialization failed' 
+    });
+  }
+});
+
+// Verify Payment
+app.post('/api/verify-payment', async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  try {
+    // Create expected signature
+    const crypto = require('crypto');
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .digest('hex');
+
+    // Verify signature
+    if (expectedSignature === razorpay_signature) {
+      // Payment successful
+      res.json({ 
+        success: true, 
+        message: 'Payment verified successfully',
+        payment_id: razorpay_payment_id
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        error: 'Payment verification failed' 
+      });
+    }
+  } catch (error) {
+    console.error('Payment verification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Payment verification failed' 
+    });
+  }
+});
+
+
+
+
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
