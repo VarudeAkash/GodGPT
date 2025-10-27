@@ -192,12 +192,14 @@ function App() {
     setMessages([]);
   };
 
-
   const handlePurchase = async () => {
     if (!window.Razorpay) {
       alert('Payment system loading... Please refresh the page.');
       return;
     }
+    
+    if (isProcessingPayment) return;
+    
     setIsProcessingPayment(true);
     
     try {
@@ -216,49 +218,29 @@ function App() {
         throw new Error('Failed to create order');
       }
   
-      // Step 2: Initialize Razorpay Checkout
+      // Store deity info in variables to avoid React state closure
+      const deityName = selectedDeityForPremium.name;
+      const deityColor = selectedDeityForPremium.color;
+      const deityEmoji = selectedDeityForPremium.emoji;
+      const deityBlessing = selectedDeityForPremium.blessing;
+      const deityId = selectedDeityForPremium.id;
+  
+      // Step 2: Initialize Razorpay Checkout with proper event handlers
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'DharmaAI Premium',
-        description: `50 Divine Messages with ${selectedDeityForPremium.name}`,
-        image: 'https://ask-devata.vercel.app/favicon.ico', // You can add a logo later
+        description: `50 Divine Messages with ${deityName}`,
+        image: 'https://ask-devata.vercel.app/favicon.ico',
         order_id: orderData.order_id,
-        handler: async function (response) {
-          // Step 3: Verify Payment on Backend
-          const verificationResponse = await fetch(`${API_URL}/api/verify-payment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            }),
-          });
-  
-          const verificationData = await verificationResponse.json();
-          
-          if (verificationData.success) {
-            // SUCCESS - Unlock premium
-            setUserHasPremium(true);
-            setRemainingMessages(50);
-            setShowPremiumModal(false);
+        handler: function (response) {
+          // Verify payment immediately after success
+          verifyPayment(response, deityName, deityColor, deityEmoji, deityBlessing, deityId);
+        },
+        modal: {
+          ondismiss: function() {
             setIsProcessingPayment(false);
-            
-            // Go to chat with selected deity
-            setSelectedDeity(selectedDeityForPremium);
-            setCurrentScreen('chat');
-            const welcomeMessage = {
-              id: Date.now(),
-              text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${selectedDeityForPremium.name}. You have 50 divine messages. ${selectedDeityForPremium.blessing}`,
-              sender: 'deity',
-              deity: selectedDeityForPremium,
-              timestamp: new Date().toLocaleTimeString()
-            };
-            setMessages([welcomeMessage]);
-          } else {
-            throw new Error('Payment verification failed');
           }
         },
         prefill: {
@@ -266,22 +248,89 @@ function App() {
           email: '',
           contact: ''
         },
-        notes: {
-          product: 'DharmaAI Premium',
-          deity: selectedDeityForPremium.id
-        },
         theme: {
-          color: selectedDeityForPremium.color || '#FF6B35'
+          color: deityColor || '#FF6B35'
         }
       };
   
       const razorpay = new window.Razorpay(options);
-      razorpay.open();
       
+      // Add payment failed handler
+      razorpay.on('payment.failed', function(response) {
+        console.error('Payment failed:', response.error);
+        setIsProcessingPayment(false);
+        alert('Payment failed. Please try again.');
+      });
+      
+      razorpay.open();
+  
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        if (isProcessingPayment) {
+          setIsProcessingPayment(false);
+          alert('Payment completed! Please refresh the page to access premium features.');
+        }
+      }, 40000); // 40 seconds timeout
+  
+      // Cleanup timeout if component unmounts
+      return () => clearTimeout(timeoutId);
+  
     } catch (error) {
       console.error('Payment error:', error);
       setIsProcessingPayment(false);
       alert('❌ Payment failed. Please try again.');
+    }
+  };
+  
+  // ADD THIS SEPARATE FUNCTION OUTSIDE handlePurchase
+  const verifyPayment = async (response, deityName, deityColor, deityEmoji, deityBlessing, deityId) => {
+    try {
+      const verificationResponse = await fetch(`${API_URL}/api/verify-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        }),
+      });
+  
+      const verificationData = await verificationResponse.json();
+      
+      if (verificationData.success) {
+        // SUCCESS - Unlock premium
+        setUserHasPremium(true);
+        setRemainingMessages(50);
+        setShowPremiumModal(false);
+        setIsProcessingPayment(false);
+        
+        // Create deity object from stored values
+        const deity = {
+          id: deityId,
+          name: deityName,
+          color: deityColor,
+          emoji: deityEmoji,
+          blessing: deityBlessing
+        };
+        
+        // Go to chat with selected deity
+        setSelectedDeity(deity);
+        setCurrentScreen('chat');
+        const welcomeMessage = {
+          id: Date.now(),
+          text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
+          sender: 'deity',
+          deity: deity,
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setMessages([welcomeMessage]);
+      } else {
+        throw new Error('Payment verification failed');
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      setIsProcessingPayment(false);
+      alert('❌ Payment verification failed. Please contact support.');
     }
   };
 
