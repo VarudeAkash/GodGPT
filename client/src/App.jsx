@@ -11,13 +11,15 @@ function App() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedDeityForPremium, setSelectedDeityForPremium] = useState(null);
   const [userHasPremium, setUserHasPremium] = useState(false);
-  const [remainingMessages, setRemainingMessages] = useState(0);
+  // In your useState declarations, change:
+  const [remainingMessages, setRemainingMessages] = useState(50); // Start with 50 free messages for Krishna
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedDeity, setSelectedDeity] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
 
   // Load deities on component mount
   useEffect(() => {
@@ -103,6 +105,18 @@ function App() {
   const sendMessage = async () => {
     if (!inputMessage.trim() || !selectedDeity || isLoading) return;
 
+    // Check message limits for ALL deities (including Krishna after first 50)
+    if (userHasPremium && remainingMessages <= 0) {
+      setShowBuyMoreModal(true);
+      return;
+    }
+
+    // Check if free Krishna messages are exhausted
+    if (selectedDeity.id === 'krishna' && !userHasPremium && remainingMessages <= 0) {
+      setShowBuyMoreModal(true);
+      return;
+    }
+
     const userMessage = {
       id: Date.now(),
       text: inputMessage,
@@ -114,15 +128,18 @@ function App() {
     setInputMessage('');
     setIsLoading(true);
 
+    // Decrement message count for ALL users (including free Krishna)
+    setRemainingMessages(prev => prev - 1);
+    
     try {
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: inputMessage, deity: selectedDeity.id }),
       });
-
+  
       if (!response.ok) throw new Error('Network response was not ok');
-
+  
       const data = await response.json();
       
       const divineMessage = {
@@ -132,7 +149,7 @@ function App() {
         deity: selectedDeity,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
+  
       setMessages(prev => [...prev, divineMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -143,6 +160,11 @@ function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, errorMessage]);
+      
+      // Restore message count if error occurred
+      if (selectedDeity.id !== 'krishna' && userHasPremium) {
+        setRemainingMessages(prev => prev + 1);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -164,21 +186,22 @@ function App() {
   };
 
   const selectDeity = (deity) => {
-
-    // Check if deity is not Krishna and user is not premium
-    if (deity.id !== 'krishna' && !userHasPremium) {
-      setSelectedDeityForPremium(deity); // Store which deity they wanted
-      setShowPremiumModal(true);         // Show payment modal
-      return; // Stop here, don't proceed to chat
+    // Check if user needs to purchase (all deities now have limits)
+    if (!userHasPremium && remainingMessages <= 0) {
+      setSelectedDeityForPremium(deity);
+      setShowPremiumModal(true);
+      return;
     }
-
-    // If Krishna or premium user, proceed normally
+  
+    // Proceed to chat
     setSelectedDeity(deity);
     setCurrentScreen('chat');
-    // Add welcome message from the deity
+    
     const welcomeMessage = {
       id: Date.now(),
-      text: `Welcome, seeker. I am ${deity.name}. ${deity.blessing} What wisdom do you seek today?`,
+      text: userHasPremium 
+        ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
+        : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
       sender: 'deity',
       deity: deity,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -281,6 +304,12 @@ function App() {
       alert('❌ Payment failed. Please try again.');
     }
   };
+
+  const handleBuyMoreMessages = async () => {
+    setShowBuyMoreModal(false);
+    setSelectedDeityForPremium(selectedDeity);
+    setShowPremiumModal(true);
+  };
   
   // ADD THIS SEPARATE FUNCTION OUTSIDE handlePurchase
   const verifyPayment = async (response, deityName, deityColor, deityEmoji, deityBlessing, deityId) => {
@@ -300,7 +329,7 @@ function App() {
       if (verificationData.success) {
         // SUCCESS - Unlock premium
         setUserHasPremium(true);
-        setRemainingMessages(50);
+        setRemainingMessages(prev => prev + 50);
         setShowPremiumModal(false);
         setIsProcessingPayment(false);
         
@@ -318,7 +347,9 @@ function App() {
         setCurrentScreen('chat');
         const welcomeMessage = {
           id: Date.now(),
-          text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
+          text: userHasPremium 
+            ? `Welcome back, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You now have ${remainingMessages + 50} divine messages. ${deityBlessing}`
+            : `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
           sender: 'deity',
           deity: deity,
           timestamp: new Date().toLocaleTimeString()
@@ -337,6 +368,14 @@ function App() {
 
   return (
     <>
+
+      <BuyMoreModal
+        isOpen={showBuyMoreModal}
+        onClose={() => setShowBuyMoreModal(false)}
+        deity={selectedDeity}
+        onBuyMore={handleBuyMoreMessages}
+      />
+
       {/* Premium Modal - OUTSIDE all screens, always available */}
       <PremiumModal
         isOpen={showPremiumModal}
@@ -478,6 +517,22 @@ function App() {
               <p>{selectedDeity.description}</p>
             </div>
           </div>
+          {userHasPremium && (
+            <div className="message-counter">
+              <div className="counter-badge">
+                {remainingMessages} messages left
+              </div>
+            </div>
+          )}
+          {/* Also add free tier counter for Krishna */}
+          {!userHasPremium && selectedDeity.id === 'krishna' && (
+            <div className="message-counter">
+              <div className="counter-badge free">
+                {remainingMessages} free messages left
+              </div>
+            </div>
+          )}
+  
           {messages.length > 0 && (
             <button className="clear-chat-button" onClick={clearChat}>
               🧹 Clear
@@ -585,7 +640,63 @@ function App() {
     </>
   );
 }
+// Add this modal component before PremiumModal
+function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
+  if (!isOpen) return null;
 
+  return (
+    <div className="premium-modal-overlay">
+      <div className="premium-modal">
+        <div className="premium-header">
+          <div className="premium-icon">🌟</div>
+          <h2>Divine Messages Exhausted</h2>
+          <button className="close-modal" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="premium-content">
+          <div className="deity-premium-preview">
+            <div className="premium-deity-avatar" style={{ background: deity.color }}>
+              {deity.emoji}
+            </div>
+            <h3>Continue with {deity.name}</h3>
+            <p>You've used all your divine messages. Purchase 50 more to continue your spiritual journey.</p>
+          </div>
+
+          <div className="pricing-card">
+            <div className="price">₹15</div>
+            <div className="package-details">
+              <h4>50 More Divine Messages</h4>
+              <ul>
+                <li>✓ Continue deep conversations</li>
+                <li>✓ Additional 50 messages</li>
+                <li>✓ Unlimited wisdom access</li>
+                <li>✓ One-time payment</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="action-buttons">
+            <button 
+              className="purchase-button"
+              onClick={onBuyMore}
+              style={{ background: deity.color }}
+            >
+              <span>Buy 50 More Messages - ₹15</span>
+              <span className="lock-icon">🔓</span>
+            </button>
+            
+            <button 
+              className="secondary-button"
+              onClick={onClose}
+            >
+              Switch to Free Deity
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 // Premium Modal Component - ADD THIS BEFORE export default App
 function PremiumModal({ isOpen, onClose, deity, onPurchase,isProcessingPayment }) {
   if (!isOpen) return null;
@@ -641,7 +752,7 @@ function PremiumModal({ isOpen, onClose, deity, onPurchase,isProcessingPayment }
         </button>
 
           <div className="free-option">
-            <p>Want to try first? <button onClick={onClose}>Chat with Lord Krishna for FREE</button></p>
+            <p>Not ready? <button onClick={onClose}>Use remaining free messages</button></p>
           </div>
         </div>
       </div>
