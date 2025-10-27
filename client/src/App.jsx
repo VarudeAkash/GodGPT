@@ -331,7 +331,7 @@ function App() {
       if (verificationData.success) {
         // SUCCESS - Unlock premium
         setUserHasPremium(true);
-        setRemainingMessages(prev => prev + 50);
+        setRemainingMessages(50);
         setShowPremiumModal(false);
         setIsProcessingPayment(false);
         
