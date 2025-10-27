@@ -184,16 +184,18 @@ function App() {
   const startJourney = () => {
     setCurrentScreen('deity-select');
   };
-
   const selectDeity = (deity) => {
-    // Check if user needs to purchase (all deities now have limits)
-    if (!userHasPremium && remainingMessages <= 0) {
+    // Check if user has messages remaining (applies to ALL deities now)
+    const hasMessagesLeft = userHasPremium ? remainingMessages > 0 : remainingMessages > 0;
+    
+    // If no messages left OR if it's not Krishna and user is not premium
+    if (!hasMessagesLeft || (deity.id !== 'krishna' && !userHasPremium)) {
       setSelectedDeityForPremium(deity);
       setShowPremiumModal(true);
       return;
     }
   
-    // Proceed to chat
+    // If Krishna and has free messages, OR premium user with messages, proceed normally
     setSelectedDeity(deity);
     setCurrentScreen('chat');
     
@@ -524,11 +526,11 @@ function App() {
               </div>
             </div>
           )}
-          {/* Also add free tier counter for Krishna */}
-          {!userHasPremium && selectedDeity.id === 'krishna' && (
+          {/* In chat header - show counter for ALL deities when they have limited messages */}
+          {(userHasPremium || selectedDeity.id === 'krishna') && (
             <div className="message-counter">
-              <div className="counter-badge free">
-                {remainingMessages} free messages left
+              <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
+                {remainingMessages} {!userHasPremium ? 'free' : ''} messages left
               </div>
             </div>
           )}
