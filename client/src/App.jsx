@@ -4,15 +4,12 @@ import './App.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState('welcome'); // welcome, deity-select, chat
+  const [currentScreen, setCurrentScreen] = useState('welcome');
   const [deities, setDeities] = useState([]);
-
-  // ADD THESE NEW STATES:
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedDeityForPremium, setSelectedDeityForPremium] = useState(null);
   const [userHasPremium, setUserHasPremium] = useState(false);
-  // In your useState declarations, change:
-  const [remainingMessages, setRemainingMessages] = useState(50); // Start with 50 free messages for Krishna
+  const [remainingMessages, setRemainingMessages] = useState(50);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedDeity, setSelectedDeity] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -20,6 +17,60 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
+
+  // === ADD THIS NEW EFFECT ===
+  useEffect(() => {
+    // Set initial screen based on URL hash
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'deity-select') {
+      setCurrentScreen('deity-select');
+    } else if (hash === 'chat') {
+      // Try to restore chat state from localStorage
+      const savedDeity = localStorage.getItem('selectedDeity');
+      const savedMessages = localStorage.getItem('chatMessages');
+      if (savedDeity) {
+        setSelectedDeity(JSON.parse(savedDeity));
+        setCurrentScreen('chat');
+        if (savedMessages) {
+          setMessages(JSON.parse(savedMessages));
+        }
+      } else {
+        // If no saved deity, go to selection
+        window.location.hash = 'deity-select';
+        setCurrentScreen('deity-select');
+      }
+    } else {
+      setCurrentScreen('welcome');
+      window.location.hash = 'welcome';
+    }
+
+    // Handle browser back/forward buttons
+    const handlePopState = () => {
+      const newHash = window.location.hash.replace('#', '');
+      
+      if (newHash === 'deity-select' && currentScreen !== 'deity-select') {
+        setCurrentScreen('deity-select');
+        setSelectedDeity(null);
+        setMessages([]);
+      } else if (newHash === 'chat' && currentScreen !== 'chat') {
+        const savedDeity = localStorage.getItem('selectedDeity');
+        if (savedDeity) {
+          setSelectedDeity(JSON.parse(savedDeity));
+          setCurrentScreen('chat');
+        } else {
+          window.location.hash = 'deity-select';
+          setCurrentScreen('deity-select');
+        }
+      } else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
+        setCurrentScreen('welcome');
+        setSelectedDeity(null);
+        setMessages([]);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentScreen]);
 
   // Load deities on component mount
   useEffect(() => {
@@ -67,7 +118,7 @@ function App() {
           name: 'Goddess Lakshmi',
           emoji: '🌸',
           color: '#F59E0B',
-          theme: 'lakshmi',
+          theme: 'lakshma',
           description: 'Goddess of Prosperity & Spiritual Wealth',
           blessing: 'May abundance flow through your life'
         },
@@ -102,6 +153,65 @@ function App() {
     }
   };
 
+  // === MODIFIED: startJourney ===
+  const startJourney = () => {
+    window.history.pushState({}, '', '#deity-select');
+    setCurrentScreen('deity-select');
+  };
+
+  // === MODIFIED: selectDeity ===
+  const selectDeity = (deity) => {
+    // Check if user has messages remaining (applies to ALL deities now)
+    const hasMessagesLeft = userHasPremium ? remainingMessages > 0 : remainingMessages > 0;
+    
+    // If no messages left OR if it's not Krishna and user is not premium
+    if (!hasMessagesLeft || (deity.id !== 'krishna' && !userHasPremium)) {
+      setSelectedDeityForPremium(deity);
+      setShowPremiumModal(true);
+      return;
+    }
+  
+    // Save deity to localStorage for back button recovery
+    localStorage.setItem('selectedDeity', JSON.stringify(deity));
+    window.history.pushState({}, '', '#chat');
+    
+    setSelectedDeity(deity);
+    setCurrentScreen('chat');
+    
+    const welcomeMessage = {
+      id: Date.now(),
+      text: userHasPremium 
+        ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
+        : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
+      sender: 'deity',
+      deity: deity,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages([welcomeMessage]);
+    localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
+  };
+
+  // === MODIFIED: goBackToSelection ===
+  const goBackToSelection = () => {
+    window.history.pushState({}, '', '#deity-select');
+    setCurrentScreen('deity-select');
+    setSelectedDeity(null);
+    setMessages([]);
+    localStorage.removeItem('selectedDeity');
+    localStorage.removeItem('chatMessages');
+  };
+
+  // === NEW FUNCTION: goToWelcome ===
+  const goToWelcome = () => {
+    window.history.pushState({}, '', '#welcome');
+    setCurrentScreen('welcome');
+    setSelectedDeity(null);
+    setMessages([]);
+    localStorage.removeItem('selectedDeity');
+    localStorage.removeItem('chatMessages');
+  };
+
+  // === MODIFIED: sendMessage ===
   const sendMessage = async () => {
     if (!inputMessage.trim() || !selectedDeity || isLoading) return;
 
@@ -124,10 +234,14 @@ function App() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputMessage('');
     setIsLoading(true);
 
+    // Save to localStorage
+    localStorage.setItem('chatMessages', JSON.stringify(newMessages));
+    
     // Decrement message count for ALL users (including free Krishna)
     setRemainingMessages(prev => prev - 1);
     
@@ -149,8 +263,11 @@ function App() {
         deity: selectedDeity,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-  
-      setMessages(prev => [...prev, divineMessage]);
+
+      const updatedMessages = [...newMessages, divineMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
+      
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
@@ -159,7 +276,10 @@ function App() {
         sender: 'error',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages(prev => [...prev, errorMessage]);
+      
+      const errorMessages = [...newMessages, errorMessage];
+      setMessages(errorMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(errorMessages));
       
       // Restore message count if error occurred
       if (selectedDeity.id !== 'krishna' && userHasPremium) {
@@ -170,6 +290,25 @@ function App() {
     }
   };
 
+  // === MODIFIED: clearChat ===
+  const clearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('chatMessages');
+    
+    // Add new welcome message after clearing
+    if (selectedDeity) {
+      const welcomeMessage = {
+        id: Date.now(),
+        text: `Welcome back! I am ${selectedDeity.name}. What wisdom do you seek today?`,
+        sender: 'deity',
+        deity: selectedDeity,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages([welcomeMessage]);
+      localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -177,47 +316,10 @@ function App() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
-  };
-
-  const startJourney = () => {
-    setCurrentScreen('deity-select');
-  };
-  const selectDeity = (deity) => {
-    // Check if user has messages remaining (applies to ALL deities now)
-    const hasMessagesLeft = userHasPremium ? remainingMessages > 0 : remainingMessages > 0;
-    
-    // If no messages left OR if it's not Krishna and user is not premium
-    if (!hasMessagesLeft || (deity.id !== 'krishna' && !userHasPremium)) {
-      setSelectedDeityForPremium(deity);
-      setShowPremiumModal(true);
-      return;
-    }
-  
-    // If Krishna and has free messages, OR premium user with messages, proceed normally
-    setSelectedDeity(deity);
-    setCurrentScreen('chat');
-    
-    const welcomeMessage = {
-      id: Date.now(),
-      text: userHasPremium 
-        ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
-        : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
-      sender: 'deity',
-      deity: deity,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([welcomeMessage]);
-  };
-
-  const goBackToSelection = () => {
-    setCurrentScreen('deity-select');
-    setSelectedDeity(null);
-    setMessages([]);
-  };
+  // ... (Keep ALL your existing handlePurchase, verifyPayment, handleBuyMoreMessages functions EXACTLY as they are)
 
   const handlePurchase = async () => {
+    // KEEP THIS FUNCTION EXACTLY AS IS - no changes
     if (!window.Razorpay) {
       alert('Payment system loading... Please refresh the page.');
       return;
@@ -228,7 +330,6 @@ function App() {
     setIsProcessingPayment(true);
     
     try {
-      // Step 1: Create Order on Backend
       const orderResponse = await fetch(`${API_URL}/api/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -242,15 +343,13 @@ function App() {
       if (!orderData.success) {
         throw new Error('Failed to create order');
       }
-  
-      // Store deity info in variables to avoid React state closure
+
       const deityName = selectedDeityForPremium.name;
       const deityColor = selectedDeityForPremium.color;
       const deityEmoji = selectedDeityForPremium.emoji;
       const deityBlessing = selectedDeityForPremium.blessing;
       const deityId = selectedDeityForPremium.id;
-  
-      // Step 2: Initialize Razorpay Checkout with proper event handlers
+
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: orderData.amount,
@@ -260,7 +359,6 @@ function App() {
         image: 'https://ask-devata.vercel.app/favicon.ico',
         order_id: orderData.order_id,
         handler: function (response) {
-          // Verify payment immediately after success
           verifyPayment(response, deityName, deityColor, deityEmoji, deityBlessing, deityId);
         },
         modal: {
@@ -280,7 +378,6 @@ function App() {
   
       const razorpay = new window.Razorpay(options);
       
-      // Add payment failed handler
       razorpay.on('payment.failed', function(response) {
         console.error('Payment failed:', response.error);
         setIsProcessingPayment(false);
@@ -288,16 +385,14 @@ function App() {
       });
       
       razorpay.open();
-  
-      // Add timeout to prevent infinite loading
+
       const timeoutId = setTimeout(() => {
         if (isProcessingPayment) {
           setIsProcessingPayment(false);
           alert('Payment completed! Please refresh the page to access premium features.');
         }
-      }, 40000); // 40 seconds timeout
-  
-      // Cleanup timeout if component unmounts
+      }, 40000);
+
       return () => clearTimeout(timeoutId);
   
     } catch (error) {
@@ -313,8 +408,8 @@ function App() {
     setShowPremiumModal(true);
   };
   
-  // ADD THIS SEPARATE FUNCTION OUTSIDE handlePurchase
   const verifyPayment = async (response, deityName, deityColor, deityEmoji, deityBlessing, deityId) => {
+    // KEEP THIS FUNCTION EXACTLY AS IS - no changes
     try {
       const verificationResponse = await fetch(`${API_URL}/api/verify-payment`, {
         method: 'POST',
@@ -329,13 +424,11 @@ function App() {
       const verificationData = await verificationResponse.json();
       
       if (verificationData.success) {
-        // SUCCESS - Unlock premium
         setUserHasPremium(true);
         setRemainingMessages(50);
         setShowPremiumModal(false);
         setIsProcessingPayment(false);
         
-        // Create deity object from stored values
         const deity = {
           id: deityId,
           name: deityName,
@@ -344,7 +437,6 @@ function App() {
           blessing: deityBlessing
         };
         
-        // Go to chat with selected deity
         setSelectedDeity(deity);
         setCurrentScreen('chat');
         const welcomeMessage = {
@@ -367,10 +459,8 @@ function App() {
     }
   };
 
-
   return (
     <>
-
       <BuyMoreModal
         isOpen={showBuyMoreModal}
         onClose={() => setShowBuyMoreModal(false)}
@@ -378,7 +468,6 @@ function App() {
         onBuyMore={handleBuyMoreMessages}
       />
 
-      {/* Premium Modal - OUTSIDE all screens, always available */}
       <PremiumModal
         isOpen={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
@@ -388,261 +477,250 @@ function App() {
       />
 
       {/* Welcome Screen */}
-    {currentScreen === 'welcome' && ( 
-      <div className="app welcome-screen">
-        <div className="temple-background"></div>
-        <div className="floating-diwali"></div>
-        <div className="floating-om">ॐ</div>
-        <div className="floating-lotus">🌸</div>
-        
-        <div className="welcome-container">
-          <div className="welcome-content">
-            <div className="main-icon">🙏</div>
-            <h1 className="welcome-title">
-              Divine <span className="highlight">Dialogue</span>
-            </h1>
-            <p className="welcome-subtitle">
-              Seek Guidance from the Divine Realm
-            </p>
-            <p className="welcome-description">
-              Connect with celestial beings, receive spiritual wisdom, and find peace through 
-              meaningful conversations with Hindu deities. Your personal sanctuary for divine guidance.
-            </p>
-            
-            <div className="features-grid">
-              <div className="feature-card">
-                <div className="feature-icon">💫</div>
-                <h4>Divine Wisdom</h4>
-                <p>Receive guidance from enlightened beings</p>
+      {currentScreen === 'welcome' && ( 
+        <div className="app welcome-screen">
+          <div className="temple-background"></div>
+          <div className="floating-diwali"></div>
+          <div className="floating-om">ॐ</div>
+          <div className="floating-lotus">🌸</div>
+          
+          <div className="welcome-container">
+            <div className="welcome-content">
+              <div className="main-icon">🙏</div>
+              <h1 className="welcome-title">
+                Divine <span className="highlight">Dialogue</span>
+              </h1>
+              <p className="welcome-subtitle">
+                Seek Guidance from the Divine Realm
+              </p>
+              <p className="welcome-description">
+                Connect with celestial beings, receive spiritual wisdom, and find peace through 
+                meaningful conversations with Hindu deities. Your personal sanctuary for divine guidance.
+              </p>
+              
+              <div className="features-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">💫</div>
+                  <h4>Divine Wisdom</h4>
+                  <p>Receive guidance from enlightened beings</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">🌙</div>
+                  <h4>Spiritual Comfort</h4>
+                  <p>Find peace and clarity in challenging times</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">📿</div>
+                  <h4>Personalized Guidance</h4>
+                  <p>Tailored advice for your unique journey</p>
+                </div>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon">🌙</div>
-                <h4>Spiritual Comfort</h4>
-                <p>Find peace and clarity in challenging times</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">📿</div>
-                <h4>Personalized Guidance</h4>
-                <p>Tailored advice for your unique journey</p>
-              </div>
-            </div>
 
-            <button className="cta-button" onClick={startJourney}>
-              <span>Begin Your Spiritual Journey</span>
-              <span className="arrow">→</span>
-            </button>
+              <button className="cta-button" onClick={startJourney}>
+                <span>Begin Your Spiritual Journey</span>
+                <span className="arrow">→</span>
+              </button>
 
-            <div className="testimonial">
-              <p>"This app brought me peace during difficult times. Krishna's guidance felt truly divine."</p>
-              <small>- Priya, Mumbai</small>
+              <div className="testimonial">
+                <p>"This app brought me peace during difficult times. Krishna's guidance felt truly divine."</p>
+                <small>- Priya, Mumbai</small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-    {/* Deity Selection Screen */}
-  {currentScreen === 'deity-select' && (
-      <div className="app deity-select-screen">
-        <div className="saffron-background"></div>
-        <div className="floating-diwali"></div>
-        <div className="floating-om">ॐ</div>
-        
-        <div className="selection-container">
-          <div className="selection-header">
-            <button className="back-button" onClick={() => setCurrentScreen('welcome')}>
-              ← Back
-            </button>
-            <h1>Choose Your Divine Guide</h1>
-            <p>Select a deity to begin your spiritual conversation</p>
-          </div>
-
-          <div className="deities-grid">
-            {deities.map(deity => (
-              <div
-                key={deity.id}
-                className="deity-card-select"
-                onClick={() => selectDeity(deity)}
-              >
-                <div className="deity-glow" style={{ background: deity.color }}></div>
-                <div className="deity-avatar-select" style={{ background: deity.color }}>
-                  <span className="deity-emoji-select">{deity.emoji}</span>
-                </div>
-                <div className="deity-info-select">
-                  <h3>{deity.name}</h3>
-                  <p>{deity.description}</p>
-                  <div className="deity-blessing">
-                    <small>💫 {deity.blessing}</small>
-                  </div>
-                </div>
-                <div className="select-arrow">→</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="selection-footer">
-            <p>Each deity offers unique wisdom and perspective for your spiritual journey</p>
-          </div>
-        </div>
-      </div>
-    )}
-
-    
-    {/* Chat Screen */}
-    {currentScreen === 'chat' && (
-    <div className={`app chat-screen ${selectedDeity?.theme || 'default'}`}>
-
-      {/* ADD THIS MODAL */}
-      <PremiumModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        deity={selectedDeityForPremium}
-        onPurchase={handlePurchase}
-        isProcessingPayment={isProcessingPayment}
-      />
-
-      <div className="chat-background"></div>
-      <div className="floating-om">ॐ</div>
-      
-      <div className="chat-layout">
-        {/* Header */}
-        <div className="chat-header">
-          <button className="back-button" onClick={goBackToSelection}>
-            ← Choose Another Deity
-          </button>
-          <div className="deity-header-info">
-            <div className="deity-avatar-chat" style={{ background: selectedDeity.color }}>
-              <span>{selectedDeity.emoji}</span>
+      {/* Deity Selection Screen */}
+      {currentScreen === 'deity-select' && (
+        <div className="app deity-select-screen">
+          <div className="saffron-background"></div>
+          <div className="floating-diwali"></div>
+          <div className="floating-om">ॐ</div>
+          
+          <div className="selection-container">
+            <div className="selection-header">
+              {/* === CHANGED: Now uses goToWelcome === */}
+              <button className="back-button" onClick={goToWelcome}>
+                ← Back
+              </button>
+              <h1>Choose Your Divine Guide</h1>
+              <p>Select a deity to begin your spiritual conversation</p>
             </div>
-            <div className="deity-chat-info">
-              <h2>Chat with {selectedDeity.name}</h2>
-              <p>{selectedDeity.description}</p>
-            </div>
-          </div>
-          {userHasPremium && (
-            <div className="message-counter">
-              <div className="counter-badge">
-                {remainingMessages} messages left
-              </div>
-            </div>
-          )}
-          {/* In chat header - show counter for ALL deities when they have limited messages */}
-          {(userHasPremium || selectedDeity.id === 'krishna') && (
-            <div className="message-counter">
-              <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
-                {remainingMessages} {!userHasPremium ? 'free' : ''} messages left
-              </div>
-            </div>
-          )}
-  
-          {messages.length > 0 && (
-            <button className="clear-chat-button" onClick={clearChat}>
-              🧹 Clear
-            </button>
-          )}
-        </div>
 
-        {/* Messages Area */}
-        <div className="messages-area-chat">
-          {messages.length === 0 ? (
-            <div className="chat-welcome">
-              <div className="chat-welcome-icon">{selectedDeity.emoji}</div>
-              <h3>Welcome to {selectedDeity.name}'s Sanctuary</h3>
-              <p>{selectedDeity.blessing}</p>
-              <div className="suggested-questions-chat">
-                <div className="suggestion" onClick={() => setInputMessage("How can I find inner peace?")}>
-                  "How can I find inner peace?"
-                </div>
-                <div className="suggestion" onClick={() => setInputMessage("What is my life's purpose?")}>
-                  "What is my life's purpose?"
-                </div>
-                <div className="suggestion" onClick={() => setInputMessage("Guide me through my current challenges...")}>
-                  "Guide me through my current challenges..."
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="messages-list-chat">
-              {messages.map(message => (
+            <div className="deities-grid">
+              {deities.map(deity => (
                 <div
-                  key={message.id}
-                  className={`message-chat ${message.sender}`}
+                  key={deity.id}
+                  className="deity-card-select"
+                  onClick={() => selectDeity(deity)}
                 >
-                  <div className="message-bubble-chat">
-                    {message.sender === 'deity' && (
-                      <div className="message-header">
-                        <div className="deity-avatar-small" style={{ background: message.deity.color }}>
-                          <span>{message.deity.emoji}</span>
-                        </div>
-                        <span className="deity-name-chat">{message.deity.name}</span>
-                      </div>
-                    )}
-                    <div className="message-text-chat">{message.text}</div>
-                    <div className="message-time-chat">{message.timestamp}</div>
+                  <div className="deity-glow" style={{ background: deity.color }}></div>
+                  <div className="deity-avatar-select" style={{ background: deity.color }}>
+                    <span className="deity-emoji-select">{deity.emoji}</span>
                   </div>
+                  <div className="deity-info-select">
+                    <h3>{deity.name}</h3>
+                    <p>{deity.description}</p>
+                    <div className="deity-blessing">
+                      <small>💫 {deity.blessing}</small>
+                    </div>
+                  </div>
+                  <div className="select-arrow">→</div>
                 </div>
               ))}
-              
-              {isLoading && (
-                <div className="message-chat deity">
-                  <div className="message-bubble-chat">
-                    <div className="message-header">
-                      <div className="deity-avatar-small" style={{ background: selectedDeity.color }}>
-                        <span>{selectedDeity.emoji}</span>
-                      </div>
-                      <span className="deity-name-chat">{selectedDeity.name}</span>
-                    </div>
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
+            </div>
+
+            <div className="selection-footer">
+              <p>Each deity offers unique wisdom and perspective for your spiritual journey</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Chat Screen */}
+      {currentScreen === 'chat' && (
+      <div className={`app chat-screen ${selectedDeity?.theme || 'default'}`}>
+        <PremiumModal
+          isOpen={showPremiumModal}
+          onClose={() => setShowPremiumModal(false)}
+          deity={selectedDeityForPremium}
+          onPurchase={handlePurchase}
+          isProcessingPayment={isProcessingPayment}
+        />
+
+        <div className="chat-background"></div>
+        <div className="floating-om">ॐ</div>
+        
+        <div className="chat-layout">
+          <div className="chat-header">
+            {/* === CHANGED: Now uses goBackToSelection === */}
+            <button className="back-button" onClick={goBackToSelection}>
+              ← Choose Another Deity
+            </button>
+            <div className="deity-header-info">
+              <div className="deity-avatar-chat" style={{ background: selectedDeity.color }}>
+                <span>{selectedDeity.emoji}</span>
+              </div>
+              <div className="deity-chat-info">
+                <h2>Chat with {selectedDeity.name}</h2>
+                <p>{selectedDeity.description}</p>
+              </div>
+            </div>
+            {(userHasPremium || selectedDeity.id === 'krishna') && (
+              <div className="message-counter">
+                <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
+                  {remainingMessages} {!userHasPremium ? 'free' : ''} messages left
+                </div>
+              </div>
+            )}
+    
+            {messages.length > 0 && (
+              <button className="clear-chat-button" onClick={clearChat}>
+                🧹 Clear
+              </button>
+            )}
+          </div>
+
+          <div className="messages-area-chat">
+            {messages.length === 0 ? (
+              <div className="chat-welcome">
+                <div className="chat-welcome-icon">{selectedDeity.emoji}</div>
+                <h3>Welcome to {selectedDeity.name}'s Sanctuary</h3>
+                <p>{selectedDeity.blessing}</p>
+                <div className="suggested-questions-chat">
+                  <div className="suggestion" onClick={() => setInputMessage("How can I find inner peace?")}>
+                    "How can I find inner peace?"
+                  </div>
+                  <div className="suggestion" onClick={() => setInputMessage("What is my life's purpose?")}>
+                    "What is my life's purpose?"
+                  </div>
+                  <div className="suggestion" onClick={() => setInputMessage("Guide me through my current challenges...")}>
+                    "Guide me through my current challenges..."
                   </div>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
+              </div>
+            ) : (
+              <div className="messages-list-chat">
+                {messages.map(message => (
+                  <div
+                    key={message.id}
+                    className={`message-chat ${message.sender}`}
+                  >
+                    <div className="message-bubble-chat">
+                      {message.sender === 'deity' && (
+                        <div className="message-header">
+                          <div className="deity-avatar-small" style={{ background: message.deity.color }}>
+                            <span>{message.deity.emoji}</span>
+                          </div>
+                          <span className="deity-name-chat">{message.deity.name}</span>
+                        </div>
+                      )}
+                      <div className="message-text-chat">{message.text}</div>
+                      <div className="message-time-chat">{message.timestamp}</div>
+                    </div>
+                  </div>
+                ))}
+                
+                {isLoading && (
+                  <div className="message-chat deity">
+                    <div className="message-bubble-chat">
+                      <div className="message-header">
+                        <div className="deity-avatar-small" style={{ background: selectedDeity.color }}>
+                          <span>{selectedDeity.emoji}</span>
+                        </div>
+                        <span className="deity-name-chat">{selectedDeity.name}</span>
+                      </div>
+                      <div className="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
 
-        {/* Input Area */}
-        <div className="input-area-chat">
-          <div className="input-container-chat">
-            <textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Ask ${selectedDeity.name} for guidance...`}
-              rows="2"
-              disabled={isLoading}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="send-button-chat"
-              style={{ background: selectedDeity.color }}
-            >
-              {isLoading ? (
-                <>
-                  <div className="spinner"></div>
-                  Sending...
-                </>
-              ) : (
-                <>
-                  Send Prayer
-                  <span className="prayer-icon">🙏</span>
-                </>
-              )}
-            </button>
+          <div className="input-area-chat">
+            <div className="input-container-chat">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Ask ${selectedDeity.name} for guidance...`}
+                rows="2"
+                disabled={isLoading}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="send-button-chat"
+                style={{ background: selectedDeity.color }}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="spinner"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Prayer
+                    <span className="prayer-icon">🙏</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    )}
+      )}
     </>
   );
 }
-// Add this modal component before PremiumModal
+
+// KEEP THESE COMPONENTS EXACTLY AS THEY ARE - no changes
 function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
   if (!isOpen) return null;
 
@@ -699,8 +777,8 @@ function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
     </div>
   );
 }
-// Premium Modal Component - ADD THIS BEFORE export default App
-function PremiumModal({ isOpen, onClose, deity, onPurchase,isProcessingPayment }) {
+
+function PremiumModal({ isOpen, onClose, deity, onPurchase, isProcessingPayment }) {
   if (!isOpen) return null;
 
   return (
