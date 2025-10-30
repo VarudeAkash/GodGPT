@@ -69,6 +69,30 @@ function App() {
     };
 
     window.addEventListener('popstate', handlePopState);
+
+    // === 🆕 ADD THIS RIGHT HERE - Load premium status ===
+    const loadPremiumStatus = () => {
+      const premiumData = localStorage.getItem('premiumData');
+      if (premiumData) {
+        const { expiry, remainingMessages } = JSON.parse(premiumData);
+        
+        // Check if premium hasn't expired
+        if (expiry > Date.now()) {
+          setUserHasPremium(true);
+          setRemainingMessages(remainingMessages || 50);
+        } else {
+          // Clear expired premium
+          localStorage.removeItem('premiumData');
+          setUserHasPremium(false);
+          setRemainingMessages(50); // Reset to free Krishna messages
+        }
+      }
+    };
+
+    loadPremiumStatus();
+    // === 🆕 END OF NEW CODE ===
+
+
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentScreen]);
 
@@ -244,6 +268,15 @@ function App() {
     
     // Decrement message count for ALL users (including free Krishna)
     setRemainingMessages(prev => prev - 1);
+
+    // === 🆕 UPDATE: Persist message count in localStorage ===
+    if (userHasPremium) {
+      const currentPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{}');
+      if (currentPremiumData.userHasPremium) {
+        currentPremiumData.remainingMessages = remainingMessages - 1;
+        localStorage.setItem('premiumData', JSON.stringify(currentPremiumData));
+      }
+    }
     
     try {
       const response = await fetch(`${API_URL}/api/chat`, {
@@ -409,7 +442,6 @@ function App() {
   };
   
   const verifyPayment = async (response, deityName, deityColor, deityEmoji, deityBlessing, deityId) => {
-    // KEEP THIS FUNCTION EXACTLY AS IS - no changes
     try {
       const verificationResponse = await fetch(`${API_URL}/api/verify-payment`, {
         method: 'POST',
@@ -424,6 +456,18 @@ function App() {
       const verificationData = await verificationResponse.json();
       
       if (verificationData.success) {
+        // === 🆕 ENHANCED: Save premium data to localStorage ===
+        const premiumData = {
+          userHasPremium: true,
+          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days from now
+          remainingMessages: 50,
+          purchasedDeities: [deityId],
+          purchaseDate: Date.now(),
+          paymentId: response.razorpay_payment_id,
+          lastDeity: deityId
+        };
+        localStorage.setItem('premiumData', JSON.stringify(premiumData));
+        
         setUserHasPremium(true);
         setRemainingMessages(50);
         setShowPremiumModal(false);
@@ -437,18 +481,21 @@ function App() {
           blessing: deityBlessing
         };
         
+        // Save deity to localStorage
+        localStorage.setItem('selectedDeity', JSON.stringify(deity));
+        window.history.pushState({}, '', '#chat');
+        
         setSelectedDeity(deity);
         setCurrentScreen('chat');
         const welcomeMessage = {
           id: Date.now(),
-          text: userHasPremium 
-            ? `Welcome back, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You now have ${remainingMessages + 50} divine messages. ${deityBlessing}`
-            : `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
+          text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
           sender: 'deity',
           deity: deity,
           timestamp: new Date().toLocaleTimeString()
         };
         setMessages([welcomeMessage]);
+        localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
       } else {
         throw new Error('Payment verification failed');
       }
@@ -572,6 +619,29 @@ function App() {
 
             <div className="selection-footer">
               <p>Each deity offers unique wisdom and perspective for your spiritual journey</p>
+              {/* === 🆕 ADD RESTORE PURCHASES BUTTON === */}
+              {userHasPremium && (
+                <button 
+                  className="restore-purchases-btn"
+                  onClick={() => {
+                    const premiumData = JSON.parse(localStorage.getItem('premiumData'));
+                    const expiryDate = new Date(premiumData.expiry).toLocaleDateString();
+                    alert(`✅ Premium Active!\n\n📱 Messages remaining: ${remainingMessages}\n📅 Valid until: ${expiryDate}\n🙏 Thank you for your support!`);
+                  }}
+                  style={{
+                    background: '#10B981', 
+                    marginTop: '15px',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✅ Premium Active: {remainingMessages} messages left
+                </button>
+              )}
             </div>
           </div>
         </div>
