@@ -70,9 +70,22 @@ function App() {
 
     window.addEventListener('popstate', handlePopState);
 
-    // === 🆕 FIXED: Load premium status with per-deity logic ===
+    // === 🆕 FIXED: Load premium status with per-deity logic INCLUDING free Krishna ===
     const loadPremiumStatus = () => {
       const premiumData = localStorage.getItem('premiumData');
+      const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
+      
+      // Load free Krishna messages if they exist
+      if (freeKrishnaMessages) {
+        const remainingFree = parseInt(freeKrishnaMessages);
+        setRemainingMessages(remainingFree);
+      } else {
+        // Initialize free Krishna messages if first time
+        localStorage.setItem('freeKrishnaMessages', '50');
+        setRemainingMessages(50);
+      }
+      
+      // Check premium data
       if (premiumData) {
         const data = JSON.parse(premiumData);
         
@@ -87,15 +100,7 @@ function App() {
           if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
             setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
           }
-        } else {
-          // Clear expired premium
-          localStorage.removeItem('premiumData');
-          setUserHasPremium(false);
-          setRemainingMessages(50); // Free Krishna messages
         }
-      } else {
-        // No premium data, set free Krishna messages
-        setRemainingMessages(50);
       }
     };
 
@@ -111,6 +116,14 @@ function App() {
     fetchDeities();
   }, []);
 
+  // === 🆕 ADD: Initialize free Krishna messages on app start ===
+  useEffect(() => {
+    const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
+    if (!freeKrishnaMessages) {
+      localStorage.setItem('freeKrishnaMessages', '50');
+      setRemainingMessages(50);
+    }
+  }, []);
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
@@ -723,11 +736,11 @@ function App() {
             {(userHasPremium || selectedDeity.id === 'krishna') && (
               <div className="message-counter">
                 <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
-                  {remainingMessages} {!userHasPremium ? 'free' : ''} messages left
+                  {remainingMessages} {selectedDeity.id === 'krishna' && !userHasPremium ? 'free' : ''} messages left
                 </div>
               </div>
             )}
-    
+            
             {messages.length > 0 && (
               <button className="clear-chat-button" onClick={clearChat}>
                 🧹 Clear
