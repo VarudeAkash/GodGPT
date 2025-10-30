@@ -70,27 +70,37 @@ function App() {
 
     window.addEventListener('popstate', handlePopState);
 
-    // === 🆕 ADD THIS RIGHT HERE - Load premium status ===
+    // === 🆕 FIXED: Load premium status with per-deity logic ===
     const loadPremiumStatus = () => {
       const premiumData = localStorage.getItem('premiumData');
       if (premiumData) {
-        const { expiry, remainingMessages } = JSON.parse(premiumData);
+        const data = JSON.parse(premiumData);
         
-        // Check if premium hasn't expired
-        if (expiry > Date.now()) {
+        // Check if any deity premium is still valid
+        const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
+          deity => deity.expiry > Date.now() && deity.remainingMessages > 0
+        );
+        
+        if (hasActivePremium) {
           setUserHasPremium(true);
-          setRemainingMessages(remainingMessages || 50);
+          // Set remaining messages based on current selected deity (if any)
+          if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
+            setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
+          }
         } else {
           // Clear expired premium
           localStorage.removeItem('premiumData');
           setUserHasPremium(false);
-          setRemainingMessages(50); // Reset to free Krishna messages
+          setRemainingMessages(50); // Free Krishna messages
         }
+      } else {
+        // No premium data, set free Krishna messages
+        setRemainingMessages(50);
       }
     };
 
     loadPremiumStatus();
-    // === 🆕 END OF NEW CODE ===
+        // === 🆕 END OF NEW CODE ===
 
 
     return () => window.removeEventListener('popstate', handlePopState);
@@ -185,14 +195,34 @@ function App() {
 
   // === MODIFIED: selectDeity ===
   const selectDeity = (deity) => {
-    // Check if user has messages remaining (applies to ALL deities now)
-    const hasMessagesLeft = userHasPremium ? remainingMessages > 0 : remainingMessages > 0;
+    const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
     
-    // If no messages left OR if it's not Krishna and user is not premium
-    if (!hasMessagesLeft || (deity.id !== 'krishna' && !userHasPremium)) {
-      setSelectedDeityForPremium(deity);
-      setShowPremiumModal(true);
-      return;
+    // Check Krishna free messages (Bug 1 fix)
+    if (deity.id === 'krishna') {
+      const freeMessages = localStorage.getItem('freeKrishnaMessages');
+      if (!freeMessages) {
+        // First time - set 50 free messages
+        localStorage.setItem('freeKrishnaMessages', '50');
+        setRemainingMessages(50);
+      } else {
+        const remaining = parseInt(freeMessages);
+        if (remaining <= 0) {
+          setSelectedDeityForPremium(deity);
+          setShowPremiumModal(true);
+          return;
+        }
+        setRemainingMessages(remaining);
+      }
+    } 
+    // Check premium deities (Bug 2 fix)
+    else {
+      const deityPremium = premiumData.purchasedDeities[deity.id];
+      if (!deityPremium || deityPremium.remainingMessages <= 0 || deityPremium.expiry <= Date.now()) {
+        setSelectedDeityForPremium(deity);
+        setShowPremiumModal(true);
+        return;
+      }
+      setRemainingMessages(deityPremium.remainingMessages);
     }
   
     // Save deity to localStorage for back button recovery
@@ -269,12 +299,17 @@ function App() {
     // Decrement message count for ALL users (including free Krishna)
     setRemainingMessages(prev => prev - 1);
 
-    // === 🆕 UPDATE: Persist message count in localStorage ===
-    if (userHasPremium) {
-      const currentPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{}');
-      if (currentPremiumData.userHasPremium) {
-        currentPremiumData.remainingMessages = remainingMessages - 1;
-        localStorage.setItem('premiumData', JSON.stringify(currentPremiumData));
+    // === 🆕 FIXED: Update per-deity message count in localStorage ===
+    if (selectedDeity.id === 'krishna' && !userHasPremium) {
+      // Update free Krishna messages
+      const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
+      localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
+    } else {
+      // Update premium deity messages
+      const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+      if (premiumData.purchasedDeities[selectedDeity.id]) {
+        premiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
+        localStorage.setItem('premiumData', JSON.stringify(premiumData));
       }
     }
     
@@ -456,17 +491,18 @@ function App() {
       const verificationData = await verificationResponse.json();
       
       if (verificationData.success) {
-        // === 🆕 ENHANCED: Save premium data to localStorage ===
-        const premiumData = {
-          userHasPremium: true,
-          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days from now
+        // === 🆕 FIXED: Save per-deity premium data ===
+        const existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+        
+        existingData.purchasedDeities[deityId] = {
           remainingMessages: 50,
-          purchasedDeities: [deityId],
+          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
           purchaseDate: Date.now(),
-          paymentId: response.razorpay_payment_id,
-          lastDeity: deityId
+          paymentId: response.razorpay_payment_id
         };
-        localStorage.setItem('premiumData', JSON.stringify(premiumData));
+        existingData.userHasPremium = true;
+        
+        localStorage.setItem('premiumData', JSON.stringify(existingData));
         
         setUserHasPremium(true);
         setRemainingMessages(50);
@@ -619,14 +655,22 @@ function App() {
 
             <div className="selection-footer">
               <p>Each deity offers unique wisdom and perspective for your spiritual journey</p>
-              {/* === 🆕 ADD RESTORE PURCHASES BUTTON === */}
+              {/* === 🆕 FIXED: Show premium status per deity === */}
               {userHasPremium && (
                 <button 
                   className="restore-purchases-btn"
                   onClick={() => {
-                    const premiumData = JSON.parse(localStorage.getItem('premiumData'));
-                    const expiryDate = new Date(premiumData.expiry).toLocaleDateString();
-                    alert(`✅ Premium Active!\n\n📱 Messages remaining: ${remainingMessages}\n📅 Valid until: ${expiryDate}\n🙏 Thank you for your support!`);
+                    const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+                    let message = "✅ Your Premium Deities:\n\n";
+                    
+                    Object.entries(premiumData.purchasedDeities).forEach(([deityId, data]) => {
+                      if (data.expiry > Date.now()) {
+                        const deityName = deities.find(d => d.id === deityId)?.name || deityId;
+                        message += `🙏 ${deityName}: ${data.remainingMessages} messages\n`;
+                      }
+                    });
+                    
+                    alert(message);
                   }}
                   style={{
                     background: '#10B981', 
@@ -639,7 +683,7 @@ function App() {
                     cursor: 'pointer'
                   }}
                 >
-                  ✅ Premium Active: {remainingMessages} messages left
+                  ✅ View My Premium Deities
                 </button>
               )}
             </div>
