@@ -152,6 +152,7 @@ app.post('/api/verify-payment', async (req, res) => {
 
 
 // Chat endpoint
+// Chat endpoint with streaming for complete responses
 app.post('/api/chat', async (req, res) => {
   const { message, deity } = req.body;
 
@@ -171,24 +172,43 @@ app.post('/api/chat', async (req, res) => {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    // === 🆕 KEY CHANGE: Use streaming ===
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // Better model
       messages: [
         {
           role: 'system',
-          content: deityPrompts[deity]
+          // === 🆕 Added instruction to ensure complete answers ===
+          content: deityPrompts[deity] + ' Always provide complete, well-formed answers that end naturally.'
         },
         {
           role: 'user',
           content: message
         }
       ],
-      max_tokens: 150,
+      max_tokens: 500, // Increased for longer spiritual guidance
       temperature: 0.7,
+      stream: true // ← 🆕 THIS ENABLES STREAMING
     });
 
-    const response = completion.choices[0].message.content;
-    res.json({ response });
+    // === 🆕 Set headers for streaming response ===
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+
+    let fullResponse = '';
+    
+    // === 🆕 Stream response chunk by chunk ===
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      fullResponse += content;
+      res.write(content); // Send each chunk immediately
+    }
+
+    res.end(); // End the response
 
   } catch (error) {
     console.error('OpenAI API error:', error);

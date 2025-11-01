@@ -327,27 +327,63 @@ function App() {
     }
     
     try {
+      // === 🆕 STREAMING API CALL ===
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: inputMessage, deity: selectedDeity.id }),
       });
-  
+    
       if (!response.ok) throw new Error('Network response was not ok');
-  
-      const data = await response.json();
-      
-      const divineMessage = {
-        id: Date.now() + 1,
-        text: data.response,
+    
+      // === 🆕 CREATE INITIAL EMPTY MESSAGE ===
+      const streamingMessageId = Date.now() + 1;
+      const initialStreamingMessage = {
+        id: streamingMessageId,
+        text: '', // Start empty - will fill gradually
         sender: 'deity',
         deity: selectedDeity,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
-      const updatedMessages = [...newMessages, divineMessage];
-      setMessages(updatedMessages);
-      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
+    
+      // Add the empty message that will be filled gradually
+      const messagesWithEmpty = [...newMessages, initialStreamingMessage];
+      setMessages(messagesWithEmpty);
+    
+      // === 🆕 SET UP STREAM READER ===
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let aiResponse = '';
+    
+      // === 🆕 READ STREAM CHUNK BY CHUNK ===
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        // Decode the chunk and add to response
+        const chunk = decoder.decode(value, { stream: true });
+        aiResponse += chunk;
+        
+        // === 🆕 UPDATE THE MESSAGE IN REAL-TIME ===
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === streamingMessageId 
+              ? { ...msg, text: aiResponse }
+              : msg
+          )
+        );
+      }
+    
+      // === 🆕 SAVE FINAL MESSAGE TO LOCALSTORAGE ===
+      const finalMessages = [...newMessages, {
+        id: streamingMessageId,
+        text: aiResponse,
+        sender: 'deity',
+        deity: selectedDeity,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }];
+      
+      localStorage.setItem('chatMessages', JSON.stringify(finalMessages));
       
     } catch (error) {
       console.error('Error sending message:', error);
@@ -788,7 +824,7 @@ function App() {
                   </div>
                 ))}
                 
-                {isLoading && (
+                {isLoading && messages[messages.length - 1]?.sender !== 'deity' && (
                   <div className="message-chat deity">
                     <div className="message-bubble-chat">
                       <div className="message-header">
