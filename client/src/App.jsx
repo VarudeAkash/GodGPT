@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
+import Header from './components/header.jsx';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
@@ -593,6 +595,8 @@ function App() {
 
   return (
     <>
+    <Header />
+    <div className="main-content">
       <BuyMoreModal
         isOpen={showBuyMoreModal}
         onClose={() => setShowBuyMoreModal(false)}
@@ -879,6 +883,7 @@ function App() {
         </div>
       </div>
       )}
+    </div>
     </>
   );
 }
@@ -945,6 +950,7 @@ function PremiumModal({ isOpen, onClose, deity, onPurchase, isProcessingPayment 
   if (!isOpen) return null;
 
   return (
+
     <div className="premium-modal-overlay">
       <div className="premium-modal">
         <div className="premium-header">

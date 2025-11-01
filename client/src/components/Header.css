@@ -1,0 +1,437 @@
+/* Light Spiritual Header with Visible Rangoli */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  /* Highly Visible Rangoli Patterns */
+  .rangoli-pattern {
+    position: absolute;
+    opacity: 0.4; /* Much more visible */
+    pointer-events: none;
+    z-index: 1;
+    filter: blur(0.8px);
+  }
+  
+  .rangoli-1 {
+    top: 15%;
+    left: 5%;
+    width: 120px;
+    height: 120px;
+    background: 
+      radial-gradient(circle, #8B0000 0%, transparent 60%), /* Maroon */
+      conic-gradient(from 0deg, #8B0000, #FF6B35, #4B0082); /* Maroon, Saffron, Violet */
+    border-radius: 50%;
+    animation: floatRangoli 15s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(139, 0, 0, 0.5);
+  }
+  
+  .rangoli-2 {
+    top: 65%;
+    right: 8%;
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(45deg, #4B0082, #8B0000, #FF6B35); /* Violet, Maroon, Saffron */
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    animation: floatRangoli 10s ease-in-out infinite reverse;
+    box-shadow: 0 0 35px rgba(75, 0, 130, 0.5);
+  }
+  
+  .rangoli-3 {
+    bottom: 25%;
+    left: 15%;
+    width: 140px;
+    height: 140px;
+    background: 
+      radial-gradient(circle at 30% 30%, #8B0000 0%, transparent 50%), /* Maroon */
+      radial-gradient(circle at 70% 70%, #4B0082 0%, transparent 50%); /* Violet */
+    animation: floatRangoli 18s ease-in-out infinite;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    box-shadow: 0 0 45px rgba(255, 107, 53, 0.6);
+  }
+  
+  .rangoli-4 {
+    top: 35%;
+    right: 20%;
+    width: 100px;
+    height: 100px;
+    background: conic-gradient(from 180deg, #4B0082, #8B0000, #FF6B35); /* Violet, Maroon, Saffron */
+    clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+    animation: floatRangoli 12s ease-in-out infinite reverse;
+    box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+  }
+  
+  .rangoli-5 {
+    top: 75%;
+    left: 25%;
+    width: 80px;
+    height: 80px;
+    background: 
+      radial-gradient(circle, #FF6B35 0%, transparent 70%),
+      radial-gradient(circle at 60% 60%, #4B0082 0%, transparent 50%);
+    animation: floatRangoli 14s ease-in-out infinite;
+    border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.5);
+  }
+  
+  /* Lighter Header Background */
+  .header-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+      rgba(30, 20, 15, 0.92) 0%,    /* Lighter dark */
+      rgba(60, 30, 20, 0.88) 50%,   /* Warm brown */
+      rgba(30, 20, 15, 0.92) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(139, 0, 0, 0.3); /* Maroon border */
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+  }
+  
+  .header-container {
+    position: relative;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 3;
+  }
+  
+  /* Logo - No Background for Transparent Logo */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+  }
+  
+  .logo-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: transparent; /* No background for transparent logo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* Remove saffron shadow effects */
+    box-shadow: none;
+    animation: none; /* Remove pulsing animation */
+  }
+  
+  .logo-image::before {
+    display: none; /* Remove shine effect */
+  }
+  
+  /* Logo Image - Full container for transparent logo */
+  .logo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;
+    /* Add subtle shadow for better visibility */
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  }
+  
+  /* Logo Fallback - Only shows when image fails */
+  .logo-fallback {
+    font-size: 2rem;
+    position: relative;
+    z-index: 1;
+    animation: gentleSway 4s ease-in-out infinite;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #8B0000, #4B0082); /* Maroon to Violet */
+    border-radius: 12px;
+    color: #FFE4C4;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Brand Name Color - Matches logo colors */
+  .logo-main {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #E6D3B3; /* Light beige that works with dark colors */
+    text-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.5),
+      0 4px 12px rgba(0, 0, 0, 0.4);
+    letter-spacing: -0.3px;
+  }
+  
+  /* Navigation - Lighter Colors */
+  .desktop-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+  }
+  
+  .nav-link {
+    color: #D4C1A5; /* Light beige */
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.8rem 1.8rem;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    background: transparent;
+    border: 1px solid transparent;
+    overflow: hidden;
+  }
+  
+  .nav-glow {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(139, 0, 0, 0.2), /* Maroon glow */
+      transparent);
+    transition: left 0.6s ease;
+  }
+  
+  .nav-link:hover .nav-glow {
+    left: 100%;
+  }
+  
+  .nav-link:hover {
+    color: #FFFFFF;
+    background: rgba(139, 0, 0, 0.15); /* Maroon background */
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 25px rgba(139, 0, 0, 0.3),
+      0 0 20px rgba(75, 0, 130, 0.2); /* Violet glow */
+  }
+  
+  .nav-text {
+    position: relative;
+    z-index: 1;
+    font-weight: 500;
+  }
+  
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(139, 0, 0, 0.2); /* Maroon */
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 0.8rem;
+    transition: all 0.4s ease;
+    width: 52px;
+    height: 52px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .mobile-menu-btn:hover {
+    background: rgba(139, 0, 0, 0.3);
+    border-color: rgba(139, 0, 0, 0.6);
+    transform: scale(1.05);
+  }
+  
+  .menu-dot {
+    width: 6px;
+    height: 6px;
+    background: #D4C1A5; /* Light beige */
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(139, 0, 0, 0.6);
+  }
+  
+  .mobile-menu-btn.open .menu-dot:nth-child(1) {
+    transform: translateY(9px) rotate(45deg) scale(1.2);
+    background: #8B0000; /* Maroon */
+  }
+  
+  .mobile-menu-btn.open .menu-dot:nth-child(2) {
+    opacity: 0;
+    transform: scale(0);
+  }
+  
+  .mobile-menu-btn.open .menu-dot:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg) scale(1.2);
+    background: #8B0000; /* Maroon */
+  }
+  
+  /* Mobile Navigation */
+  .mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    height: 100vh;
+    z-index: 1001;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-rangoli {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.12) 0%, transparent 50%);
+    opacity: 0.7;
+  }
+  
+  .mobile-nav-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1E140F 0%, #3C1E14 100%);
+    border-left: 1px solid rgba(139, 0, 0, 0.4);
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+  }
+  
+  .mobile-nav-content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+  }
+  
+  .mobile-nav.open {
+    right: 0;
+  }
+  
+  .mobile-nav-header {
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.3);
+  }
+  
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    flex: 1;
+  }
+  
+  .mobile-nav .nav-link {
+    padding: 1.2rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.5rem;
+  }
+  
+  .mobile-nav .nav-link:hover {
+    background: rgba(139, 0, 0, 0.15);
+    border-color: rgba(139, 0, 0, 0.4);
+    transform: translateX(-8px);
+  }
+  
+  /* Mobile Overlay */
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+  }
+  
+  /* Animations */
+  @keyframes floatRangoli {
+    0%, 100% { 
+      transform: translateY(0px) rotate(0deg) scale(1);
+      opacity: 0.4;
+    }
+    50% { 
+      transform: translateY(-20px) rotate(10deg) scale(1.15);
+      opacity: 0.6;
+    }
+  }
+  
+  @keyframes gentleSway {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(3deg); }
+    75% { transform: rotate(-3deg); }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .header-container {
+      padding: 0.8rem 1.5rem;
+    }
+  
+    .desktop-nav {
+      display: none;
+    }
+  
+    .mobile-menu-btn {
+      display: flex;
+    }
+  
+    .logo-main {
+      font-size: 1.4rem;
+    }
+  
+    .logo-image {
+      width: 45px;
+      height: 45px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header-container {
+      padding: 0.7rem 1rem;
+    }
+  
+    .logo-main {
+      font-size: 1.2rem;
+    }
+  
+    .logo-image {
+      width: 40px;
+      height: 40px;
+    }
+  
+    .mobile-nav {
+      width: 280px;
+    }
+    
+    .rangoli-pattern {
+      opacity: 0.3; /* Slightly less visible on mobile */
+    }
+  }
