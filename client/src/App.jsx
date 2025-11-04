@@ -635,15 +635,15 @@ function App() {
         {/* Compact Header */}
         <div className="main-header">
           <div className="brand-section">
-            <div className="logo-large">
-              <img src="/logo.png" alt="Hindu.Dharma.AI" onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}/>
-              <div className="logo-fallback-large">🕉️</div>
-            </div>
+          <div className="logo-large">
+            <img src="/logo.png" alt="Hindu.Dharma.AI" onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }} style={{ width: '120px', height: '120px' }}/>
+            <div className="logo-fallback-large">🕉️</div>
+          </div>
             <div className="brand-text">
-              <h1 className="welcome-title">Hindu.Dharma.AI</h1>
+              <h1 className="welcome-title">Astravedam</h1>
               <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
             </div>
           </div>

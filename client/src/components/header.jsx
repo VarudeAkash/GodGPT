@@ -19,19 +19,20 @@ function Header() {
         
         {/* Logo - No Background for Transparent Logo */}
         <div className="logo">
-          <div className="logo-image">
+          <div className="logo-image" style={{ width: '80px', height: '80px' }}>
             {!logoError ? (
               <img 
                 src="/logo.png" 
-                alt="Hindu.Dharma.AI" 
+                alt="Astravedam" 
                 onError={() => setLogoError(true)}
-              />
+                style={{ width: '90px', height: '90px' }}
+                />
             ) : (
               <div className="logo-fallback">🕉️</div>
             )}
           </div>
           <div className="logo-text">
-            <span className="logo-main">Hindu.Dharma.AI</span>
+            <span className="logo-main">Astravedam</span>
           </div>
         </div>
 
@@ -72,19 +73,20 @@ function Header() {
           <div className="mobile-nav-content">
             <div className="mobile-nav-header">
               <div className="logo">
-                <div className="logo-image">
+                <div className="logo-image" style={{ width: '80px', height: '80px' }}>
                   {!logoError ? (
                     <img 
-                      src="/logo.png" 
-                      alt="Hindu.Dharma.AI" 
-                      onError={() => setLogoError(true)}
+                        src="/logo.png" 
+                        alt="Astravedam" 
+                        onError={() => setLogoError(true)}
+                        style={{ width: '90px', height: '90px' }}
                     />
                   ) : (
                     <div className="logo-fallback">🕉️</div>
                   )}
                 </div>
                 <div className="logo-text">
-                  <span className="logo-main">Hindu.Dharma.AI</span>
+                  <span className="logo-main">Astravedam</span>
                 </div>
               </div>
             </div>

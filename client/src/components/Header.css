@@ -170,7 +170,7 @@
   
   /* Brand Name Color - Matches logo colors */
   .logo-main {
-    font-size: 1.6rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: #E6D3B3; /* Light beige that works with dark colors */
     text-shadow: 
@@ -404,7 +404,7 @@
     }
   
     .logo-main {
-      font-size: 1.4rem;
+      font-size: 2.5rem;
     }
   
     .logo-image {
@@ -419,7 +419,7 @@
     }
   
     .logo-main {
-      font-size: 1.2rem;
+      font-size: 2rem;
     }
   
     .logo-image {
@@ -434,4 +434,26 @@
     .rangoli-pattern {
       opacity: 0.3; /* Slightly less visible on mobile */
     }
+  }
+
+  /* Larger logo styles */
+.logo-image {
+    width: 80px !important;
+    height: 80px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .logo-image img {
+    width: 90px !important;
+    height: 90px !important;
+    object-fit: contain;
+  }
+  
+  /* Larger welcome screen logo */
+  .logo-large img {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: contain;
   }
