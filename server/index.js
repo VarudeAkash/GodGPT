@@ -10,7 +10,8 @@ const port = process.env.PORT || 3002;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://ask-devata.vercel.app' 
+    'https://astravedam.com',
+    'https://www.astravedam.com'
   ],
   credentials: true
 }));
