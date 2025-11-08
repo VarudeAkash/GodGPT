@@ -23,7 +23,7 @@ function Privacy() {
                 <div className="logo-fallback-large">🕉️</div>
               </div>
               <div className="brand-text">
-                <h1 className="welcome-title">AstraVedam</h1>
+                <h1 className="welcome-title">Astravedam</h1>
                 <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
               </div>
             </div>

@@ -37,7 +37,8 @@ function App() {
       const savedDeity = localStorage.getItem('selectedDeity');
       const savedMessages = localStorage.getItem('chatMessages');
       if (savedDeity) {
-        setSelectedDeity(JSON.parse(savedDeity));
+        const deity = JSON.parse(savedDeity); // 🆕 ADD THIS LINE
+        setSelectedDeity(deity);
         setCurrentScreen('chat');
         if (savedMessages) {
           setMessages(JSON.parse(savedMessages));
@@ -257,24 +258,36 @@ function App() {
       setRemainingMessages(deityPremium.remainingMessages);
     }
   
-    // Save deity to localStorage for back button recovery
+    // 🆕 CHECK if we're selecting the SAME deity that has existing chat
+    const savedDeity = localStorage.getItem('selectedDeity');
+    const savedMessages = localStorage.getItem('chatMessages');
+    const isSameDeity = savedDeity && JSON.parse(savedDeity).id === deity.id;
+    
+    // Save deity to localStorage
     localStorage.setItem('selectedDeity', JSON.stringify(deity));
     window.history.pushState({}, '', '#chat');
     
     setSelectedDeity(deity);
     setCurrentScreen('chat');
     
-    const welcomeMessage = {
-      id: Date.now(),
-      text: userHasPremium 
-        ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
-        : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
-      sender: 'deity',
-      deity: deity,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([welcomeMessage]);
-    localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
+    // 🆕 FIX: Load existing messages if same deity, otherwise welcome
+    if (isSameDeity && savedMessages) {
+      // Load existing conversation
+      setMessages(JSON.parse(savedMessages));
+    } else {
+      // Start new conversation
+      const welcomeMessage = {
+        id: Date.now(),
+        text: userHasPremium 
+          ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
+          : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
+        sender: 'deity',
+        deity: deity,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages([welcomeMessage]);
+      localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
+    }
   };
 
   // === MODIFIED: goBackToSelection ===
@@ -283,8 +296,8 @@ function App() {
     setCurrentScreen('deity-select');
     setSelectedDeity(null);
     setMessages([]);
-    localStorage.removeItem('selectedDeity');
-    localStorage.removeItem('chatMessages');
+    // localStorage.removeItem('selectedDeity');
+    // localStorage.removeItem('chatMessages');
   };
 
   // === NEW FUNCTION: goToWelcome ===
@@ -293,8 +306,8 @@ function App() {
     setCurrentScreen('welcome');
     setSelectedDeity(null);
     setMessages([]);
-    localStorage.removeItem('selectedDeity');
-    localStorage.removeItem('chatMessages');
+    // localStorage.removeItem('selectedDeity');
+    // localStorage.removeItem('chatMessages');
   };
 
   // === MODIFIED: sendMessage ===
