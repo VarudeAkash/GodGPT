@@ -1,0 +1,155 @@
+.about-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a0f0f 0%, #2d1b1b 100%);
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  .about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 20px 50px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .about-content {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 50px 40px;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* About Heading */
+  .about-heading-section {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .about-heading-section h2 {
+    font-size: 2.5rem;
+    color: #FF6B35;
+    border-bottom: 3px solid #FF6B35;
+    display: inline-block;
+    padding-bottom: 10px;
+  }
+  
+  /* Section Styles */
+  .about-section {
+    margin-bottom: 40px;
+  }
+  
+  .about-section h3 {
+    color: #FF6B35;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    border-left: 4px solid #FF6B35;
+    padding-left: 15px;
+  }
+  
+  .about-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #e5e7eb;
+    margin-bottom: 20px;
+  }
+  
+  /* Deities List */
+  .deities-list {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .deity-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px 20px;
+    border-radius: 10px;
+    border-left: 3px solid #FF6B35;
+    color: #e5e7eb;
+  }
+  
+  /* Values Grid */
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  }
+  
+  .value-item {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 165, 0, 0.1);
+  }
+  
+  .value-item h4 {
+    color: #FF6B35;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+  }
+  
+  .value-item p {
+    color: #d1d5db;
+    font-size: 1rem;
+  }
+  
+  /* CTA Section */
+  .about-cta {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(245, 158, 11, 0.1));
+    padding: 40px;
+    border-radius: 15px;
+    margin-top: 50px;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+  }
+  
+  .about-cta h3 {
+    color: #FF6B35;
+    font-size: 2rem;
+    margin-bottom: 15px;
+  }
+  
+  .cta-button-about {
+    background: linear-gradient(45deg, #FF6B35, #F59E0B);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .cta-button-about:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .about-container {
+      padding: 80px 15px 30px;
+    }
+    
+    .about-content {
+      padding: 30px 20px;
+    }
+    
+    .about-heading-section h2 {
+      font-size: 2rem;
+    }
+    
+    .about-section h3 {
+      font-size: 1.5rem;
+    }
+    
+    .values-grid {
+      grid-template-columns: 1fr;
+    }
+  }

@@ -38,19 +38,19 @@ function Header() {
 
         {/* Navigation */}
         <nav className="desktop-nav">
-          <a href="/" className="nav-link">
+          <a href="#welcome" className="nav-link" onClick={() => setCurrentScreen('welcome')}>
             <span className="nav-glow"></span>
             <span className="nav-text">Home</span>
           </a>
-          <a href="/about" className="nav-link">
+          <a href="#about" className="nav-link" onClick={() => setCurrentScreen('about')}>
             <span className="nav-glow"></span>
             <span className="nav-text">About</span>
           </a>
-          <a href="/contact" className="nav-link">
+          <a href="#contact" className="nav-link" onClick={() => setCurrentScreen('contact')}>
             <span className="nav-glow"></span>
             <span className="nav-text">Contact</span>
           </a>
-          <a href="/privacy" className="nav-link">
+          <a href="#privacy" className="nav-link" onClick={() => setCurrentScreen('privacy')}>
             <span className="nav-glow"></span>
             <span className="nav-text">Privacy</span>
           </a>
@@ -92,16 +92,16 @@ function Header() {
             </div>
             
             <div className="mobile-nav-links">
-              <a href="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <a href="#welcome" className="nav-link" onClick={() => { setIsMenuOpen(false); setCurrentScreen('welcome'); }}>
                 <span className="nav-text">Home</span>
               </a>
-              <a href="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <a href="#about" className="nav-link" onClick={() => { setIsMenuOpen(false); setCurrentScreen('about'); }}>
                 <span className="nav-text">About</span>
               </a>
-              <a href="/contact" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <a href="#contact" className="nav-link" onClick={() => { setIsMenuOpen(false); setCurrentScreen('contact'); }}>
                 <span className="nav-text">Contact</span>
               </a>
-              <a href="/privacy" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+              <a href="#privacy" className="nav-link" onClick={() => { setIsMenuOpen(false); setCurrentScreen('privacy'); }}>
                 <span className="nav-text">Privacy</span>
               </a>
             </div>

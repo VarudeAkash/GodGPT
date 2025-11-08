@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Header from './components/header.jsx';
-
+import About from './components/About.jsx';
+import Contact from './components/Contact.jsx';
+import Privacy from './components/Privacy.jsx'; 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
@@ -25,6 +27,9 @@ function App() {
   useEffect(() => {
     // Set initial screen based on URL hash
     const hash = window.location.hash.replace('#', '');
+    
+    console.log('Current hash:', hash); // Debug log
+    
     if (hash === 'deity-select') {
       setCurrentScreen('deity-select');
     } else if (hash === 'chat') {
@@ -42,15 +47,21 @@ function App() {
         window.location.hash = 'deity-select';
         setCurrentScreen('deity-select');
       }
-    } else {
+    } else if (hash === 'about') {
+      setCurrentScreen('about');
+    } else if (hash === 'contact') {
+      setCurrentScreen('contact');
+    } else if (hash === 'privacy') {
+      setCurrentScreen('privacy');
+    } else if (!hash || hash === 'welcome') {
       setCurrentScreen('welcome');
-      window.location.hash = 'welcome';
     }
-    
+    // Removed the else block that was forcing welcome screen
     
     // Handle browser back/forward buttons
     const handlePopState = () => {
       const newHash = window.location.hash.replace('#', '');
+      console.log('Popstate hash:', newHash); // Debug log
       
       if (newHash === 'deity-select' && currentScreen !== 'deity-select') {
         setCurrentScreen('deity-select');
@@ -65,53 +76,51 @@ function App() {
           window.location.hash = 'deity-select';
           setCurrentScreen('deity-select');
         }
+      } else if (newHash === 'about' && currentScreen !== 'about') {
+        setCurrentScreen('about');
+      } else if (newHash === 'contact' && currentScreen !== 'contact') {
+        setCurrentScreen('contact');
+      } else if (newHash === 'privacy' && currentScreen !== 'privacy') {
+        setCurrentScreen('privacy');
       } else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
         setCurrentScreen('welcome');
         setSelectedDeity(null);
         setMessages([]);
       }
     };
-
+  
     window.addEventListener('popstate', handlePopState);
-
-    // === 🆕 FIXED: Load premium status with per-deity logic INCLUDING free Krishna ===
+  
+    // Load premium status
     const loadPremiumStatus = () => {
       const premiumData = localStorage.getItem('premiumData');
       const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
       
-      // Load free Krishna messages if they exist
       if (freeKrishnaMessages) {
         const remainingFree = parseInt(freeKrishnaMessages);
         setRemainingMessages(remainingFree);
       } else {
-        // Initialize free Krishna messages if first time
         localStorage.setItem('freeKrishnaMessages', '50');
         setRemainingMessages(50);
       }
       
-      // Check premium data
       if (premiumData) {
         const data = JSON.parse(premiumData);
-        
-        // Check if any deity premium is still valid
         const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
           deity => deity.expiry > Date.now() && deity.remainingMessages > 0
         );
         
         if (hasActivePremium) {
           setUserHasPremium(true);
-          // Set remaining messages based on current selected deity (if any)
           if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
             setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
           }
         }
       }
     };
-
+  
     loadPremiumStatus();
-        // === 🆕 END OF NEW CODE ===
-
-
+  
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentScreen]);
 
@@ -621,121 +630,132 @@ function App() {
       />
 
       {/* Welcome Screen */}
-{/* Fixed Welcome Screen */}
-{currentScreen === 'welcome' && ( 
-  <div className="app welcome-screen">
-    <div className="temple-background"></div>
-    <div className="floating-diwali"></div>
-    <div className="floating-om">ॐ</div>
-    <div className="floating-lotus">🌸</div>
-    
-    <div className="welcome-container">
-      <div className="welcome-content">
-        
-        {/* Compact Header */}
-        <div className="main-header">
-          <div className="brand-section">
-          <div className="logo-large">
-            <img src="/logo.png" alt="Hindu.Dharma.AI" onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }} style={{ width: '120px', height: '120px' }}/>
-            <div className="logo-fallback-large">🕉️</div>
-          </div>
-            <div className="brand-text">
-              <h1 className="welcome-title">Astravedam</h1>
-              <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Immediate CTA */}
-        <div className="immediate-cta">
-          <button className="cta-button" onClick={startJourney}>
-            <span>Begin Your Spiritual Journey</span>
-            <span className="arrow">→</span>
-          </button>
-          <p className="cta-note">
-            Start with free messages from Lord Krishna
-          </p>
-        </div>
-
-        {/* Feature Cards */}
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🌅</div>
-            <h4>Divine Conversations</h4>
-            <p>Engage in meaningful dialogues with AI-powered deities, crafted from authentic scriptures</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">📜</div>
-            <h4>Authentic Guidance</h4>
-            <p>Receive wisdom based on Bhagavad Gita, Vedas, Puranas, and sacred texts</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">💫</div>
-            <h4>Personalized Insights</h4>
-            <p>Get tailored spiritual guidance for your unique life situations</p>
-          </div>
-        </div>
-
-        {/* How It Works - Compact */}
-        <div className="how-it-works">
-          <h3>How It Works</h3>
-          <div className="steps">
-            <div className="step">
-              <div className="step-number">1</div>
-              <div className="step-content">
-                <h5>Choose Your Guide</h5>
-                <p>Select from enlightened deities</p>
+      {/* Fixed Welcome Screen */}
+      {currentScreen === 'welcome' && ( 
+        <div className="app welcome-screen">
+          <div className="temple-background"></div>
+          <div className="floating-diwali"></div>
+          <div className="floating-om">ॐ</div>
+          <div className="floating-lotus">🌸</div>
+          
+          <div className="welcome-container">
+            <div className="welcome-content">
+              
+              {/* Compact Header */}
+              <div className="main-header">
+                <div className="brand-section">
+                <div className="logo-large">
+                  <img src="/logo.png" alt="Hindu.Dharma.AI" onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }} style={{ width: '120px', height: '120px' }}/>
+                  <div className="logo-fallback-large">🕉️</div>
+                </div>
+                  <div className="brand-text">
+                    <h1 className="welcome-title">Astravedam</h1>
+                    <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-content">
-                <h5>Ask Your Questions</h5>
-                <p>Seek guidance on life and purpose</p>
+
+              {/* Immediate CTA */}
+              <div className="immediate-cta">
+                <button className="cta-button" onClick={startJourney}>
+                  <span>Begin Your Spiritual Journey</span>
+                  <span className="arrow">→</span>
+                </button>
+                <p className="cta-note">
+                  Start with free messages from Lord Krishna
+                </p>
               </div>
-            </div>
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-content">
-                <h5>Receive Wisdom</h5>
-                <p>Get profound insights with references</p>
+
+              {/* Feature Cards */}
+              <div className="features-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">🌅</div>
+                  <h4>Divine Conversations</h4>
+                  <p>Engage in meaningful dialogues with AI-powered deities, crafted from authentic scriptures</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">📜</div>
+                  <h4>Authentic Guidance</h4>
+                  <p>Receive wisdom based on Bhagavad Gita, Vedas, Puranas, and sacred texts</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">💫</div>
+                  <h4>Personalized Insights</h4>
+                  <p>Get tailored spiritual guidance for your unique life situations</p>
+                </div>
               </div>
+
+              {/* How It Works - Compact */}
+              <div className="how-it-works">
+                <h3>How It Works</h3>
+                <div className="steps">
+                  <div className="step">
+                    <div className="step-number">1</div>
+                    <div className="step-content">
+                      <h5>Choose Your Guide</h5>
+                      <p>Select from enlightened deities</p>
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-number">2</div>
+                    <div className="step-content">
+                      <h5>Ask Your Questions</h5>
+                      <p>Seek guidance on life and purpose</p>
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-number">3</div>
+                    <div className="step-content">
+                      <h5>Receive Wisdom</h5>
+                      <p>Get profound insights with references</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rotating Testimonials */}
+              <div className="testimonials-rotating">
+                <div className={`testimonial ${activeTestimonial === 0 ? 'active' : ''}`}>
+                  <p>"The guidance felt genuinely divine. Practical and deeply spiritual."</p>
+                  <div className="testimonial-author">
+                    <strong>Priya Sharma</strong>
+                    <span>Mumbai</span>
+                  </div>
+                </div>
+                <div className={`testimonial ${activeTestimonial === 1 ? 'active' : ''}`}>
+                  <p>"Made ancient wisdom accessible and relevant to modern life."</p>
+                  <div className="testimonial-author">
+                    <strong>Arjun Patel</strong>
+                    <span>Delhi</span>
+                  </div>
+                </div>
+                <div className={`testimonial ${activeTestimonial === 2 ? 'active' : ''}`}>
+                  <p>"Krishna's guidance helped me find peace during difficult times."</p>
+                  <div className="testimonial-author">
+                    <strong>Rahul Verma</strong>
+                    <span>Bangalore</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
+      )}
 
-        {/* Rotating Testimonials */}
-        <div className="testimonials-rotating">
-          <div className={`testimonial ${activeTestimonial === 0 ? 'active' : ''}`}>
-            <p>"The guidance felt genuinely divine. Practical and deeply spiritual."</p>
-            <div className="testimonial-author">
-              <strong>Priya Sharma</strong>
-              <span>Mumbai</span>
-            </div>
-          </div>
-          <div className={`testimonial ${activeTestimonial === 1 ? 'active' : ''}`}>
-            <p>"Made ancient wisdom accessible and relevant to modern life."</p>
-            <div className="testimonial-author">
-              <strong>Arjun Patel</strong>
-              <span>Delhi</span>
-            </div>
-          </div>
-          <div className={`testimonial ${activeTestimonial === 2 ? 'active' : ''}`}>
-            <p>"Krishna's guidance helped me find peace during difficult times."</p>
-            <div className="testimonial-author">
-              <strong>Rahul Verma</strong>
-              <span>Bangalore</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
+      {/* About Screen */}
+      {currentScreen === 'about' && (
+        <About />
+      )}
+      {currentScreen === 'contact' && (
+        <Contact />
+      )}
+      {currentScreen === 'privacy' && (
+        <Privacy />
+      )}
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (
