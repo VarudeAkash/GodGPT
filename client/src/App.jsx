@@ -21,6 +21,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
+  const [chatLanguage, setChatLanguage] = useState('english');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   // === ADD THIS NEW EFFECT ===
   
@@ -366,7 +367,8 @@ function App() {
         body: JSON.stringify({ 
           message: inputMessage, 
           deity: selectedDeity.id,
-          conversationHistory: messages
+          conversationHistory: messages,
+          language: chatLanguage  
         }),
       });
     
@@ -868,10 +870,10 @@ function App() {
         
         <div className="chat-layout">
           <div className="chat-header">
-            {/* === CHANGED: Now uses goBackToSelection === */}
             <button className="back-button" onClick={goBackToSelection}>
               ← Choose Another Deity
             </button>
+            
             <div className="deity-header-info">
               <div className="deity-avatar-chat" style={{ background: selectedDeity.color }}>
                 <span>{selectedDeity.emoji}</span>
@@ -881,14 +883,33 @@ function App() {
                 <p>{selectedDeity.description}</p>
               </div>
             </div>
-            {(userHasPremium || selectedDeity.id === 'krishna') && (
-              <div className="message-counter">
-                <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
-                  {remainingMessages} {selectedDeity.id === 'krishna' && !userHasPremium ? 'free' : ''} messages left
-                </div>
+
+            {/* 🆕 LANGUAGE SELECTOR AND CONTROLS */}
+            <div className="header-controls">
+              <div className="language-selector">
+                <button 
+                  className={`lang-btn ${chatLanguage === 'english' ? 'active' : ''}`}
+                  onClick={() => setChatLanguage('english')}
+                >
+                  🇺🇸 English
+                </button>
+                <button 
+                  className={`lang-btn ${chatLanguage === 'hindi' ? 'active' : ''}`}
+                  onClick={() => setChatLanguage('hindi')}
+                >
+                  🇮🇳 हिन्दी
+                </button>
               </div>
-            )}
-            
+
+              {(userHasPremium || selectedDeity.id === 'krishna') && (
+                <div className="message-counter">
+                  <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
+                    {remainingMessages} {selectedDeity.id === 'krishna' && !userHasPremium ? 'free' : ''} messages left
+                  </div>
+                </div>
+              )}
+            </div>
+
             {messages.length > 0 && (
               <button className="clear-chat-button" onClick={clearChat}>
                 🧹 Clear

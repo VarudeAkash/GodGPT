@@ -108,11 +108,11 @@ body {
 /* WELCOME SCREEN STYLES */
 /* Fixed Welcome Screen Styles */
 .welcome-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 120px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 2rem 1rem;
   position: relative;
   z-index: 2;
 }
@@ -559,6 +559,8 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  flex-shrink: 0; /* 🆕 Prevent button shrinking */
+  white-space: nowrap; /* 🆕 Prevent text wrapping */
 }
 
 .back-button:hover {
@@ -698,6 +700,8 @@ body {
   padding: 1.5rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 1rem;
+  gap: 1rem; /* 🆕 Add gap between items */
+  flex-wrap: wrap; /* 🆕 Allow wrapping on small screens */
 }
 
 .deity-header-info {
@@ -706,6 +710,7 @@ body {
   gap: 1rem;
   flex: 1;
   justify-content: center;
+  min-width: 200px; /* 🆕 Prevent squeezing */
 }
 
 .deity-avatar-chat {
@@ -738,6 +743,8 @@ body {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* 🆕 Prevent button shrinking */
+  white-space: nowrap; /* 🆕 Prevent text wrapping */
 }
 
 .clear-chat-button:hover {
@@ -1023,6 +1030,10 @@ body {
   .welcome-title {
     font-size: 3rem;
   }
+  .back-button {
+    /* position: relative; */
+    align-self: flex-start;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1050,7 +1061,7 @@ body {
   }
   
   .back-button {
-    position: relative;
+    /* position: relative; */
     align-self: flex-start;
   }
   
@@ -1490,12 +1501,79 @@ html, body {
 
 /* Add this to App.css */
 .main-content {
-  padding-top: 80px;
-  min-height: 100vh;
+  padding-top: 120px; /* Increased for larger header */
+  min-height: calc(100vh - 120px);
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 70px;
+    padding-top: 100px; /* Slightly less on mobile */
+    min-height: calc(100vh - 100px);
   }
+  .chat-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .deity-header-info {
+    order: 2;
+  }
+  
+  .back-button {
+    order: 1;
+    align-self: flex-start;
+  }
+
+  .clear-chat-button {
+    order: 4;
+  }
+}
+/* Beautiful Language Selector */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.language-selector {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  padding: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.lang-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 50px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lang-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lang-btn.active {
+  background: linear-gradient(135deg, #FF6B35, #F59E0B);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+/* Adjust message counter for new layout */
+.message-counter {
+  margin: 0;
 }

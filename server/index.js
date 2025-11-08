@@ -175,7 +175,7 @@ app.post('/api/verify-payment', async (req, res) => {
 // Chat endpoint with streaming for complete responses
 app.post('/api/chat', async (req, res) => {
   // const { message, deity } = req.body;
-  const { message, deity, conversationHistory = [] } = req.body;
+  const { message, deity, conversationHistory = [], language = 'english' } = req.body;
   
   if (!message || !deity) {
     return res.status(400).json({ error: 'Message and deity are required' });
@@ -196,7 +196,11 @@ app.post('/api/chat', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: deityPrompts[deity] + ' Always provide complete, well-formed answers that end naturally. Remember the conversation context and user details mentioned earlier.'
+        content: deityPrompts[deity] + 
+          (language === 'hindi' ? 
+            ' Always respond in Hindi language only. Use Devanagari script for Hindi text.' : 
+            ' Always respond in English language only.') +
+          ' Remember the conversation context and user details mentioned earlier.'
       },
       // Add conversation history
       ...conversationHistory.map(msg => ({
