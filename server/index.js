@@ -174,8 +174,9 @@ app.post('/api/verify-payment', async (req, res) => {
 // Chat endpoint
 // Chat endpoint with streaming for complete responses
 app.post('/api/chat', async (req, res) => {
-  const { message, deity } = req.body;
-
+  // const { message, deity } = req.body;
+  const { message, deity, conversationHistory = [] } = req.body;
+  
   if (!message || !deity) {
     return res.status(400).json({ error: 'Message and deity are required' });
   }
@@ -192,23 +193,29 @@ app.post('/api/chat', async (req, res) => {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // === 🆕 KEY CHANGE: Use streaming ===
+    const messages = [
+      {
+        role: 'system',
+        content: deityPrompts[deity] + ' Always provide complete, well-formed answers that end naturally. Remember the conversation context and user details mentioned earlier.'
+      },
+      // Add conversation history
+      ...conversationHistory.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      // Current message
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Better model
-      messages: [
-        {
-          role: 'system',
-          // === 🆕 Added instruction to ensure complete answers ===
-          content: deityPrompts[deity] + ' Always provide complete, well-formed answers that end naturally.'
-        },
-        {
-          role: 'user',
-          content: message
-        }
-      ],
-      max_tokens: 500, // Increased for longer spiritual guidance
+      model: 'gpt-4o-mini',
+      messages: messages,
+      max_tokens: 500,
       temperature: 0.7,
-      stream: true // ← 🆕 THIS ENABLES STREAMING
+      stream: true
     });
 
     // === 🆕 Set headers for streaming response ===

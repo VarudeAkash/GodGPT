@@ -363,7 +363,11 @@ function App() {
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: inputMessage, deity: selectedDeity.id }),
+        body: JSON.stringify({ 
+          message: inputMessage, 
+          deity: selectedDeity.id,
+          conversationHistory: messages
+        }),
       });
     
       if (!response.ok) throw new Error('Network response was not ok');
