@@ -60,8 +60,18 @@ function Header() {
           </a>
         </nav>
 
-        {/* Mobile Navigation */}
-        <div className={`mobile-nav ${isMenuOpen ? 'open' : ''}`}>
+       
+
+        {/* Overlay */}
+        {isMenuOpen && (
+          <div 
+            className={`mobile-overlay ${isMenuOpen ? 'visible' : ''}`}
+            onClick={() => setIsMenuOpen(false)}
+          ></div>
+        )}
+      </div>
+       {/* Mobile Navigation */}
+       <div className={`mobile-nav ${isMenuOpen ? 'open' : ''}`}>
           <div className="mobile-nav-background"></div>
           <div className="mobile-nav-content">
             <div className="mobile-nav-header">
@@ -99,15 +109,6 @@ function Header() {
             </div>
           </div>
         </div>
-
-        {/* Overlay */}
-        {isMenuOpen && (
-          <div 
-            className={`mobile-overlay ${isMenuOpen ? 'visible' : ''}`}
-            onClick={() => setIsMenuOpen(false)}
-          ></div>
-        )}
-      </div>
     </header>
   );
 }
