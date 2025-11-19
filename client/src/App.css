@@ -1090,11 +1090,11 @@ body {
   position: relative;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
   animation: modalAppear 0.3s ease-out;
-
-  max-height: 90vh; /* Add this */
+  max-height: 80vh; /* Add this */
   overflow-y: auto; /* Add this */
-  margin: 1rem;     /* Add this */
+  margin-top: 5rem;
 }
+
 
 @keyframes modalAppear {
   from {
@@ -1109,17 +1109,17 @@ body {
 
 .premium-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   position: relative;
 }
 
 .premium-icon {
-  font-size: 3rem;
+  font-size: 2rem;
   margin-bottom: 1rem;
 }
 
 .premium-header h2 {
-  font-size: 2rem;
+  font-size: 1 rem;
   background: linear-gradient(135deg, #FF6B35, #F59E0B);
   background-clip: text;
   -webkit-background-clip: text;
@@ -1149,20 +1149,20 @@ body {
 
 .deity-premium-preview {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .premium-deity-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 3rem;
   margin: 0 auto 1rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
@@ -1171,25 +1171,25 @@ body {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 107, 53, 0.2);
   border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
 .price {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: bold;
   background: linear-gradient(135deg, #FF6B35, #F59E0B);
   background-clip: text; 
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .package-details h4 {
   color: #fbbf24;
-  margin-bottom: 1rem;
-  font-size: 1.3rem;
+  /* margin-bottom: 1rem; */
+  font-size: 1rem;
 }
 
 .package-details ul {
@@ -1213,7 +1213,7 @@ body {
   border: none;
   border-radius: 16px;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1221,9 +1221,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  min-height: 60px;
+  min-height: 40px;
 }
 
 .purchase-button:hover {
@@ -1363,21 +1363,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Fix modal for small screens */
-@media (max-width: 360px) {
-  .premium-modal {
-    max-width: 95vw;
-    padding: 1.5rem 1rem;
-  }
-  
-  .price {
-    font-size: 2.5rem;
-  }
-  
-  .premium-header h2 {
-    font-size: 1.5rem;
-  }
-}
 
 
 /* ===== RESPONSIVE FIXES ===== */
@@ -1397,14 +1382,6 @@ html, body {
 }
 
 
-/* Premium modal responsive fixes */
-.premium-modal {
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  margin: 1rem;
-  width: auto;
-}
 
 /* Mobile-specific fixes */
 @media (max-width: 480px) {
@@ -1441,23 +1418,28 @@ html, body {
     padding: 1rem 1.5rem;
     font-size: 1rem;
   }
+  .premium-modal {
+    max-width: 70vw;
+    max-height: 80vh;
+    padding: 1rem 1rem;
+  }
 }
 
-/* Extra small devices */
+/* Fix modal for small screens */
 @media (max-width: 360px) {
   .premium-modal {
-    max-width: 95vw;
+    max-width: 70vw;
+    max-height: 80vh;
     padding: 1.5rem 1rem;
   }
   
   .price {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
   
   .premium-header h2 {
     font-size: 1.5rem;
   }
-  
   .purchase-button {
     padding: 1.25rem;
     font-size: 1.1rem;
@@ -1508,6 +1490,11 @@ html, body {
 
   .clear-chat-button {
     order: 4;
+  }
+  .premium-modal {
+    max-width: 70vw;
+    max-height: 80vh;
+    padding: 1.5rem 1rem;
   }
 }
 /* Beautiful Language Selector */

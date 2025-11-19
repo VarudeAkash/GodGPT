@@ -1083,8 +1083,8 @@ function PremiumModal({ isOpen, onClose, deity, onPurchase, isProcessingPayment 
     <div className="premium-modal-overlay">
       <div className="premium-modal">
         <div className="premium-header">
-          <div className="premium-icon">🌟</div>
-          <h2>Unlock Divine Wisdom</h2>
+          {/* <div className="premium-icon">🌟</div> */}
+          {/* <h2>Unlock Divine Wisdom</h2> */}
           <button className="close-modal" onClick={onClose}>×</button>
         </div>
         
