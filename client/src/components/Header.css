@@ -130,7 +130,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    font-size: 1rem;
+    font-size: 1.2rem;
     background: transparent;
     border: 1px solid transparent;
     overflow: hidden;
@@ -167,6 +167,7 @@
     position: relative;
     z-index: 1;
     font-weight: 500;
+
   }
   
   /* Mobile Menu Button */
@@ -263,7 +264,7 @@
   color: #FFFFFF;
   text-decoration: none;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 /* Mobile Overlay */

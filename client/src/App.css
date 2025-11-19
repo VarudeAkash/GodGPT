@@ -108,7 +108,7 @@ body {
 /* WELCOME SCREEN STYLES */
 /* Fixed Welcome Screen Styles */
 .welcome-container {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 150px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1396,13 +1396,6 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Container width limits */
-.welcome-container,
-.selection-container,
-.chat-layout {
-  max-width: 100%;
-  overflow-x: hidden;
-}
 
 /* Premium modal responsive fixes */
 .premium-modal {
@@ -1559,7 +1552,6 @@ html, body {
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
 }
 
-/* Adjust message counter for new layout */
 .message-counter {
   margin: 0;
 }
