@@ -47,6 +47,27 @@
 //   }
 // })
 
+// import { defineConfig } from 'vite'
+// import react from '@vitejs/plugin-react'
+
+// export default defineConfig({
+//   plugins: [react()],
+//   define: {
+//     'process.env': {},
+//     global: 'globalThis'
+//   },
+//   build: {
+//     commonjsOptions: {
+//       include: [/firebase/, /node_modules/]
+//     }
+//   },
+//   optimizeDeps: {
+//     include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+//   }
+// })
+
+
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -57,11 +78,14 @@ export default defineConfig({
     global: 'globalThis'
   },
   build: {
-    commonjsOptions: {
-      include: [/firebase/, /node_modules/]
+    rollupOptions: {
+      external: [
+        'firebase',
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+        'firebase/analytics'
+      ]
     }
-  },
-  optimizeDeps: {
-    include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
   }
 })
