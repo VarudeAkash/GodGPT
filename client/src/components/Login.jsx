@@ -1,22 +1,21 @@
-// client/src/components/Login.jsx - CORRECT FIREBASE COMPATIBLE SYNTAX
+// client/src/components/Login.jsx - UPDATED VERSION
 import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { auth } from '../firebase.js';
 import './Login.css';
 
-function Login() {
-  const [user, setUser] = useState(null);
+function Login({ user }) { // 🆕 RECEIVE user as prop
   const [isLoading, setIsLoading] = useState(false);
 
-  // Google Login - CORRECT syntax
+  // Google Login - UPDATED: No need to setUser here
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      setUser(result.user);
-      console.log("✅ User logged in:", result.user.displayName);
+      await firebase.auth().signInWithPopup(provider);
+      // 🆕 REMOVED: setUser(result.user) - App.jsx will handle this automatically
+      console.log("✅ Login process started...");
     } catch (error) {
       console.error("❌ Login failed:", error);
       alert("Login failed. Please try again.");
@@ -24,12 +23,12 @@ function Login() {
     setIsLoading(false);
   };
 
-  // Logout - CORRECT syntax
+  // Logout - UPDATED: No need to setUser here
   const handleLogout = async () => {
     try {
       await firebase.auth().signOut();
-      setUser(null);
-      console.log("✅ User logged out");
+      // 🆕 REMOVED: setUser(null) - App.jsx will handle this automatically
+      console.log("✅ Logout process started...");
     } catch (error) {
       console.error("❌ Logout failed:", error);
     }
@@ -37,7 +36,7 @@ function Login() {
 
   return (
     <div className="login-container">
-      {!user ? (
+      {!user ? ( // 🆕 USE the user prop instead of internal state
         <button 
           className="google-login-btn"
           onClick={handleGoogleLogin}

@@ -27,4 +27,15 @@ export const auth = firebase.auth();
 export const db = firebase.firestore();
 const analytics = firebase.analytics();
 
+
+// 🆕 ADD THIS: Enable persistence for login to survive refresh
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(() => {
+    console.log("🔥 Auth persistence enabled - login will survive refresh!");
+  })
+  .catch((error) => {
+    console.error("❌ Auth persistence error:", error);
+  });
+
+
 console.log("🔥 Firebase connected successfully!");

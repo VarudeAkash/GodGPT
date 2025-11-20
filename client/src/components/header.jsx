@@ -6,7 +6,7 @@ import Login from './Login.jsx';
 
 
 
-function Header() {
+function Header({ user }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
@@ -63,7 +63,7 @@ function Header() {
             <span className="nav-glow"></span>
             <span className="nav-text">Privacy</span>
           </a>
-          <Login />
+          <Login user={user} />
         </nav>
 
        

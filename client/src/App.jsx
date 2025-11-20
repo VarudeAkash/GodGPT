@@ -680,7 +680,8 @@ function App() {
 
   return (
     <>
-    <Header />
+    {/* <Header /> */}
+    <Header user={user} />
     <div className="main-content">
       <BuyMoreModal
         isOpen={showBuyMoreModal}
