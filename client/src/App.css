@@ -468,68 +468,9 @@ body {
   }
 }
 
-@media (max-width: 768px) {
-  .welcome-content {
-    padding: 2rem 1.5rem;
-    margin: 0.5rem;
-  }
-  
-  .brand-section {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .brand-text {
-    text-align: center;
-  }
-  
-  .welcome-title {
-    font-size: 2rem;
-  }
-  
-  .feature-card {
-    padding: 1.5rem 1.2rem;
-  }
-  
-  .how-it-works {
-    padding: 1.5rem;
-  }
-  
-  .step {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.8rem;
-  }
-  
-  .testimonials-rotating {
-    height: 160px;
-  }
-}
 
-@media (max-width: 480px) {
-  .welcome-title {
-    font-size: 1.8rem;
-  }
-  
-  .welcome-tagline {
-    font-size: 1rem;
-  }
-  
-  .feature-icon {
-    font-size: 2rem;
-  }
-  
-  .cta-button {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-  }
-  
-  .logo-large {
-    width: 60px;
-    height: 60px;
-  }
-}
+
+
 
 /* DEITY SELECTION SCREEN */
 .selection-container {
@@ -986,8 +927,6 @@ body {
 .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
 
 /* Animations */
-
-
 @keyframes gentlePulse {
   0%, 100% { opacity: 0.7; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.1); }
@@ -1021,47 +960,6 @@ body {
     align-self: flex-start;
   }
 }
-
-@media (max-width: 768px) {
-  .welcome-content {
-    padding: 2rem 1.5rem;
-    margin: 1rem;
-  }
-  
-  .welcome-title {
-    font-size: 2.5rem;
-  }
-  
-  .selection-header h1 {
-    font-size: 2.5rem;
-  }
-  
-  .message-chat {
-    max-width: 85%;
-  }
-  
-  .chat-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .back-button {
-    /* position: relative; */
-    align-self: flex-start;
-  }
-  
-  .input-container-chat {
-    flex-direction: column;
-  }
-  
-  .send-button-chat {
-    width: 100%;
-  }
-}
-
-
-
 
 
 /* Premium Modal Styles */
@@ -1248,12 +1146,6 @@ body {
 .free-option button:hover {
   color: #F59E0B;
 }
-
-
-
-
-
-
 .purchase-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
@@ -1315,38 +1207,7 @@ body {
 
 /* Add this NEW section at the end of your CSS */
 /* RESPONSIVE FIXES */
-@media (max-width: 480px) {
-  .welcome-content {
-    padding: 1.5rem 1rem;
-    margin: 0.5rem;
-    border-radius: 20px;
-  }
-  
-  .welcome-title {
-    font-size: 2rem;
-  }
-  
-  .selection-container,
-  .chat-layout {
-    padding: 1rem 0.5rem;
-  }
-  
-  .deity-card-select {
-    padding: 1.5rem 1rem;
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .input-container-chat textarea {
-    min-height: 60px;
-    padding: 1rem;
-  }
-  
-  .send-button-chat {
-    min-width: auto;
-    padding: 1rem 1.5rem;
-  }
-}
+
 
 /* Fix for zoom levels */
 .app {
@@ -1381,8 +1242,6 @@ html, body {
   overflow-x: hidden;
 }
 
-
-
 /* Mobile-specific fixes */
 @media (max-width: 480px) {
   .welcome-content {
@@ -1392,15 +1251,22 @@ html, body {
   }
   
   .welcome-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
-  
+  .welcome-tagline {
+    font-size: 1rem;
+  }
+  .selection-container,
+  .chat-layout {
+    padding: 1rem 0.5rem;
+  }
   .feature-card {
     padding: 1.5rem 1rem;
   }
-  
   .deity-card-select {
     padding: 1.5rem 1rem;
+    flex-direction: column;
+    text-align: center;
     margin: 0.5rem;
   }
   
@@ -1412,7 +1278,6 @@ html, body {
     min-height: 60px;
     padding: 1rem;
   }
-  
   .send-button-chat {
     min-width: auto;
     padding: 1rem 1.5rem;
@@ -1422,6 +1287,19 @@ html, body {
     max-width: 70vw;
     max-height: 80vh;
     padding: 1rem 1rem;
+  }
+  .feature-icon {
+    font-size: 2rem;
+  }
+  
+  .cta-button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+  }
+  
+  .logo-large {
+    width: 60px;
+    height: 60px;
   }
 }
 
@@ -1469,27 +1347,73 @@ html, body {
 }
 
 @media (max-width: 768px) {
+  .welcome-content {
+    padding: 2rem 1.5rem;
+    margin: 0.5rem;
+  }
   .main-content {
     padding-top: 100px; /* Slightly less on mobile */
     min-height: calc(100vh - 100px);
+  }
+  
+  .brand-section {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .brand-text {
+    text-align: center;
+  }
+  
+  .welcome-title {
+    font-size: 2rem;
+  }
+  
+  .feature-card {
+    padding: 1.5rem 1.2rem;
+  }
+  
+  .how-it-works {
+    padding: 1.5rem;
+  }
+  
+  .step {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+  }
+  
+  .testimonials-rotating {
+    height: 160px;
+  }
+  .selection-header h1 {
+    font-size: 2.5rem;
+  }
+  .message-chat {
+    max-width: 85%;
   }
   .chat-header {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
   .deity-header-info {
     order: 2;
   }
-  
   .back-button {
+    /* position: relative; */
     order: 1;
     align-self: flex-start;
   }
-
+  .input-container-chat {
+    flex-direction: column;
+  }
   .clear-chat-button {
     order: 4;
+  }
+  .send-button-chat {
+    width: 100%;
   }
   .premium-modal {
     max-width: 70vw;

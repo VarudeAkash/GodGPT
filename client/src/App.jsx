@@ -4,6 +4,10 @@ import Header from './components/header.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Privacy from './components/Privacy.jsx'; 
+import './firebase.js'; 
+import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase.js'; 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
@@ -23,6 +27,7 @@ function App() {
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
   const [chatLanguage, setChatLanguage] = useState('english');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [user, setUser] = useState(null);
   // === ADD THIS NEW EFFECT ===
   
   useEffect(() => {
@@ -130,6 +135,7 @@ function App() {
   useEffect(() => {
     fetchDeities();
   }, []);
+
   useEffect(() => {
     const testimonialInterval = setInterval(() => {
       setActiveTestimonial((prev) => (prev + 1) % 3); // 3 testimonials
@@ -149,6 +155,24 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+
+  // Add this useEffect - can go with your other useEffects
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (user) {
+        console.log("👤 User is logged in:", user.displayName);
+        // Migrate existing data to cloud
+        migrateToCloud(user.uid);
+      } else {
+        console.log("👤 User is logged out");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -221,6 +245,7 @@ function App() {
     }
   };
 
+
   // === MODIFIED: startJourney ===
   const startJourney = () => {
     window.history.pushState({}, '', '#deity-select');
@@ -290,7 +315,7 @@ function App() {
       localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
     }
   };
-
+  
   // === MODIFIED: goBackToSelection ===
   const goBackToSelection = () => {
     window.history.pushState({}, '', '#deity-select');
@@ -443,6 +468,16 @@ function App() {
     } finally {
       setIsLoading(false);
     }
+  // 🆕 CLOUD SAVE - ADD AT THE END OF sendMessage FUNCTION
+  if (user && selectedDeity) {
+    // Save to cloud after AI response is complete
+    setTimeout(() => {
+      const currentMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+      if (currentMessages.length > 0) {
+        saveChatToCloud(user.uid, selectedDeity.id, currentMessages);
+      }
+    }, 1500); // Wait 3 seconds for AI response to complete
+  }
   };
 
   // === MODIFIED: clearChat ===
@@ -610,6 +645,15 @@ function App() {
         
         setSelectedDeity(deity);
         setCurrentScreen('chat');
+        // 🆕 ADD CLOUD LOADING HERE
+        if (user) {
+          const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
+          if (cloudMessages && cloudMessages.length > 0) {
+            setMessages(cloudMessages);
+            localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
+            return;
+          }
+        }
         const welcomeMessage = {
           id: Date.now(),
           text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
