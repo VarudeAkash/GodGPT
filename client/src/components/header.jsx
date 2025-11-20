@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Header.css';
 // import Login from './Login.jsx';
 
+
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
