@@ -5,6 +5,8 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 
+
+
 console.log("🚀 Firebase config loaded:", {
     domain: window.location.hostname,
     isProduction: import.meta.env.PROD
