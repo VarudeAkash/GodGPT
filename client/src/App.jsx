@@ -476,7 +476,7 @@ function App() {
       if (currentMessages.length > 0) {
         saveChatToCloud(user.uid, selectedDeity.id, currentMessages);
       }
-    }, 1500); // Wait 3 seconds for AI response to complete
+    }, 6000); // Wait 1.5 seconds for AI response to complete
   }
   };
 
