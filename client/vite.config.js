@@ -33,6 +33,20 @@
 //   }
 // })
 
+// import { defineConfig } from 'vite'
+// import react from '@vitejs/plugin-react'
+
+// export default defineConfig({
+//   plugins: [react()],
+//   define: {
+//     'process.env': {},
+//     global: 'globalThis'
+//   },
+//   resolve: {
+//     dedupe: ['firebase']  // ← ADD THIS LINE
+//   }
+// })
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -42,7 +56,12 @@ export default defineConfig({
     'process.env': {},
     global: 'globalThis'
   },
-  resolve: {
-    dedupe: ['firebase']  // ← ADD THIS LINE
+  build: {
+    commonjsOptions: {
+      include: [/firebase/, /node_modules/]
+    }
+  },
+  optimizeDeps: {
+    include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
   }
 })
