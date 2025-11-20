@@ -1,4 +1,4 @@
-// client/src/firebase.js - COMPATIBLE VERSION
+// client/src/firebase.js
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -9,7 +9,6 @@ console.log("🚀 Firebase config loaded:", {
   isProduction: import.meta.env.PROD
 });
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBT823C3tClsGt2nnLWnZhn7dObS79P0VQ",
   authDomain: "astravedam-ai.firebaseapp.com",
@@ -23,7 +22,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 
-// Initialize services (compatible version)
+// Initialize services
 export const auth = firebase.auth();
 export const db = firebase.firestore();
 const analytics = firebase.analytics();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './Header.css';
-// import Login from './Login.jsx';
+import Login from './login.jsx';
 
 
 
@@ -63,7 +63,7 @@ function Header() {
             <span className="nav-glow"></span>
             <span className="nav-text">Privacy</span>
           </a>
-          {/* <Login /> */}
+          <Login />
         </nav>
 
        

@@ -1,6 +1,7 @@
-// client/src/components/Login.jsx
+// client/src/components/Login.jsx - CORRECT FIREBASE COMPATIBLE SYNTAX
 import { useState } from 'react';
-import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 import { auth } from '../firebase.js';
 import './Login.css';
 
@@ -8,12 +9,12 @@ function Login() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Google Login
+  // Google Login - CORRECT syntax
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
       setUser(result.user);
       console.log("✅ User logged in:", result.user.displayName);
     } catch (error) {
@@ -23,10 +24,10 @@ function Login() {
     setIsLoading(false);
   };
 
-  // Logout
+  // Logout - CORRECT syntax
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await firebase.auth().signOut();
       setUser(null);
       console.log("✅ User logged out");
     } catch (error) {
