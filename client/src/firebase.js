@@ -1,19 +1,15 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-
-
-
+// client/src/firebase.js - COMPATIBLE VERSION
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/analytics';
 
 console.log("🚀 Firebase config loaded:", {
-    domain: window.location.hostname,
-    isProduction: import.meta.env.PROD
-  });
+  domain: window.location.hostname,
+  isProduction: import.meta.env.PROD
+});
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBT823C3tClsGt2nnLWnZhn7dObS79P0VQ",
   authDomain: "astravedam-ai.firebaseapp.com",
@@ -25,15 +21,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
-
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
-
-// Initialize Analytics (optional)
-const analytics = getAnalytics(app);
+// Initialize services (compatible version)
+export const auth = firebase.auth();
+export const db = firebase.firestore();
+const analytics = firebase.analytics();
 
 console.log("🔥 Firebase connected successfully!");
