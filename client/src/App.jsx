@@ -4,7 +4,7 @@ import Header from './components/header.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Privacy from './components/Privacy.jsx'; 
-// import './firebase.js'; 
+import './firebase.js'; 
 // import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js';
 // import { onAuthStateChanged } from 'firebase/auth';
 // import { auth } from './firebase.js'; 
