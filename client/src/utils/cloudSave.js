@@ -1,15 +1,16 @@
-// client/src/utils/cloudSave.js
-import { doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db, auth } from '../firebase.js';
+// client/src/utils/cloudSave.js - COMPATIBLE VERSION
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import { db } from '../firebase.js';
 
 // Save chat to cloud
 export const saveChatToCloud = async (userId, deityId, messages) => {
   try {
-    const chatRef = doc(db, 'chats', userId, 'deityChats', deityId);
+    const chatRef = db.collection('chats').doc(userId).collection('deityChats').doc(deityId);
     
-    await setDoc(chatRef, {
+    await chatRef.set({
       messages: messages,
-      lastUpdated: new Date(),
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
       deity: deityId,
       messageCount: messages.length
     }, { merge: true });
@@ -25,10 +26,10 @@ export const saveChatToCloud = async (userId, deityId, messages) => {
 // Load chat from cloud
 export const loadChatFromCloud = async (userId, deityId) => {
   try {
-    const chatRef = doc(db, 'chats', userId, 'deityChats', deityId);
-    const chatDoc = await getDoc(chatRef);
+    const chatRef = db.collection('chats').doc(userId).collection('deityChats').doc(deityId);
+    const chatDoc = await chatRef.get();
     
-    if (chatDoc.exists()) {
+    if (chatDoc.exists) {
       console.log("☁️ Loaded chat from cloud for", deityId);
       return chatDoc.data().messages;
     }

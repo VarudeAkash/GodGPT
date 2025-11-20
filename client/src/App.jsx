@@ -5,6 +5,8 @@ import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Privacy from './components/Privacy.jsx'; 
 import './firebase.js'; 
+import firebase from 'firebase/compat/app';
+import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js'; 
 // import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js';
 // import { onAuthStateChanged } from 'firebase/auth';
 // import { auth } from './firebase.js'; 
@@ -160,21 +162,21 @@ function App() {
   }, [messages]);
 
 
-  // Add this useEffect - can go with your other useEffects
-  // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
-  //     setUser(user);
-  //     if (user) {
-  //       console.log("👤 User is logged in:", user.displayName);
-  //       // Migrate existing data to cloud
-  //       migrateToCloud(user.uid);
-  //     } else {
-  //       console.log("👤 User is logged out");
-  //     }
-  //   });
+// Add this useEffect in App.jsx
+  useEffect(() => {
+    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      setUser(user);
+      if (user) {
+        console.log("👤 User is logged in:", user.displayName);
+        // Migrate existing data to cloud
+        migrateToCloud(user.uid);
+      } else {
+        console.log("👤 User is logged out");
+      }
+    });
 
-  //   return () => unsubscribe();
-  // }, []);
+    return () => unsubscribe();
+  }, []);
 
 
   const scrollToBottom = () => {
