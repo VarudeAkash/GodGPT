@@ -112,6 +112,9 @@ function Header({ user }) {
               <a href="#privacy" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                 <span className="nav-text">Privacy</span>
               </a>
+              <div className="mobile-login-section" onClick={() => setIsMenuOpen(false)}>
+                <Login user={user} />
+              </div>
             </div>
           </div>
         </div>

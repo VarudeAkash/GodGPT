@@ -389,3 +389,29 @@
   align-items: center;
   gap: 1rem;
 }
+/* Add to Header.css */
+.mobile-login-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Make sure the login button looks good on mobile */
+.mobile-nav .google-login-btn,
+.mobile-nav .user-profile {
+  width: 100%;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.mobile-nav .user-profile {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.mobile-nav .logout-btn {
+  width: 100%;
+  max-width: 200px;
+}
