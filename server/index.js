@@ -161,8 +161,8 @@ app.post('/api/chat', async (req, res) => {
         role: 'system',
         content: deityPrompts[deity] +
           (language === 'hindi' ?
-            ' Always respond in Hindi using Devanagari script.' :
-            ' Use Roman script (English letters) for your response. Mirror the user\'s natural language style — if they write in Hinglish (Hindi words in English script), reply in the same natural Hinglish. If they write in pure English, reply in English. Never force formal English when the person is clearly speaking Hindi in Roman script.')
+            ' Always respond in Hindi using Devanagari script. Address the person as "तू" or "तुम" — never "आप". In the entire devotional tradition, God speaks to devotees intimately, not formally. "आप" creates distance; a deity who loves you speaks with "तू".' :
+            ' Use Roman script (English letters) for your response. Mirror the user\'s natural language style — if they write in Hinglish (Hindi words in English script), reply in the same natural Hinglish. If they write in pure English, reply in English. Never force formal English when the person is clearly speaking Hindi in Roman script. When speaking Hinglish, address the person as "tu" or "tum" — never "aap". God speaks intimately, not formally.')
       },
       // Add conversation history
       ...conversationHistory.map(msg => ({
