@@ -4,10 +4,6 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
 
-console.log("🚀 Firebase config loaded:", {
-  domain: window.location.hostname,
-  isProduction: import.meta.env.PROD
-});
 
 const firebaseConfig = {
   apiKey: "AIzaSyBT823C3tClsGt2nnLWnZhn7dObS79P0VQ",
@@ -31,11 +27,10 @@ const analytics = firebase.analytics();
 // 🆕 ADD THIS: Enable persistence for login to survive refresh
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
   .then(() => {
-    console.log("🔥 Auth persistence enabled - login will survive refresh!");
   })
   .catch((error) => {
     console.error("❌ Auth persistence error:", error);
   });
 
 
-console.log("🔥 Firebase connected successfully!");
+;

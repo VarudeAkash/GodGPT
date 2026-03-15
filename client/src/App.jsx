@@ -29,6 +29,7 @@ function App() {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const paymentTimeoutRef = useRef(null);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
   const [chatLanguage, setChatLanguage] = useState('english');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -39,8 +40,6 @@ function App() {
     // Set initial screen based on URL hash
     const hash = window.location.hash.replace('#', '');
     
-    console.log('Current hash:', hash); // Debug log
-    
     if (hash === 'deity-select') {
       setCurrentScreen('deity-select');
     } else if (hash === 'chat') {
@@ -48,11 +47,16 @@ function App() {
       const savedDeity = localStorage.getItem('selectedDeity');
       const savedMessages = localStorage.getItem('chatMessages');
       if (savedDeity) {
-        const deity = JSON.parse(savedDeity); // 🆕 ADD THIS LINE
-        setSelectedDeity(deity);
-        setCurrentScreen('chat');
-        if (savedMessages) {
-          setMessages(JSON.parse(savedMessages));
+        try {
+          const deity = JSON.parse(savedDeity);
+          setSelectedDeity(deity);
+          setCurrentScreen('chat');
+          if (savedMessages) {
+            try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
+          }
+        } catch {
+          window.location.hash = 'deity-select';
+          setCurrentScreen('deity-select');
         }
       } else {
         // If no saved deity, go to selection
@@ -73,8 +77,6 @@ function App() {
     // Handle browser back/forward buttons
     const handlePopState = () => {
       const newHash = window.location.hash.replace('#', '');
-      console.log('Popstate hash:', newHash); // Debug log
-      
       if (newHash === 'deity-select' && currentScreen !== 'deity-select') {
         setCurrentScreen('deity-select');
         setSelectedDeity(null);
@@ -82,7 +84,7 @@ function App() {
       } else if (newHash === 'chat' && currentScreen !== 'chat') {
         const savedDeity = localStorage.getItem('selectedDeity');
         if (savedDeity) {
-          setSelectedDeity(JSON.parse(savedDeity));
+          try { setSelectedDeity(JSON.parse(savedDeity)); } catch { /* ignore */ }
           setCurrentScreen('chat');
         } else {
           window.location.hash = 'deity-select';
@@ -117,7 +119,8 @@ function App() {
       }
       
       if (premiumData) {
-        const data = JSON.parse(premiumData);
+        let data;
+        try { data = JSON.parse(premiumData); } catch { data = { purchasedDeities: {} }; }
         const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
           deity => deity.expiry > Date.now() && deity.remainingMessages > 0
         );
@@ -167,11 +170,16 @@ function App() {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       setUser(user);
       if (user) {
-        console.log("👤 User is logged in:", user.displayName);
-        // Migrate existing data to cloud
         migrateToCloud(user.uid);
       } else {
-        console.log("👤 User is logged out");
+        // Reset all state on sign-out
+        const freeMessages = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
+        setRemainingMessages(freeMessages);
+        setUserHasPremium(false);
+        setSelectedDeity(null);
+        setMessages([]);
+        setCurrentScreen('welcome');
+        window.history.pushState({}, '', '#welcome');
       }
     });
 
@@ -186,10 +194,10 @@ function App() {
   const fetchDeities = async () => {
     try {
       const response = await fetch(`${API_URL}/api/deities`);
+      if (!response.ok) throw new Error(`Failed to fetch deities: ${response.status}`);
       const data = await response.json();
       setDeities(data.deities);
     } catch (error) {
-      console.error('Error fetching deities:', error);
       // Fallback deities with beautiful data
       setDeities([
         {
@@ -259,8 +267,10 @@ function App() {
 
   // === MODIFIED: selectDeity ===
   const selectDeity = (deity) => {
-    const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
-    
+    let premiumData;
+    try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+    catch { premiumData = { purchasedDeities: {} }; }
+
     // Check Krishna free messages (Bug 1 fix)
     if (deity.id === 'krishna') {
       const freeMessages = localStorage.getItem('freeKrishnaMessages');
@@ -292,7 +302,8 @@ function App() {
     // 🆕 CHECK if we're selecting the SAME deity that has existing chat
     const savedDeity = localStorage.getItem('selectedDeity');
     const savedMessages = localStorage.getItem('chatMessages');
-    const isSameDeity = savedDeity && JSON.parse(savedDeity).id === deity.id;
+    let isSameDeity = false;
+    try { isSameDeity = savedDeity && JSON.parse(savedDeity).id === deity.id; } catch { /* ignore */ }
     
     // Save deity to localStorage
     localStorage.setItem('selectedDeity', JSON.stringify(deity));
@@ -304,7 +315,7 @@ function App() {
     // 🆕 FIX: Load existing messages if same deity, otherwise welcome
     if (isSameDeity && savedMessages) {
       // Load existing conversation
-      setMessages(JSON.parse(savedMessages));
+      try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
     } else {
       // Start new conversation
       const welcomeMessage = {
@@ -382,7 +393,9 @@ function App() {
       localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
     } else {
       // Update premium deity messages
-      const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+      let premiumData;
+      try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+      catch { premiumData = { purchasedDeities: {} }; }
       if (premiumData.purchasedDeities[selectedDeity.id]) {
         premiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
         localStorage.setItem('premiumData', JSON.stringify(premiumData));
@@ -454,7 +467,6 @@ function App() {
       localStorage.setItem('chatMessages', JSON.stringify(finalMessages));
       
     } catch (error) {
-      console.error('Error sending message:', error);
       const errorMessage = {
         id: Date.now() + 1,
         text: "The divine connection is weak. Please try again later.",
@@ -466,9 +478,19 @@ function App() {
       setMessages(errorMessages);
       localStorage.setItem('chatMessages', JSON.stringify(errorMessages));
       
-      // Restore message count if error occurred
-      if (selectedDeity.id !== 'krishna' && userHasPremium) {
-        setRemainingMessages(prev => prev + 1);
+      // Restore message count on error for all users
+      setRemainingMessages(prev => prev + 1);
+      if (selectedDeity.id === 'krishna' && !userHasPremium) {
+        const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '0');
+        localStorage.setItem('freeKrishnaMessages', (currentFree + 1).toString());
+      } else {
+        let premiumData;
+        try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+        catch { premiumData = { purchasedDeities: {} }; }
+        if (premiumData.purchasedDeities[selectedDeity.id]) {
+          premiumData.purchasedDeities[selectedDeity.id].remainingMessages += 1;
+          localStorage.setItem('premiumData', JSON.stringify(premiumData));
+        }
       }
     } finally {
       setIsLoading(false);
@@ -477,7 +499,9 @@ function App() {
   if (user && selectedDeity) {
     // Save to cloud after AI response is complete
     setTimeout(() => {
-      const currentMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+      let currentMessages;
+      try { currentMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); }
+      catch { currentMessages = []; }
       if (currentMessages.length > 0) {
         saveChatToCloud(user.uid, selectedDeity.id, currentMessages);
       }
@@ -528,11 +552,12 @@ function App() {
       const orderResponse = await fetch(`${API_URL}/api/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          deityId: selectedDeityForPremium.id 
+        body: JSON.stringify({
+          deityId: selectedDeityForPremium.id
         }),
       });
-  
+      if (!orderResponse.ok) throw new Error(`Order creation failed: ${orderResponse.status}`);
+
       const orderData = await orderResponse.json();
       
       if (!orderData.success) {
@@ -573,25 +598,21 @@ function App() {
   
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on('payment.failed', function(response) {
-        console.error('Payment failed:', response.error);
-        setIsProcessingPayment(false);
+      razorpay.on('payment.failed', function(_response) {
+          setIsProcessingPayment(false);
         alert('Payment failed. Please try again.');
       });
       
       razorpay.open();
 
-      const timeoutId = setTimeout(() => {
-        if (isProcessingPayment) {
-          setIsProcessingPayment(false);
-          alert('Payment completed! Please refresh the page to access premium features.');
-        }
+      if (paymentTimeoutRef.current) clearTimeout(paymentTimeoutRef.current);
+      paymentTimeoutRef.current = setTimeout(() => {
+        setIsProcessingPayment(false);
+        paymentTimeoutRef.current = null;
+        alert('Payment completed! Please refresh the page to access premium features.');
       }, 40000);
-
-      return () => clearTimeout(timeoutId);
   
     } catch (error) {
-      console.error('Payment error:', error);
       setIsProcessingPayment(false);
       alert('❌ Payment failed. Please try again.');
     }
@@ -614,12 +635,15 @@ function App() {
           razorpay_signature: response.razorpay_signature
         }),
       });
-  
+      if (!verificationResponse.ok) throw new Error(`Payment verification failed: ${verificationResponse.status}`);
+
       const verificationData = await verificationResponse.json();
       
       if (verificationData.success) {
         // === 🆕 FIXED: Save per-deity premium data ===
-        const existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+        let existingData;
+        try { existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+        catch { existingData = { purchasedDeities: {} }; }
         
         existingData.purchasedDeities[deityId] = {
           remainingMessages: 50,
@@ -672,7 +696,6 @@ function App() {
         throw new Error('Payment verification failed');
       }
     } catch (error) {
-      console.error('Payment verification error:', error);
       setIsProcessingPayment(false);
       alert('❌ Payment verification failed. Please contact support.');
     }

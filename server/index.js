@@ -6,15 +6,20 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3002;
 
+// Validate required environment variables
+const requiredEnvVars = ['OPENAI_API_KEY', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(v => !process.env[v]);
+if (missingEnvVars.length > 0) {
+  console.error('Missing required environment variables:', missingEnvVars.join(', '));
+  process.exit(1);
+}
+
 // Middleware
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://astravedam.com',
-    'https://www.astravedam.com'
-  ],
-  credentials: true
-}));
+const allowedOrigins = ['https://astravedam.com', 'https://www.astravedam.com'];
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173');
+}
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
 // ↓ ADD THIS RAZORPAY INITIALIZATION ↓
