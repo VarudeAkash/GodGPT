@@ -775,8 +775,17 @@ function App() {
                   <span className="feature-card-cta">Begin Your Journey →</span>
                 </div>
                 <div className="featured-deity-grid">
-                  {['कृ','ॐ','श्रीं','हं','ऐं','गं'].map((d, i) => (
-                    <div key={i} className="featured-deity-chip">{d}</div>
+                  {[
+                    { id: 'krishna',   color: '#FF6B35' },
+                    { id: 'shiva',     color: '#8B5CF6' },
+                    { id: 'lakshmi',   color: '#F59E0B' },
+                    { id: 'hanuman',   color: '#FF6B6B' },
+                    { id: 'saraswati', color: '#4ECDC4' },
+                    { id: 'ganesha',   color: '#45B7D1' },
+                  ].map(d => (
+                    <div key={d.id} className="featured-deity-chip">
+                      <DeityIcon id={d.id} color={d.color} size={52} borderRadius={12} />
+                    </div>
                   ))}
                 </div>
               </div>
