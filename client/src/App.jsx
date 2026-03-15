@@ -953,51 +953,47 @@ function App() {
         
         <div className="chat-layout">
           <div className="chat-header">
+            {/* Left: back */}
             <button className="back-button" onClick={goBackToSelection}>
-              ← Choose Another Deity
+              ← Back
             </button>
-            
+
+            {/* Center: deity identity */}
             <div className="deity-header-info">
               <div className="deity-avatar-chat" style={{ background: selectedDeity.color }}>
                 <span>{selectedDeity.emoji}</span>
               </div>
               <div className="deity-chat-info">
-                <h2>Chat with {selectedDeity.name}</h2>
+                <h2>{selectedDeity.name}</h2>
                 <p>{selectedDeity.description}</p>
               </div>
             </div>
 
-            {/* 🆕 LANGUAGE SELECTOR AND CONTROLS */}
-            <div className="header-controls">
+            {/* Right: controls */}
+            <div className="chat-header-controls">
               <div className="language-selector">
-                <button 
+                <button
                   className={`lang-btn ${chatLanguage === 'english' ? 'active' : ''}`}
                   onClick={() => setChatLanguage('english')}
-                >
-                  🇺🇸 English
-                </button>
-                <button 
+                >EN</button>
+                <button
                   className={`lang-btn ${chatLanguage === 'hindi' ? 'active' : ''}`}
                   onClick={() => setChatLanguage('hindi')}
-                >
-                  🇮🇳 हिन्दी
-                </button>
+                >हिं</button>
               </div>
 
               {(userHasPremium || selectedDeity.id === 'krishna') && (
-                <div className="message-counter">
-                  <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
-                    {remainingMessages} {selectedDeity.id === 'krishna' && !userHasPremium ? 'free' : ''} messages left
-                  </div>
+                <div className={`counter-badge ${!userHasPremium ? 'free' : ''}`}>
+                  {remainingMessages} left
                 </div>
               )}
-            </div>
 
-            {messages.length > 0 && (
-              <button className="clear-chat-button" onClick={clearChat}>
-                🧹 Clear
-              </button>
-            )}
+              {messages.length > 0 && (
+                <button className="clear-chat-button" onClick={clearChat} title="Clear chat">
+                  🧹
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="messages-area-chat">

@@ -7,8 +7,8 @@
     z-index: 1000;
     padding: 0;
     overflow: hidden;
-    height: auto; /* ← ADD THIS */
-    min-height: 80px; /* ← ADD THIS */
+    height: auto;
+    min-height: 64px;
   }
 
   /* Lighter Header Background */
@@ -32,7 +32,7 @@
     position: relative;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -49,18 +49,17 @@
   }
   
   .logo-image {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    background: transparent; /* No background for transparent logo */
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    /* Remove saffron shadow effects */
     box-shadow: none;
-    animation: none; /* Remove pulsing animation */
+    animation: none;
   }
   
   .logo-image::before {
@@ -101,15 +100,13 @@
     flex-direction: column;
   }
   
-  /* Brand Name Color - Matches logo colors */
+  /* Brand Name Color */
   .logo-main {
-    font-size: 2.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: #E6D3B3; /* Light beige that works with dark colors */
-    text-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      0 4px 12px rgba(0, 0, 0, 0.4);
-    letter-spacing: -0.3px;
+    color: #E6D3B3;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    letter-spacing: -0.2px;
   }
   
   /* Navigation - Lighter Colors */
@@ -358,25 +355,10 @@
   }
 }
 
-  /* Larger logo styles */
-.logo-image {
-    width: 80px !important;
-    height: 80px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .logo-image img {
-    width: 90px !important;
-    height: 90px !important;
-    object-fit: contain;
-  }
-  
-  /* Larger welcome screen logo */
+  /* Welcome screen logo (larger) */
   .logo-large img {
-    width: 120px !important;
-    height: 120px !important;
+    width: 120px;
+    height: 120px;
     object-fit: contain;
   }
   .mobile-overlay.visible {
