@@ -113,23 +113,7 @@ function App() {
       localStorage.setItem('freeKrishnaMessages', '50');
       setRemainingMessages(50);
     }
-
-    // Only load premium from localStorage if a user is signed in
-    // (premiumData is cleared on sign-out, so this only runs for signed-in users)
-    const premiumData = localStorage.getItem('premiumData');
-    if (premiumData) {
-      let data;
-      try { data = JSON.parse(premiumData); } catch { data = { purchasedDeities: {} }; }
-      const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
-        d => d.expiry > Date.now() && d.remainingMessages > 0
-      );
-      if (hasActivePremium) {
-        setUserHasPremium(true);
-        if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
-          setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
-        }
-      }
-    }
+    // Premium state is managed by onAuthStateChanged — not here
   
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentScreen]);
@@ -166,19 +150,34 @@ function App() {
       setUser(user);
       if (user) {
         migrateToCloud(user.uid);
-        // Load premium from Firestore and sync to localStorage + state
+
+        // Try Firestore first (cross-device), fall back to localStorage (same device)
         const cloudPremium = await loadPremiumFromCloud(user.uid);
         if (cloudPremium) {
           localStorage.setItem('premiumData', JSON.stringify(cloudPremium));
-          const hasActivePremium = Object.values(cloudPremium.purchasedDeities || {}).some(
+          const hasActive = Object.values(cloudPremium.purchasedDeities || {}).some(
             d => d.expiry > Date.now() && d.remainingMessages > 0
           );
-          if (hasActivePremium) setUserHasPremium(true);
+          if (hasActive) setUserHasPremium(true);
+        } else {
+          // No Firestore record — check localStorage (e.g. purchased before cloud sync was added)
+          const localPremium = localStorage.getItem('premiumData');
+          if (localPremium) {
+            try {
+              const data = JSON.parse(localPremium);
+              const hasActive = Object.values(data.purchasedDeities || {}).some(
+                d => d.expiry > Date.now() && d.remainingMessages > 0
+              );
+              if (hasActive) {
+                setUserHasPremium(true);
+                // Migrate this old purchase up to Firestore
+                savePremiumToCloud(user.uid, data);
+              }
+            } catch { /* ignore */ }
+          }
         }
       } else {
-        // Clear premium from localStorage so loadPremiumStatus doesn't re-enable it
-        localStorage.removeItem('premiumData');
-        // Reset all state on sign-out
+        // Sign-out: reset state only — keep localStorage so re-login on same device works
         const freeMessages = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
         setRemainingMessages(freeMessages);
         setUserHasPremium(false);
