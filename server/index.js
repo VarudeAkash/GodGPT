@@ -284,15 +284,15 @@ function getDeityName(id) {
 }
 
 function getDeityEmoji(id) {
-  const emojis = {
-    krishna: '🕉️',
-    shiva: '☯️',
-    lakshmi: '🌸', // Changed from 💰 for better spiritual feel
-    hanuman: '🐒',
-    saraswati: '📚',
-    ganesha: '🐘' // ADD THIS LINE
+  const symbols = {
+    krishna: 'कृ',
+    shiva: 'ॐ',
+    lakshmi: 'श्रीं',
+    hanuman: 'हं',
+    saraswati: 'ऐं',
+    ganesha: 'गं'
   };
-  return emojis[id] || '🙏';
+  return symbols[id] || 'ॐ';
 }
 
 function getDeityColor(id) {

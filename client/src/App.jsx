@@ -208,7 +208,7 @@ function App() {
         {
           id: 'krishna',
           name: 'Lord Krishna',
-          emoji: '🕉️',
+          emoji: 'कृ',
           color: '#FF6B35',
           theme: 'krishna',
           description: 'Divine Mentor & Compassionate Guide',
@@ -216,8 +216,8 @@ function App() {
         },
         {
           id: 'shiva',
-          name: 'Lord Shiva', 
-          emoji: '☯️',
+          name: 'Lord Shiva',
+          emoji: 'ॐ',
           color: '#8B5CF6',
           theme: 'shiva',
           description: 'The Eternal Yogi & Destroyer of Illusions',
@@ -226,7 +226,7 @@ function App() {
         {
           id: 'lakshmi',
           name: 'Goddess Lakshmi',
-          emoji: '🌸',
+          emoji: 'श्रीं',
           color: '#F59E0B',
           theme: 'lakshma',
           description: 'Goddess of Prosperity & Spiritual Wealth',
@@ -235,7 +235,7 @@ function App() {
         {
           id: 'hanuman',
           name: 'Lord Hanuman',
-          emoji: '🐒',
+          emoji: 'हं',
           color: '#FF6B6B',
           theme: 'hanuman',
           description: 'Embodiment of Devotion & Strength',
@@ -244,7 +244,7 @@ function App() {
         {
           id: 'saraswati',
           name: 'Goddess Saraswati',
-          emoji: '📚',
+          emoji: 'ऐं',
           color: '#4ECDC4',
           theme: 'saraswati',
           description: 'Goddess of Knowledge & Creative Wisdom',
@@ -253,7 +253,7 @@ function App() {
         {
           id: 'ganesha',
           name: 'Lord Ganesha',
-          emoji: '🐘',
+          emoji: 'गं',
           color: '#45B7D1',
           theme: 'ganesha',
           description: 'Remover of Obstacles & Lord of Beginnings',
@@ -347,15 +347,6 @@ function App() {
     // localStorage.removeItem('chatMessages');
   };
 
-  // === NEW FUNCTION: goToWelcome ===
-  const goToWelcome = () => {
-    window.history.pushState({}, '', '#welcome');
-    setCurrentScreen('welcome');
-    setSelectedDeity(null);
-    setMessages([]);
-    // localStorage.removeItem('selectedDeity');
-    // localStorage.removeItem('chatMessages');
-  };
 
   // === MODIFIED: sendMessage ===
   const sendMessage = async () => {
@@ -868,11 +859,7 @@ function App() {
           
           <div className="selection-container">
             <div className="selection-header">
-              <div className="selection-header-row">
-                <button className="back-button" onClick={goToWelcome}>← Back</button>
-                <h1>Choose Your Divine Guide</h1>
-                <div></div>
-              </div>
+              <h1>Choose Your Divine Guide</h1>
               <p>Select a deity to begin your spiritual conversation</p>
             </div>
 

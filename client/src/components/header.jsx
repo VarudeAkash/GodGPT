@@ -27,12 +27,12 @@ function Header({ user }) {
           </button>
 
           {/* Logo and Brand Name */}
-          <div className="logo">
+          <a className="logo" href="#welcome" style={{ textDecoration: 'none' }}>
             <div className="logo-image">
               {!logoError ? (
-                <img 
-                  src="/logo.png" 
-                  alt="Astravedam" 
+                <img
+                  src="/logo.png"
+                  alt="Astravedam"
                   onError={() => setLogoError(true)}
                 />
               ) : (
@@ -42,7 +42,7 @@ function Header({ user }) {
             <div className="logo-text">
               <span className="logo-main">Astravedam</span>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Desktop Navigation (right side - hidden on mobile) */}
