@@ -3,6 +3,31 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import { db } from '../firebase.js';
 
+// Save premium data to cloud
+export const savePremiumToCloud = async (userId, premiumData) => {
+  try {
+    const premiumRef = db.collection('users').doc(userId);
+    await premiumRef.set({ premiumData }, { merge: true });
+  } catch (error) {
+    console.error('Cloud premium save failed:', error);
+  }
+};
+
+// Load premium data from cloud
+export const loadPremiumFromCloud = async (userId) => {
+  try {
+    const premiumRef = db.collection('users').doc(userId);
+    const doc = await premiumRef.get();
+    if (doc.exists && doc.data().premiumData) {
+      return doc.data().premiumData;
+    }
+    return null;
+  } catch (error) {
+    console.error('Cloud premium load failed:', error);
+    return null;
+  }
+};
+
 // Save chat to cloud
 export const saveChatToCloud = async (userId, deityId, messages) => {
   try {
@@ -15,9 +40,7 @@ export const saveChatToCloud = async (userId, deityId, messages) => {
       messageCount: messages.length
     }, { merge: true });
     
-    console.log("💾 Chat saved to cloud for", deityId);
   } catch (error) {
-    console.error("❌ Cloud save failed:", error);
     // Fallback to localStorage
     localStorage.setItem('chatMessages', JSON.stringify(messages));
   }
@@ -30,12 +53,10 @@ export const loadChatFromCloud = async (userId, deityId) => {
     const chatDoc = await chatRef.get();
     
     if (chatDoc.exists) {
-      console.log("☁️ Loaded chat from cloud for", deityId);
       return chatDoc.data().messages;
     }
     return null;
   } catch (error) {
-    console.error("❌ Cloud load failed:", error);
     return null;
   }
 };
@@ -45,17 +66,15 @@ export const migrateToCloud = async (userId) => {
   try {
     const savedDeity = localStorage.getItem('selectedDeity');
     const savedMessages = localStorage.getItem('chatMessages');
-    
+
     if (savedDeity && savedMessages) {
-      const deity = JSON.parse(savedDeity);
-      const messages = JSON.parse(savedMessages);
-      
+      let deity, messages;
+      try { deity = JSON.parse(savedDeity); } catch { return; }
+      try { messages = JSON.parse(savedMessages); } catch { return; }
+
       if (messages.length > 0) {
         await saveChatToCloud(userId, deity.id, messages);
-        console.log("🔄 Migrated localStorage data to cloud");
       }
     }
-  } catch (error) {
-    console.error("❌ Migration failed:", error);
-  }
+  } catch { /* ignore */ }
 };

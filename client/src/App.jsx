@@ -6,7 +6,7 @@ import Contact from './components/Contact.jsx';
 import Privacy from './components/Privacy.jsx'; 
 import './firebase.js'; 
 import firebase from 'firebase/compat/app';
-import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js'; 
+import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
 // import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js';
 // import { onAuthStateChanged } from 'firebase/auth';
 // import { auth } from './firebase.js'; 
@@ -105,36 +105,31 @@ function App() {
   
     window.addEventListener('popstate', handlePopState);
   
-    // Load premium status
-    const loadPremiumStatus = () => {
-      const premiumData = localStorage.getItem('premiumData');
-      const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
-      
-      if (freeKrishnaMessages) {
-        const remainingFree = parseInt(freeKrishnaMessages);
-        setRemainingMessages(remainingFree);
-      } else {
-        localStorage.setItem('freeKrishnaMessages', '50');
-        setRemainingMessages(50);
-      }
-      
-      if (premiumData) {
-        let data;
-        try { data = JSON.parse(premiumData); } catch { data = { purchasedDeities: {} }; }
-        const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
-          deity => deity.expiry > Date.now() && deity.remainingMessages > 0
-        );
-        
-        if (hasActivePremium) {
-          setUserHasPremium(true);
-          if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
-            setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
-          }
+    // Load free message count (always)
+    const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
+    if (freeKrishnaMessages) {
+      setRemainingMessages(parseInt(freeKrishnaMessages));
+    } else {
+      localStorage.setItem('freeKrishnaMessages', '50');
+      setRemainingMessages(50);
+    }
+
+    // Only load premium from localStorage if a user is signed in
+    // (premiumData is cleared on sign-out, so this only runs for signed-in users)
+    const premiumData = localStorage.getItem('premiumData');
+    if (premiumData) {
+      let data;
+      try { data = JSON.parse(premiumData); } catch { data = { purchasedDeities: {} }; }
+      const hasActivePremium = Object.values(data.purchasedDeities || {}).some(
+        d => d.expiry > Date.now() && d.remainingMessages > 0
+      );
+      if (hasActivePremium) {
+        setUserHasPremium(true);
+        if (selectedDeity && data.purchasedDeities[selectedDeity.id]) {
+          setRemainingMessages(data.purchasedDeities[selectedDeity.id].remainingMessages);
         }
       }
-    };
-  
-    loadPremiumStatus();
+    }
   
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentScreen]);
@@ -167,11 +162,22 @@ function App() {
 
 // Add this useEffect in App.jsx
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
       setUser(user);
       if (user) {
         migrateToCloud(user.uid);
+        // Load premium from Firestore and sync to localStorage + state
+        const cloudPremium = await loadPremiumFromCloud(user.uid);
+        if (cloudPremium) {
+          localStorage.setItem('premiumData', JSON.stringify(cloudPremium));
+          const hasActivePremium = Object.values(cloudPremium.purchasedDeities || {}).some(
+            d => d.expiry > Date.now() && d.remainingMessages > 0
+          );
+          if (hasActivePremium) setUserHasPremium(true);
+        }
       } else {
+        // Clear premium from localStorage so loadPremiumStatus doesn't re-enable it
+        localStorage.removeItem('premiumData');
         // Reset all state on sign-out
         const freeMessages = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
         setRemainingMessages(freeMessages);
@@ -654,7 +660,12 @@ function App() {
         existingData.userHasPremium = true;
         
         localStorage.setItem('premiumData', JSON.stringify(existingData));
-        
+
+        // Sync premium to Firestore for cross-device access
+        if (user) {
+          savePremiumToCloud(user.uid, existingData);
+        }
+
         setUserHasPremium(true);
         setRemainingMessages(50);
         setShowPremiumModal(false);
