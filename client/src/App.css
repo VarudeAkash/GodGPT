@@ -485,7 +485,26 @@ body {
 .selection-header {
   text-align: center;
   margin-bottom: 3rem;
-  position: relative;
+}
+
+.selection-header-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.selection-header-row h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF6B35, #F59E0B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.selection-header-row .back-button {
+  justify-self: start;
 }
 
 .back-button {
@@ -507,15 +526,6 @@ body {
   transform: translateX(-3px);
 }
 
-.selection-header h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FF6B35, #F59E0B);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1rem;
-}
 
 .selection-header p {
   font-size: 1.2rem;

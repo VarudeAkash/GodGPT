@@ -868,11 +868,11 @@ function App() {
           
           <div className="selection-container">
             <div className="selection-header">
-              {/* === CHANGED: Now uses goToWelcome === */}
-              <button className="back-button" onClick={goToWelcome}>
-                ← Back
-              </button>
-              <h1>Choose Your Divine Guide</h1>
+              <div className="selection-header-row">
+                <button className="back-button" onClick={goToWelcome}>← Back</button>
+                <h1>Choose Your Divine Guide</h1>
+                <div></div>
+              </div>
               <p>Select a deity to begin your spiritual conversation</p>
             </div>
 
