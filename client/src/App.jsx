@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Header from './components/header.jsx';
+import Footer from './components/Footer.jsx';
 import DeityIcon from './components/DeityIcon.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
-import Privacy from './components/Privacy.jsx'; 
-import './firebase.js'; 
+import Privacy from './components/Privacy.jsx';
+import PanchangPage from './components/PanchangPage.jsx';
+import KundaliPage from './components/KundaliPage.jsx';
+import DivyaUpayPage from './components/DivyaUpayPage.jsx';
+import BlogPage from './components/BlogPage.jsx';
+import './firebase.js';
 import firebase from 'firebase/compat/app';
 import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
-// import { saveChatToCloud, loadChatFromCloud, migrateToCloud } from './utils/cloudSave.js';
-// import { onAuthStateChanged } from 'firebase/auth';
-// import { auth } from './firebase.js'; 
+import { loadDeityMemory, updateDeityMemoryAfterChat, buildMemoryContext } from './utils/deityMemory.js';
 
 
 
@@ -35,16 +38,22 @@ function App() {
   const [chatLanguage, setChatLanguage] = useState('english');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [user, setUser] = useState(null);
-  // === ADD THIS NEW EFFECT ===
-  
+  const [deityMemory, setDeityMemory] = useState(null);
+  const memoryDebounceRef = useRef(null);
+
+  const navigateTo = (screen, hash) => {
+    window.history.pushState({}, '', `#${hash || screen}`);
+    setCurrentScreen(screen);
+    window.scrollTo(0, 0);
+  };
+
   useEffect(() => {
     // Set initial screen based on URL hash
     const hash = window.location.hash.replace('#', '');
-    
+
     if (hash === 'deity-select') {
       setCurrentScreen('deity-select');
     } else if (hash === 'chat') {
-      // Try to restore chat state from localStorage
       const savedDeity = localStorage.getItem('selectedDeity');
       const savedMessages = localStorage.getItem('chatMessages');
       if (savedDeity) {
@@ -60,44 +69,39 @@ function App() {
           setCurrentScreen('deity-select');
         }
       } else {
-        // If no saved deity, go to selection
         window.location.hash = 'deity-select';
         setCurrentScreen('deity-select');
       }
-    } else if (hash === 'about') {
-      setCurrentScreen('about');
-    } else if (hash === 'contact') {
-      setCurrentScreen('contact');
-    } else if (hash === 'privacy') {
-      setCurrentScreen('privacy');
-    } else if (!hash || hash === 'welcome') {
-      setCurrentScreen('welcome');
-    }
-    // Removed the else block that was forcing welcome screen
-    
-    // Handle browser back/forward buttons
+    } else if (hash === 'about')      { setCurrentScreen('about'); }
+    else if (hash === 'contact')      { setCurrentScreen('contact'); }
+    else if (hash === 'privacy')      { setCurrentScreen('privacy'); }
+    else if (hash === 'panchang')     { setCurrentScreen('panchang'); }
+    else if (hash === 'kundali')      { setCurrentScreen('kundali'); }
+    else if (hash === 'divya-upay')   { setCurrentScreen('divya-upay'); }
+    else if (hash === 'blog')         { setCurrentScreen('blog'); }
+    else if (!hash || hash === 'welcome') { setCurrentScreen('welcome'); }
+
+    // Handle browser back/forward
     const handlePopState = () => {
       const newHash = window.location.hash.replace('#', '');
-      if (newHash === 'deity-select' && currentScreen !== 'deity-select') {
-        setCurrentScreen('deity-select');
-        setSelectedDeity(null);
-        setMessages([]);
-      } else if (newHash === 'chat' && currentScreen !== 'chat') {
+      if (newHash === 'deity-select') {
+        setCurrentScreen('deity-select'); setSelectedDeity(null); setMessages([]);
+      } else if (newHash === 'chat') {
         const savedDeity = localStorage.getItem('selectedDeity');
         if (savedDeity) {
           try { setSelectedDeity(JSON.parse(savedDeity)); } catch { /* ignore */ }
           setCurrentScreen('chat');
         } else {
-          window.location.hash = 'deity-select';
-          setCurrentScreen('deity-select');
+          window.location.hash = 'deity-select'; setCurrentScreen('deity-select');
         }
-      } else if (newHash === 'about' && currentScreen !== 'about') {
-        setCurrentScreen('about');
-      } else if (newHash === 'contact' && currentScreen !== 'contact') {
-        setCurrentScreen('contact');
-      } else if (newHash === 'privacy' && currentScreen !== 'privacy') {
-        setCurrentScreen('privacy');
-      } else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
+      } else if (newHash === 'about')    { setCurrentScreen('about'); }
+      else if (newHash === 'contact')    { setCurrentScreen('contact'); }
+      else if (newHash === 'privacy')    { setCurrentScreen('privacy'); }
+      else if (newHash === 'panchang')   { setCurrentScreen('panchang'); }
+      else if (newHash === 'kundali')    { setCurrentScreen('kundali'); }
+      else if (newHash === 'divya-upay') { setCurrentScreen('divya-upay'); }
+      else if (newHash === 'blog')       { setCurrentScreen('blog'); }
+      else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
         setCurrentScreen('welcome');
         setSelectedDeity(null);
         setMessages([]);
@@ -184,6 +188,7 @@ function App() {
         setUserHasPremium(false);
         setSelectedDeity(null);
         setMessages([]);
+        setDeityMemory(null);
         setCurrentScreen('welcome');
         window.history.pushState({}, '', '#welcome');
       }
@@ -265,14 +270,10 @@ function App() {
   };
 
 
-  // === MODIFIED: startJourney ===
-  const startJourney = () => {
-    window.history.pushState({}, '', '#deity-select');
-    setCurrentScreen('deity-select');
-  };
+  const startJourney = () => navigateTo('deity-select');
 
   // === MODIFIED: selectDeity ===
-  const selectDeity = (deity) => {
+  const selectDeity = async (deity) => {
     let premiumData;
     try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
     catch { premiumData = { purchasedDeities: {} }; }
@@ -311,10 +312,16 @@ function App() {
     let isSameDeity = false;
     try { isSameDeity = savedDeity && JSON.parse(savedDeity).id === deity.id; } catch { /* ignore */ }
     
-    // Save deity to localStorage
+    // Load deity memory for logged-in users
+    if (user) {
+      loadDeityMemory(user.uid, deity.id).then(mem => setDeityMemory(mem));
+    } else {
+      setDeityMemory(null);
+    }
+
     localStorage.setItem('selectedDeity', JSON.stringify(deity));
     window.history.pushState({}, '', '#chat');
-    
+
     setSelectedDeity(deity);
     setCurrentScreen('chat');
     
@@ -340,12 +347,15 @@ function App() {
   
   // === MODIFIED: goBackToSelection ===
   const goBackToSelection = () => {
-    window.history.pushState({}, '', '#deity-select');
-    setCurrentScreen('deity-select');
+    navigateTo('deity-select');
     setSelectedDeity(null);
     setMessages([]);
-    // localStorage.removeItem('selectedDeity');
-    // localStorage.removeItem('chatMessages');
+    // Trigger memory save when leaving chat
+    if (user && selectedDeity) {
+      if (memoryDebounceRef.current) clearTimeout(memoryDebounceRef.current);
+      const msgs = (() => { try { return JSON.parse(localStorage.getItem('chatMessages') || '[]'); } catch { return []; } })();
+      updateDeityMemoryAfterChat(user.uid, selectedDeity.id, msgs, API_URL);
+    }
   };
 
 
@@ -404,11 +414,12 @@ function App() {
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: inputMessage, 
+        body: JSON.stringify({
+          message: inputMessage,
           deity: selectedDeity.id,
           conversationHistory: messages,
-          language: chatLanguage  
+          language: chatLanguage,
+          userMemory: buildMemoryContext(deityMemory) || undefined,
         }),
       });
     
@@ -494,7 +505,6 @@ function App() {
     }
   // 🆕 CLOUD SAVE - ADD AT THE END OF sendMessage FUNCTION
   if (user && selectedDeity) {
-    // Save to cloud after AI response is complete
     setTimeout(() => {
       let currentMessages;
       try { currentMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); }
@@ -502,7 +512,18 @@ function App() {
       if (currentMessages.length > 0) {
         saveChatToCloud(user.uid, selectedDeity.id, currentMessages);
       }
-    }, 6000); // Wait 1.5 seconds for AI response to complete
+    }, 6000);
+
+    // Debounced memory update — runs 15s after last message
+    if (memoryDebounceRef.current) clearTimeout(memoryDebounceRef.current);
+    memoryDebounceRef.current = setTimeout(() => {
+      let currentMessages;
+      try { currentMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]'); }
+      catch { currentMessages = []; }
+      updateDeityMemoryAfterChat(user.uid, selectedDeity.id, currentMessages, API_URL)
+        .then(() => loadDeityMemory(user.uid, selectedDeity.id))
+        .then(mem => setDeityMemory(mem));
+    }, 15000);
   }
   };
 
@@ -705,8 +726,7 @@ function App() {
 
   return (
     <>
-    {/* <Header /> */}
-    <Header user={user} />
+    <Header user={user} navigateTo={navigateTo} />
     <div className="main-content">
       <BuyMoreModal
         isOpen={showBuyMoreModal}
@@ -764,20 +784,30 @@ function App() {
 
               {/* Feature Cards */}
               <div className="features-grid">
-                <div className="feature-card">
+                <div className="feature-card" onClick={() => navigateTo('deity-select')} style={{cursor:'pointer'}}>
                   <div className="feature-icon">✦</div>
-                  <h4>Divine Conversations</h4>
-                  <p>Engage in meaningful dialogues with AI-powered deities, crafted from authentic scriptures</p>
+                  <h4>Chat with Deities</h4>
+                  <p>Conversations with Krishna, Shiva, Lakshmi and more — drawn from authentic scriptures</p>
                 </div>
-                <div className="feature-card">
+                <div className="feature-card" onClick={() => navigateTo('panchang')} style={{cursor:'pointer'}}>
+                  <div className="feature-icon">◉</div>
+                  <h4>Today's Panchang</h4>
+                  <p>Daily Tithi, Nakshatra, Yoga, Rahukala and Muhurat — calculated for your location</p>
+                </div>
+                <div className="feature-card" onClick={() => navigateTo('kundali')} style={{cursor:'pointer'}}>
                   <div className="feature-icon">✧</div>
-                  <h4>Authentic Guidance</h4>
-                  <p>Receive wisdom based on Bhagavad Gita, Vedas, Puranas, and sacred texts</p>
+                  <h4>Kundali Reading</h4>
+                  <p>Enter your birth details and receive a personalized Vedic birth chart reading</p>
                 </div>
-                <div className="feature-card">
+                <div className="feature-card" onClick={() => navigateTo('divya-upay')} style={{cursor:'pointer'}}>
                   <div className="feature-icon">◈</div>
-                  <h4>Personalized Insights</h4>
-                  <p>Get tailored spiritual guidance for your unique life situations</p>
+                  <h4>Divya Upay</h4>
+                  <p>Sacred remedies — mantras, rituals, and practices personalized for your situation</p>
+                </div>
+                <div className="feature-card" onClick={() => navigateTo('blog')} style={{cursor:'pointer'}}>
+                  <div className="feature-icon">◇</div>
+                  <h4>Vedic Wisdom Blog</h4>
+                  <p>Deep dives into Panchang, Navagraha, Sade Sati, Vastu and more</p>
                 </div>
               </div>
 
@@ -839,16 +869,13 @@ function App() {
         </div>
       )}
 
-      {/* About Screen */}
-      {currentScreen === 'about' && (
-        <About />
-      )}
-      {currentScreen === 'contact' && (
-        <Contact />
-      )}
-      {currentScreen === 'privacy' && (
-        <Privacy />
-      )}
+      {currentScreen === 'about'      && <About />}
+      {currentScreen === 'contact'    && <Contact />}
+      {currentScreen === 'privacy'    && <Privacy />}
+      {currentScreen === 'panchang'   && <PanchangPage />}
+      {currentScreen === 'kundali'    && <KundaliPage user={user} API_URL={API_URL} />}
+      {currentScreen === 'divya-upay' && <DivyaUpayPage />}
+      {currentScreen === 'blog'       && <BlogPage navigateTo={navigateTo} />}
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (
@@ -1069,6 +1096,7 @@ function App() {
       </div>
       )}
     </div>
+    {currentScreen !== 'chat' && <Footer navigateTo={navigateTo} />}
     </>
   );
 }

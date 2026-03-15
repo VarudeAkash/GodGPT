@@ -138,7 +138,7 @@ app.post('/api/verify-payment', async (req, res) => {
 // Chat endpoint with streaming for complete responses
 app.post('/api/chat', async (req, res) => {
   // const { message, deity } = req.body;
-  const { message, deity, conversationHistory = [], language = 'english' } = req.body;
+  const { message, deity, conversationHistory = [], language = 'english', userMemory = null } = req.body;
   
   if (!message || !deity) {
     return res.status(400).json({ error: 'Message and deity are required' });
@@ -162,7 +162,8 @@ app.post('/api/chat', async (req, res) => {
         content: deityPrompts[deity] +
           (language === 'hindi' ?
             ' Always respond in Hindi using Devanagari script. Address the person as "तू" or "तुम" — never "आप". In the entire devotional tradition, God speaks to devotees intimately, not formally. "आप" creates distance; a deity who loves you speaks with "तू".' :
-            ' Use Roman script (English letters) for your response. Mirror the user\'s natural language style — if they write in Hinglish (Hindi words in English script), reply in the same natural Hinglish. If they write in pure English, reply in English. Never force formal English when the person is clearly speaking Hindi in Roman script. When speaking Hinglish, address the person as "tu" or "tum" — never "aap". God speaks intimately, not formally.')
+            ' Use Roman script (English letters) for your response. Mirror the user\'s natural language style — if they write in Hinglish (Hindi words in English script), reply in the same natural Hinglish. If they write in pure English, reply in English. Never force formal English when the person is clearly speaking Hindi in Roman script. When speaking Hinglish, address the person as "tu" or "tum" — never "aap". God speaks intimately, not formally.') +
+          (userMemory ? ` [CONTEXT about this person from previous conversations: ${userMemory}. Acknowledge their journey naturally — do not mention "memory" or "last time" explicitly unless it flows naturally.]` : '')
       },
       // Add conversation history
       ...conversationHistory.map(msg => ({
@@ -209,9 +210,198 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// ── Daily Horoscope ──────────────────────────────────────────────────────────
+const horoscopeCache = new Map(); // key: `${sign}_${date}_${lang}`
+
+app.post('/api/horoscope', async (req, res) => {
+  const { sign, language = 'english' } = req.body;
+  if (!sign) return res.status(400).json({ error: 'Sign is required' });
+
+  const today = new Date().toDateString();
+  const cacheKey = `${sign}_${today}_${language}`;
+  if (horoscopeCache.has(cacheKey)) {
+    return res.json({ sign, prediction: horoscopeCache.get(cacheKey) });
+  }
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are a Vedic astrologer writing today's Moon sign horoscope (Chandra Rashifal). Write in the tradition of Jyotish — grounded, specific, practical. Avoid generic Western sun-sign clichés. Base the prediction on today's planetary transits and the Moon's current position. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Write today's horoscope for ${sign} Moon sign. Today is ${today}. Keep it to 3-4 sentences — specific, warm, and actionable. No platitudes.`
+      }],
+      max_tokens: 200,
+      temperature: 0.8,
+    });
+
+    const prediction = completion.choices[0].message.content.trim();
+    horoscopeCache.set(cacheKey, prediction);
+    // Clear cache at midnight (approx)
+    setTimeout(() => horoscopeCache.delete(cacheKey), 24 * 60 * 60 * 1000);
+
+    res.json({ sign, prediction });
+  } catch (error) {
+    console.error('Horoscope error:', error);
+    res.status(500).json({ error: 'Could not generate horoscope' });
+  }
+});
+
+// ── Kundali Reading ──────────────────────────────────────────────────────────
+app.post('/api/kundali-reading', async (req, res) => {
+  const { name, dob, tob, pob, language = 'english' } = req.body;
+  if (!name || !dob || !pob) return res.status(400).json({ error: 'Name, DOB, and place of birth are required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are a learned Vedic astrologer giving a Janma Kundali reading. Speak with warmth and precision. Provide meaningful insights without being vague. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Give a Vedic birth chart reading for:
+Name: ${name}
+Date of Birth: ${dob}
+Time of Birth: ${tob || 'unknown'}
+Place of Birth: ${pob}
+
+Cover: likely ascendant sign and personality, Moon sign and emotional nature, key life themes from the chart, practical guidance for this person's path. Where birth time is unknown, focus on the date-based insights. Be specific to this person — not generic. Keep to 300-350 words.`
+      }],
+      max_tokens: 700,
+      temperature: 0.82,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Kundali error:', error);
+    res.status(500).json({ error: 'Could not generate reading' });
+  }
+});
+
+// ── Divya Upay ───────────────────────────────────────────────────────────────
+app.post('/api/divya-upay', async (req, res) => {
+  const { situation, category, sign, favoriteDeity = 'ganesha', language = 'english' } = req.body;
+  if (!situation) return res.status(400).json({ error: 'Situation is required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const context = [
+      situation && `Situation: ${situation}`,
+      category  && `Category: ${category}`,
+      sign      && `Moon sign: ${sign}`,
+      favoriteDeity && `Deity connection: ${favoriteDeity}`,
+    ].filter(Boolean).join('\n');
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are a knowledgeable Vedic pandit giving personalized spiritual remedies (upay). Draw from authentic Vedic, Puranic, and astrological traditions. Give specific, practical remedies — not generic advice. Speak with warmth and genuine care. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `${context}
+
+Give 4-5 specific personalized remedies. For each, include:
+- The practice itself (specific mantra, ritual, or action)
+- The best day/time to do it
+- Brief explanation of why this helps
+
+End with a short blessing in the voice of ${favoriteDeity}. Total: 280-320 words.`
+      }],
+      max_tokens: 650,
+      temperature: 0.83,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Divya Upay error:', error);
+    res.status(500).json({ error: 'Could not generate remedies' });
+  }
+});
+
+// ── Extract Memory (internal) ─────────────────────────────────────────────────
+app.post('/api/extract-memory', async (req, res) => {
+  const { messages = [], existingThemes = [], deity } = req.body;
+  if (!messages.length) return res.json({ newThemes: [], sessionSummary: '', significantFacts: [] });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const transcript = messages
+      .filter(m => m.sender === 'user')
+      .map(m => m.text)
+      .join('\n');
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: 'Extract key personal information from this chat transcript for memory storage. Return ONLY valid JSON.'
+      }, {
+        role: 'user',
+        content: `Transcript of user messages in a conversation with ${deity}:\n${transcript}\n\nExisting themes: ${existingThemes.join(', ')}\n\nReturn JSON with: newThemes (array of 2-3 word strings, max 3 new ones), sessionSummary (one sentence), significantFacts (array of strings mentioning personal facts like name, family situation, job — max 2). Return {} if nothing meaningful to extract.`
+      }],
+      max_tokens: 150,
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    });
+
+    const extracted = JSON.parse(completion.choices[0].message.content);
+    res.json({
+      newThemes:        extracted.newThemes        || [],
+      sessionSummary:   extracted.sessionSummary   || '',
+      significantFacts: extracted.significantFacts || [],
+    });
+  } catch {
+    res.json({ newThemes: [], sessionSummary: '', significantFacts: [] });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'Divine server is awakened 🙏' });
+  res.json({ status: 'Divine server is awakened' });
 });
 
 // Get available deities

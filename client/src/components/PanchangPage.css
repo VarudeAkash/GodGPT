@@ -1,0 +1,292 @@
+.panchang-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 3rem;
+  min-height: 100vh;
+}
+
+.panchang-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #D4C1A5;
+  gap: 1rem;
+}
+
+.panchang-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(139,0,0,0.2);
+  border-top-color: #8B0000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.panchang-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.panchang-hero h1 {
+  font-size: 2.2rem;
+  color: #E6D3B3;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.panchang-date {
+  color: rgba(212,193,165,0.7);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.panchang-month {
+  color: #c9a96e;
+  font-size: 1.1rem;
+  margin: 0.3rem 0 0;
+  font-weight: 500;
+}
+
+.location-note {
+  color: rgba(212,193,165,0.5);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Panchang Cards Grid */
+.panchang-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.pancha-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 16px;
+  padding: 1.4rem;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s;
+}
+
+.pancha-card:hover {
+  border-color: rgba(139,0,0,0.5);
+}
+
+.pancha-card.timings {
+  grid-column: span 1;
+}
+
+.pancha-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(212,193,165,0.5);
+  margin-bottom: 0.5rem;
+}
+
+.pancha-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #E6D3B3;
+  margin-bottom: 0.25rem;
+}
+
+.pancha-sub {
+  font-size: 0.8rem;
+  color: rgba(212,193,165,0.6);
+  margin-bottom: 0.6rem;
+}
+
+.pancha-quality {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-top: 0.3rem;
+}
+
+.pancha-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  margin-top: 0.6rem;
+  overflow: hidden;
+}
+
+.pancha-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B0000, #c9a96e);
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+.pancha-pct {
+  font-size: 0.72rem;
+  color: rgba(212,193,165,0.4);
+  margin-top: 0.3rem;
+}
+
+.timing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.timing-row:last-child { border-bottom: none; }
+
+.timing-label {
+  font-size: 0.8rem;
+  color: rgba(212,193,165,0.6);
+}
+
+.timing-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #E6D3B3;
+}
+
+.timing-value.good { color: #4ade80; }
+.timing-value.bad  { color: #f87171; }
+
+/* Horoscope Section */
+.horoscope-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(139,0,0,0.2);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.horoscope-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.horoscope-header h2 {
+  color: #E6D3B3;
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.horoscope-lang {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.horoscope-lang button {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(212,193,165,0.7);
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.horoscope-lang button.active {
+  background: rgba(139,0,0,0.3);
+  border-color: rgba(139,0,0,0.6);
+  color: #E6D3B3;
+}
+
+.horoscope-sub {
+  color: rgba(212,193,165,0.55);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.rashi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.rashi-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.2);
+  border-radius: 12px;
+  padding: 0.8rem 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #D4C1A5;
+}
+
+.rashi-btn:hover {
+  border-color: rgba(139,0,0,0.5);
+  background: rgba(139,0,0,0.1);
+}
+
+.rashi-btn.selected {
+  border-color: #8B0000;
+  background: rgba(139,0,0,0.2);
+}
+
+.rashi-symbol { font-size: 1.3rem; line-height: 1; }
+.rashi-name   { font-size: 0.72rem; font-weight: 600; color: #E6D3B3; }
+.rashi-english { font-size: 0.62rem; color: rgba(212,193,165,0.5); }
+
+.horoscope-result {
+  background: rgba(139,0,0,0.08);
+  border: 1px solid rgba(139,0,0,0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.horoscope-loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: rgba(212,193,165,0.7);
+  font-size: 0.95rem;
+}
+
+.pancha-spinner-sm {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(139,0,0,0.2);
+  border-top-color: #8B0000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.horoscope-rashi-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #c9a96e;
+  margin-bottom: 0.8rem;
+}
+
+.horoscope-text {
+  color: #D4C1A5;
+  font-size: 1rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .panchang-grid { grid-template-columns: 1fr 1fr; }
+  .rashi-grid    { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .panchang-grid       { grid-template-columns: 1fr; }
+  .rashi-grid          { grid-template-columns: repeat(3, 1fr); }
+  .horoscope-header    { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+  .panchang-hero h1    { font-size: 1.7rem; }
+}

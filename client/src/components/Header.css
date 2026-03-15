@@ -167,7 +167,16 @@
 
   }
   
-  /* Mobile Menu Button */
+  /* Button nav links */
+.nav-btn, .mobile-nav-btn {
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  width: auto;
+  text-align: left;
+}
+
+/* Mobile Menu Button */
   .mobile-menu-btn {
     display: none;
     flex-direction: column;

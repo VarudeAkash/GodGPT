@@ -1,0 +1,241 @@
+.upay-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 3rem;
+  min-height: 100vh;
+}
+
+.upay-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.upay-hero h1 {
+  font-size: 2.2rem;
+  color: #E6D3B3;
+  margin: 0 0 0.6rem;
+}
+
+.upay-hero p {
+  color: rgba(212,193,165,0.7);
+  font-size: 1rem;
+  max-width: 540px;
+  margin: 0 auto 1rem;
+  line-height: 1.7;
+}
+
+.upay-lang {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.upay-lang button {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(212,193,165,0.7);
+  border-radius: 8px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upay-lang button.active {
+  background: rgba(139,0,0,0.3);
+  border-color: rgba(139,0,0,0.6);
+  color: #E6D3B3;
+}
+
+.upay-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.upay-form {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.upay-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.upay-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(212,193,165,0.6);
+}
+
+.upay-required { color: #f87171; }
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.category-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.2);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  color: rgba(212,193,165,0.7);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.category-btn:hover, .category-btn.selected {
+  border-color: rgba(139,0,0,0.6);
+  background: rgba(139,0,0,0.12);
+  color: #E6D3B3;
+}
+
+.cat-icon {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.upay-textarea {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  color: #E6D3B3;
+  font-size: 0.95rem;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+
+.upay-textarea:focus { border-color: rgba(139,0,0,0.6); }
+.upay-textarea::placeholder { color: rgba(212,193,165,0.3); }
+
+.upay-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.upay-select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: #E6D3B3;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.upay-select:focus { border-color: rgba(139,0,0,0.6); }
+
+.upay-select option { background: #1a0f08; }
+
+.deity-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.deity-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(139,0,0,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  color: rgba(212,193,165,0.7);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deity-chip:hover, .deity-chip.selected {
+  background: rgba(139,0,0,0.2);
+  border-color: rgba(139,0,0,0.6);
+  color: #E6D3B3;
+}
+
+.upay-error {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.upay-submit-btn {
+  background: linear-gradient(135deg, #8B0000, #4B0082);
+  color: #FFE4C4;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 0.3rem;
+}
+
+.upay-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.upay-submit-btn:hover:not(:disabled) { opacity: 0.88; }
+
+/* Result */
+.upay-result {
+  background: rgba(139,0,0,0.08);
+  border: 1px solid rgba(139,0,0,0.3);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.upay-result h3 {
+  color: #c9a96e;
+  font-size: 1.2rem;
+  margin: 0 0 1.2rem;
+}
+
+.upay-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: rgba(212,193,165,0.7);
+  font-size: 0.95rem;
+}
+
+.upay-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(139,0,0,0.2);
+  border-top-color: #8B0000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.upay-text p {
+  color: #D4C1A5;
+  line-height: 1.85;
+  margin: 0 0 0.8rem;
+  font-size: 0.97rem;
+}
+
+@media (max-width: 600px) {
+  .category-grid { grid-template-columns: 1fr 1fr; }
+  .upay-row      { grid-template-columns: 1fr; }
+}
