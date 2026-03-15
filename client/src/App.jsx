@@ -36,7 +36,6 @@ function App() {
   const paymentTimeoutRef = useRef(null);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
   const [chatLanguage, setChatLanguage] = useState('english');
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [user, setUser] = useState(null);
   const [deityMemory, setDeityMemory] = useState(null);
   const memoryDebounceRef = useRef(null);
@@ -128,13 +127,6 @@ function App() {
     fetchDeities();
   }, []);
 
-  useEffect(() => {
-    const testimonialInterval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % 3); // 3 testimonials
-    }, 4000); // Change every 4 seconds
-  
-    return () => clearInterval(testimonialInterval);
-  }, []);
   // === 🆕 ADD: Initialize free Krishna messages on app start ===
   useEffect(() => {
     const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
@@ -270,7 +262,6 @@ function App() {
   };
 
 
-  const startJourney = () => navigateTo('deity-select');
 
   // === MODIFIED: selectDeity ===
   const selectDeity = async (deity) => {
@@ -752,128 +743,91 @@ function App() {
           <div className="floating-om">ॐ</div>
           <div className="floating-lotus">🌸</div>
           
-          <div className="welcome-container">
-            <div className="welcome-content">
-              
-              {/* Compact Header */}
-              <div className="main-header">
-                <div className="brand-section">
-                <div className="logo-large">
-                  <img src="/logo.png" alt="Hindu.Dharma.AI" onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }} style={{ width: '120px', height: '120px' }}/>
-                  <div className="logo-fallback-large">A</div>
-                </div>
-                  <div className="brand-text">
-                    <h1 className="welcome-title">Astravedam</h1>
-                    <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
-                  </div>
-                </div>
+          {/* Hero — logo + tagline, no box */}
+          <div className="welcome-hero">
+            <div className="brand-section">
+              <div className="logo-large">
+                <img src="/logo.png" alt="Astravedam" onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }} style={{ width: '80px', height: '80px' }}/>
+                <div className="logo-fallback-large">A</div>
               </div>
-
-              {/* Immediate CTA */}
-              <div className="immediate-cta">
-                <button className="cta-button" onClick={startJourney}>
-                  Begin Your Spiritual Journey
-                </button>
-                <p className="cta-note">
-                  Start with free messages from Lord Krishna
-                </p>
+              <div className="brand-text">
+                <h1 className="welcome-title">Astravedam</h1>
+                <p className="welcome-tagline">Ancient Wisdom, Modern Intelligence</p>
               </div>
+            </div>
+          </div>
 
-              {/* Feature Cards */}
-              <div className="features-grid">
-                <div className="feature-card feature-card--chat" onClick={() => navigateTo('deity-select')}>
-                  <div className="feature-card-glow"></div>
+          {/* Features section */}
+          <div className="features-section">
+
+            {/* Featured: Chat — large prominent card */}
+            <div className="feature-card feature-card--chat feature-card--featured" onClick={() => navigateTo('deity-select')}>
+              <div className="feature-card-glow"></div>
+              <div className="featured-inner">
+                <div className="featured-text">
+                  <span className="featured-badge">Free · 50 messages to start</span>
                   <div className="feature-icon">✦</div>
-                  <h4>Chat with Deities</h4>
-                  <p>Live conversations with Krishna, Shiva, Lakshmi and more — drawn from authentic scriptures</p>
-                  <span className="feature-card-cta">Start Now →</span>
+                  <h2>Chat with the Divine</h2>
+                  <p>Seek wisdom from Krishna, Shiva, Lakshmi, Hanuman, Saraswati and Ganesha — responses drawn from authentic Vedic scriptures, personalized to your life and questions.</p>
+                  <span className="feature-card-cta">Begin Your Journey →</span>
                 </div>
-                <div className="feature-card feature-card--panchang" onClick={() => navigateTo('panchang')}>
-                  <div className="feature-card-glow"></div>
-                  <div className="feature-icon">◉</div>
-                  <h4>Today's Panchang</h4>
-                  <p>Daily Tithi, Nakshatra, Yoga, Rahukala and Muhurat — calculated for your location</p>
-                  <span className="feature-card-cta">View Today →</span>
-                </div>
-                <div className="feature-card feature-card--kundali" onClick={() => navigateTo('kundali')}>
-                  <div className="feature-card-glow"></div>
-                  <div className="feature-icon">✧</div>
-                  <h4>Kundali Reading</h4>
-                  <p>Enter your birth details and receive a personalized Vedic birth chart reading</p>
-                  <span className="feature-card-cta">Get Reading →</span>
-                </div>
-                <div className="feature-card feature-card--upay" onClick={() => navigateTo('divya-upay')}>
-                  <div className="feature-card-glow"></div>
-                  <div className="feature-icon">◈</div>
-                  <h4>Divya Upay</h4>
-                  <p>Sacred remedies — mantras, rituals, and practices personalized for your situation</p>
-                  <span className="feature-card-cta">Find Remedies →</span>
-                </div>
-                <div className="feature-card feature-card--blog" onClick={() => navigateTo('blog')}>
-                  <div className="feature-card-glow"></div>
-                  <div className="feature-icon">◇</div>
-                  <h4>Vedic Wisdom Blog</h4>
-                  <p>Deep dives into Panchang, Navagraha, Sade Sati, Vastu and more</p>
-                  <span className="feature-card-cta">Read Articles →</span>
+                <div className="featured-deity-grid">
+                  {['कृ','ॐ','श्रीं','हं','ऐं','गं'].map((d, i) => (
+                    <div key={i} className="featured-deity-chip">{d}</div>
+                  ))}
                 </div>
               </div>
+            </div>
 
-              {/* How It Works - Compact */}
-              <div className="how-it-works">
-                <h3>How It Works</h3>
-                <div className="steps">
-                  <div className="step">
-                    <div className="step-number">1</div>
-                    <div className="step-content">
-                      <h5>Choose Your Guide</h5>
-                      <p>Select from enlightened deities</p>
-                    </div>
-                  </div>
-                  <div className="step">
-                    <div className="step-number">2</div>
-                    <div className="step-content">
-                      <h5>Ask Your Questions</h5>
-                      <p>Seek guidance on life and purpose</p>
-                    </div>
-                  </div>
-                  <div className="step">
-                    <div className="step-number">3</div>
-                    <div className="step-content">
-                      <h5>Receive Wisdom</h5>
-                      <p>Get profound insights with references</p>
-                    </div>
-                  </div>
-                </div>
+            {/* Secondary 2×2 grid */}
+            <div className="features-grid-secondary">
+              <div className="feature-card feature-card--panchang" onClick={() => navigateTo('panchang')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">◉</div>
+                <h4>Today's Panchang</h4>
+                <p>Tithi, Nakshatra, Yoga, Rahukala and Muhurat — calculated for your location</p>
+                <span className="feature-card-cta">View Today →</span>
               </div>
-
-              {/* Rotating Testimonials */}
-              <div className="testimonials-rotating">
-                <div className={`testimonial ${activeTestimonial === 0 ? 'active' : ''}`}>
-                  <p>"The guidance felt genuinely divine. Practical and deeply spiritual."</p>
-                  <div className="testimonial-author">
-                    <strong>Priya Sharma</strong>
-                    <span>Mumbai</span>
-                  </div>
-                </div>
-                <div className={`testimonial ${activeTestimonial === 1 ? 'active' : ''}`}>
-                  <p>"Made ancient wisdom accessible and relevant to modern life."</p>
-                  <div className="testimonial-author">
-                    <strong>Arjun Patel</strong>
-                    <span>Delhi</span>
-                  </div>
-                </div>
-                <div className={`testimonial ${activeTestimonial === 2 ? 'active' : ''}`}>
-                  <p>"Krishna's guidance helped me find peace during difficult times."</p>
-                  <div className="testimonial-author">
-                    <strong>Rahul Verma</strong>
-                    <span>Bangalore</span>
-                  </div>
-                </div>
+              <div className="feature-card feature-card--kundali" onClick={() => navigateTo('kundali')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">✧</div>
+                <h4>Kundali Reading</h4>
+                <p>Personalized Vedic birth chart reading from your name, date, time and place of birth</p>
+                <span className="feature-card-cta">Get Reading →</span>
               </div>
+              <div className="feature-card feature-card--upay" onClick={() => navigateTo('divya-upay')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">◈</div>
+                <h4>Divya Upay</h4>
+                <p>Sacred remedies — mantras, rituals and practices for your specific situation</p>
+                <span className="feature-card-cta">Find Remedies →</span>
+              </div>
+              <div className="feature-card feature-card--blog" onClick={() => navigateTo('blog')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">◇</div>
+                <h4>Vedic Wisdom Blog</h4>
+                <p>Deep dives into Panchang, Navagraha, Sade Sati, Vastu and more</p>
+                <span className="feature-card-cta">Read Articles →</span>
+              </div>
+            </div>
+          </div>
 
+          {/* Testimonials — static strip */}
+          <div className="testimonials-strip">
+            <div className="testimonial-card">
+              <p>"The guidance felt genuinely divine. Practical and deeply spiritual."</p>
+              <div className="testimonial-author"><strong>Priya Sharma</strong><span>Mumbai</span></div>
+            </div>
+            <div className="testimonial-card">
+              <p>"Made ancient wisdom accessible and relevant to modern life."</p>
+              <div className="testimonial-author"><strong>Arjun Patel</strong><span>Delhi</span></div>
+            </div>
+            <div className="testimonial-card">
+              <p>"Krishna's guidance helped me find peace during difficult times."</p>
+              <div className="testimonial-author"><strong>Rahul Verma</strong><span>Bangalore</span></div>
             </div>
           </div>
         </div>
