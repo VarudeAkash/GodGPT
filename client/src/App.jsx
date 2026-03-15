@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Header from './components/header.jsx';
+import DeityIcon from './components/DeityIcon.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Privacy from './components/Privacy.jsx'; 
@@ -871,9 +872,7 @@ function App() {
                   onClick={() => selectDeity(deity)}
                 >
                   <div className="deity-glow" style={{ background: deity.color }}></div>
-                  <div className="deity-avatar-select" style={{ background: deity.color }}>
-                    <span className="deity-emoji-select">{deity.emoji}</span>
-                  </div>
+                  <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
                   <div className="deity-info-select">
                     <h3>{deity.name}</h3>
                     <p>{deity.description}</p>
@@ -947,9 +946,7 @@ function App() {
 
             {/* Center: deity identity */}
             <div className="deity-header-info">
-              <div className="deity-avatar-chat" style={{ background: selectedDeity.color }}>
-                <span>{selectedDeity.emoji}</span>
-              </div>
+              <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
               <div className="deity-chat-info">
                 <h2>{selectedDeity.name}</h2>
                 <p>{selectedDeity.description}</p>
@@ -1011,9 +1008,7 @@ function App() {
                     <div className="message-bubble-chat">
                       {message.sender === 'deity' && (
                         <div className="message-header">
-                          <div className="deity-avatar-small" style={{ background: message.deity.color }}>
-                            <span>{message.deity.emoji}</span>
-                          </div>
+                          <DeityIcon id={message.deity?.id} color={message.deity?.color} size={28} borderRadius={8} />
                           <span className="deity-name-chat">{message.deity.name}</span>
                         </div>
                       )}
@@ -1027,9 +1022,7 @@ function App() {
                   <div className="message-chat deity">
                     <div className="message-bubble-chat">
                       <div className="message-header">
-                        <div className="deity-avatar-small" style={{ background: selectedDeity.color }}>
-                          <span>{selectedDeity.emoji}</span>
-                        </div>
+                          <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={28} borderRadius={8} />
                         <span className="deity-name-chat">{selectedDeity.name}</span>
                       </div>
                       <div className="typing-indicator">
@@ -1098,9 +1091,7 @@ function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
         
         <div className="premium-content">
           <div className="deity-premium-preview">
-            <div className="premium-deity-avatar" style={{ background: deity.color }}>
-              {deity.emoji}
-            </div>
+            <DeityIcon id={deity.id} color={deity.color} size={64} borderRadius={16} />
             <h3>Continue with {deity.name}</h3>
             <p>You've used all your divine messages. Purchase 50 more to continue your spiritual journey.</p>
           </div>
@@ -1156,9 +1147,7 @@ function PremiumModal({ isOpen, onClose, deity, onPurchase, isProcessingPayment 
         
         <div className="premium-content">
           <div className="deity-premium-preview">
-            <div className="premium-deity-avatar" style={{ background: deity.color }}>
-              {deity.emoji}
-            </div>
+            <DeityIcon id={deity.id} color={deity.color} size={64} borderRadius={16} />
             <h3>Chat with {deity.name}</h3>
             <p>{deity.description}</p>
           </div>
