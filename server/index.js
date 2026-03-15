@@ -134,6 +134,40 @@ app.post('/api/verify-payment', async (req, res) => {
 
 
 
+// Kundali order (₹49)
+app.post('/api/create-kundali-order', async (req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 4900,
+      currency: 'INR',
+      receipt: `kundali_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Kundali Reading', price: '₹49' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Kundali order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
+// Upay order (₹29)
+app.post('/api/create-upay-order', async (req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 2900,
+      currency: 'INR',
+      receipt: `upay_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Divya Upay', price: '₹29' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Upay order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
 // Chat endpoint
 // Chat endpoint with streaming for complete responses
 app.post('/api/chat', async (req, res) => {

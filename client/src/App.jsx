@@ -784,30 +784,40 @@ function App() {
 
               {/* Feature Cards */}
               <div className="features-grid">
-                <div className="feature-card" onClick={() => navigateTo('deity-select')} style={{cursor:'pointer'}}>
+                <div className="feature-card feature-card--chat" onClick={() => navigateTo('deity-select')}>
+                  <div className="feature-card-glow"></div>
                   <div className="feature-icon">✦</div>
                   <h4>Chat with Deities</h4>
-                  <p>Conversations with Krishna, Shiva, Lakshmi and more — drawn from authentic scriptures</p>
+                  <p>Live conversations with Krishna, Shiva, Lakshmi and more — drawn from authentic scriptures</p>
+                  <span className="feature-card-cta">Start Now →</span>
                 </div>
-                <div className="feature-card" onClick={() => navigateTo('panchang')} style={{cursor:'pointer'}}>
+                <div className="feature-card feature-card--panchang" onClick={() => navigateTo('panchang')}>
+                  <div className="feature-card-glow"></div>
                   <div className="feature-icon">◉</div>
                   <h4>Today's Panchang</h4>
                   <p>Daily Tithi, Nakshatra, Yoga, Rahukala and Muhurat — calculated for your location</p>
+                  <span className="feature-card-cta">View Today →</span>
                 </div>
-                <div className="feature-card" onClick={() => navigateTo('kundali')} style={{cursor:'pointer'}}>
+                <div className="feature-card feature-card--kundali" onClick={() => navigateTo('kundali')}>
+                  <div className="feature-card-glow"></div>
                   <div className="feature-icon">✧</div>
                   <h4>Kundali Reading</h4>
                   <p>Enter your birth details and receive a personalized Vedic birth chart reading</p>
+                  <span className="feature-card-cta">Get Reading →</span>
                 </div>
-                <div className="feature-card" onClick={() => navigateTo('divya-upay')} style={{cursor:'pointer'}}>
+                <div className="feature-card feature-card--upay" onClick={() => navigateTo('divya-upay')}>
+                  <div className="feature-card-glow"></div>
                   <div className="feature-icon">◈</div>
                   <h4>Divya Upay</h4>
                   <p>Sacred remedies — mantras, rituals, and practices personalized for your situation</p>
+                  <span className="feature-card-cta">Find Remedies →</span>
                 </div>
-                <div className="feature-card" onClick={() => navigateTo('blog')} style={{cursor:'pointer'}}>
+                <div className="feature-card feature-card--blog" onClick={() => navigateTo('blog')}>
+                  <div className="feature-card-glow"></div>
                   <div className="feature-icon">◇</div>
                   <h4>Vedic Wisdom Blog</h4>
                   <p>Deep dives into Panchang, Navagraha, Sade Sati, Vastu and more</p>
+                  <span className="feature-card-cta">Read Articles →</span>
                 </div>
               </div>
 
@@ -872,9 +882,9 @@ function App() {
       {currentScreen === 'about'      && <About />}
       {currentScreen === 'contact'    && <Contact />}
       {currentScreen === 'privacy'    && <Privacy />}
-      {currentScreen === 'panchang'   && <PanchangPage />}
+      {currentScreen === 'panchang'   && <PanchangPage user={user} />}
       {currentScreen === 'kundali'    && <KundaliPage user={user} API_URL={API_URL} />}
-      {currentScreen === 'divya-upay' && <DivyaUpayPage />}
+      {currentScreen === 'divya-upay' && <DivyaUpayPage user={user} />}
       {currentScreen === 'blog'       && <BlogPage navigateTo={navigateTo} />}
 
       {/* Deity Selection Screen */}

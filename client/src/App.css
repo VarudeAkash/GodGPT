@@ -1,3 +1,16 @@
+/* Markdown renderer styles */
+.markdown-body .md-h1 { font-size: 1.3rem; color: #c9a96e; font-weight: 700; margin: 1.2rem 0 0.5rem; }
+.markdown-body .md-h2 { font-size: 1.1rem; color: #c9a96e; font-weight: 700; margin: 1rem 0 0.4rem; }
+.markdown-body .md-h3 { font-size: 1rem;   color: #c9a96e; font-weight: 600; margin: 0.8rem 0 0.3rem; }
+.markdown-body .md-p  { color: #D4C1A5; line-height: 1.85; margin: 0 0 0.7rem; font-size: 0.97rem; }
+.markdown-body .md-ol,
+.markdown-body .md-ul { color: #D4C1A5; line-height: 1.85; margin: 0 0 0.7rem 1.4rem; font-size: 0.97rem; }
+.markdown-body .md-ol li,
+.markdown-body .md-ul li { margin-bottom: 0.3rem; }
+.markdown-body strong { color: #E6D3B3; font-weight: 700; }
+.markdown-body em     { color: #c9a96e; font-style: italic; }
+.markdown-body code   { background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.88rem; }
+
 /* Reset and Beautiful Base */
 * {
   margin: 0;
@@ -264,7 +277,7 @@ body {
   font-style: italic;
 }
 
-/* Feature Cards with Glass Effect Only */
+/* Feature Cards */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -273,44 +286,88 @@ body {
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.06);
-  padding: 2rem 1.5rem;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
+  padding: 2rem 1.5rem 1.5rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: rgba(20, 8, 4, 0.7);
+  border: 1.5px solid rgba(201, 169, 110, 0.25);
   backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
+.feature-card-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 20px;
+  pointer-events: none;
 }
+
+.feature-card--chat   { border-color: rgba(255, 107, 53, 0.4); }
+.feature-card--panchang { border-color: rgba(255, 191, 36, 0.4); }
+.feature-card--kundali  { border-color: rgba(139, 0, 139, 0.5); }
+.feature-card--upay     { border-color: rgba(16, 185, 129, 0.4); }
+.feature-card--blog     { border-color: rgba(56, 189, 248, 0.4); }
+
+.feature-card--chat     .feature-card-glow { background: radial-gradient(ellipse at top left, rgba(255,107,53,0.18), transparent 70%); }
+.feature-card--panchang .feature-card-glow { background: radial-gradient(ellipse at top left, rgba(255,191,36,0.18), transparent 70%); }
+.feature-card--kundali  .feature-card-glow { background: radial-gradient(ellipse at top left, rgba(139,0,139,0.22), transparent 70%); }
+.feature-card--upay     .feature-card-glow { background: radial-gradient(ellipse at top left, rgba(16,185,129,0.18), transparent 70%); }
+.feature-card--blog     .feature-card-glow { background: radial-gradient(ellipse at top left, rgba(56,189,248,0.18), transparent 70%); }
+
+.feature-card:hover { transform: translateY(-6px); }
+.feature-card:hover .feature-card-glow { opacity: 1; }
+.feature-card--chat:hover     { box-shadow: 0 12px 32px rgba(255,107,53,0.25); border-color: rgba(255,107,53,0.7); }
+.feature-card--panchang:hover { box-shadow: 0 12px 32px rgba(255,191,36,0.25); border-color: rgba(255,191,36,0.7); }
+.feature-card--kundali:hover  { box-shadow: 0 12px 32px rgba(139,0,139,0.3);  border-color: rgba(139,0,139,0.8); }
+.feature-card--upay:hover     { box-shadow: 0 12px 32px rgba(16,185,129,0.25); border-color: rgba(16,185,129,0.7); }
+.feature-card--blog:hover     { box-shadow: 0 12px 32px rgba(56,189,248,0.25); border-color: rgba(56,189,248,0.7); }
 
 .feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
 }
+.feature-card--chat     .feature-icon { color: #FF6B35; }
+.feature-card--panchang .feature-icon { color: #FBBF24; }
+.feature-card--kundali  .feature-icon { color: #C084FC; }
+.feature-card--upay     .feature-icon { color: #34D399; }
+.feature-card--blog     .feature-icon { color: #38BDF8; }
 
 .feature-card h4 {
-  font-size: 1.2rem;
-  color: #E6D3B3;
-  margin-bottom: 0.8rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  color: #F5E6C8;
+  margin: 0;
+  font-weight: 700;
 }
 
 .feature-card p {
-  color: #D4C1A5;
-  font-size: 0.9rem;
+  color: rgba(212, 193, 165, 0.75);
+  font-size: 0.85rem;
   line-height: 1.5;
+  margin: 0;
+  flex: 1;
 }
+
+.feature-card-cta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.feature-card:hover .feature-card-cta { opacity: 1; }
+.feature-card--chat     .feature-card-cta { color: #FF6B35; }
+.feature-card--panchang .feature-card-cta { color: #FBBF24; }
+.feature-card--kundali  .feature-card-cta { color: #C084FC; }
+.feature-card--upay     .feature-card-cta { color: #34D399; }
+.feature-card--blog     .feature-card-cta { color: #38BDF8; }
 
 /* How It Works with Saffron Numbers */
 .how-it-works {
@@ -457,7 +514,10 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .features-grid,
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
   .steps {
     grid-template-columns: 1fr;
     gap: 1.2rem;

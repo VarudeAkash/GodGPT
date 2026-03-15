@@ -194,6 +194,20 @@
 .upay-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .upay-submit-btn:hover:not(:disabled) { opacity: 0.88; }
 
+.upay-price-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgba(212, 193, 165, 0.45);
+  margin: 0;
+}
+
+.upay-paid-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #34D399;
+  margin: 0;
+}
+
 /* Result */
 .upay-result {
   background: rgba(139,0,0,0.08);

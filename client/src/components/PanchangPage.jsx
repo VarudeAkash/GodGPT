@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { getTodayPanchang, RASHI_NAMES } from '../utils/panchang.js';
+import { renderMarkdown } from '../utils/renderMarkdown.jsx';
+import { LoginWall } from './PayGate.jsx';
 import './PanchangPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
-function PanchangPage() {
+function PanchangPage({ user }) {
   const [panchang, setPanchang]         = useState(null);
   const [selectedRashi, setSelectedRashi] = useState(null);
   const [horoscope, setHoroscope]       = useState('');
   const [horoscopeLoading, setHoroscopeLoading] = useState(false);
   const [locationNote, setLocationNote] = useState('');
   const [lang, setLang] = useState('english');
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
 
   useEffect(() => {
     document.title = "Today's Panchang & Horoscope | Astravedam";
@@ -41,8 +44,17 @@ function PanchangPage() {
 
     const cacheKey = `horoscope_${rashiId}_${new Date().toDateString()}_${lang}`;
     const cached = localStorage.getItem(cacheKey);
-    if (cached) { setHoroscope(cached); return; }
+    if (cached) { setHoroscope(cached); setDailyLimitReached(false); return; }
 
+    // Require login
+    if (!user) { setHoroscope(''); setDailyLimitReached(false); return; }
+
+    // Daily limit: 1 fresh API call per day
+    const limitKey = `horoscope_generated_${new Date().toDateString()}`;
+    const generated = parseInt(localStorage.getItem(limitKey) || '0');
+    if (generated >= 1) { setDailyLimitReached(true); setHoroscope(''); return; }
+
+    setDailyLimitReached(false);
     setHoroscopeLoading(true);
     setHoroscope('');
     try {
@@ -55,6 +67,8 @@ function PanchangPage() {
       const data = await res.json();
       setHoroscope(data.prediction);
       localStorage.setItem(cacheKey, data.prediction);
+      const limitKey2 = `horoscope_generated_${new Date().toDateString()}`;
+      localStorage.setItem(limitKey2, (parseInt(localStorage.getItem(limitKey2) || '0') + 1).toString());
     } catch {
       setHoroscope('The cosmic connection is momentarily interrupted. Please try again.');
     } finally {
@@ -153,6 +167,10 @@ function PanchangPage() {
         </div>
         <p className="horoscope-sub">Select your Moon sign (Chandra Rashi) for today's prediction</p>
 
+        {!user && (
+          <LoginWall message="Sign in to view your daily Rashifal" />
+        )}
+
         <div className="rashi-grid">
           {RASHI_NAMES.map(r => (
             <button
@@ -167,6 +185,12 @@ function PanchangPage() {
           ))}
         </div>
 
+        {dailyLimitReached && (
+          <div className="horoscope-limit-notice">
+            <span>✦</span> You've received today's horoscope. Come back tomorrow for a fresh reading.
+          </div>
+        )}
+
         {(horoscopeLoading || horoscope) && (
           <div className="horoscope-result">
             {horoscopeLoading ? (
@@ -179,7 +203,7 @@ function PanchangPage() {
                 <div className="horoscope-rashi-name">
                   {RASHI_NAMES.find(r => r.id === selectedRashi)?.symbol} {RASHI_NAMES.find(r => r.id === selectedRashi)?.name} — Today
                 </div>
-                <p className="horoscope-text">{horoscope}</p>
+                <div className="horoscope-text markdown-body">{renderMarkdown(horoscope)}</div>
               </>
             )}
           </div>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { RASHI_NAMES } from '../utils/panchang.js';
+import { renderMarkdown } from '../utils/renderMarkdown.jsx';
+import { LoginWall, PaymentGate } from './PayGate.jsx';
 import './DivyaUpayPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
@@ -22,7 +24,7 @@ const DEITY_OPTIONS = [
   { id: 'ganesha',   name: 'Ganesha' },
 ];
 
-function DivyaUpayPage() {
+function DivyaUpayPage({ user }) {
   const [category,   setCategory]   = useState('');
   const [situation,  setSituation]  = useState('');
   const [rashi,      setRashi]      = useState('');
@@ -31,18 +33,39 @@ function DivyaUpayPage() {
   const [upay,       setUpay]       = useState('');
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
+  const [showPayGate, setShowPayGate] = useState(false);
+  const [paid, setPaid]               = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(null);
 
   useEffect(() => {
     document.title = "Divya Upay — Your Sacred Remedies | Astravedam";
     const savedRashi = localStorage.getItem('userRashi');
     if (savedRashi) setRashi(savedRashi);
+    const paidKey = `upay_paid_${new Date().toDateString()}`;
+    if (localStorage.getItem(paidKey)) setPaid(true);
   }, []);
+
+  const onPaymentSuccess = (paymentId) => {
+    const paidKey = `upay_paid_${new Date().toDateString()}`;
+    localStorage.setItem(paidKey, paymentId);
+    setPaid(true);
+    setShowPayGate(false);
+    generateUpay(pendingSubmit || { situation, category, rashi, deity });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!situation.trim()) { setError('Please describe your situation.'); return; }
     if (!category)         { setError('Please select a category.'); return; }
     setError('');
+
+    if (!user) { setShowPayGate('login'); return; }
+    if (!paid) { setPendingSubmit({ situation, category, rashi, deity }); setShowPayGate('pay'); return; }
+
+    generateUpay({ situation, category, rashi, deity });
+  };
+
+  const generateUpay = async ({ situation: s, category: c, rashi: r, deity: d }) => {
     setLoading(true);
     setUpay('');
 
@@ -50,7 +73,7 @@ function DivyaUpayPage() {
       const res = await fetch(`${API_URL}/api/divya-upay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ situation, category, sign: rashi, favoriteDeity: deity, language: lang }),
+        body: JSON.stringify({ situation: s, category: c, sign: r, favoriteDeity: d, language: lang }),
       });
       if (!res.ok) throw new Error();
 
@@ -81,7 +104,22 @@ function DivyaUpayPage() {
         </div>
       </div>
 
-      <div className="upay-layout">
+      {showPayGate === 'login' && (
+        <LoginWall message="Sign in to receive your Divya Upay" />
+      )}
+
+      {showPayGate === 'pay' && (
+        <PaymentGate
+          title="Divya Upay — Sacred Remedies"
+          priceDisplay="₹29"
+          description="Personalized Vedic remedies — mantras, rituals, and practices drawn from your sign and chosen deity. Specific to your situation."
+          orderEndpoint="/api/create-upay-order"
+          user={user}
+          onSuccess={onPaymentSuccess}
+        />
+      )}
+
+      {!showPayGate && <div className="upay-layout">
         <form className="upay-form" onSubmit={handleSubmit}>
 
           <div className="upay-section">
@@ -143,8 +181,10 @@ function DivyaUpayPage() {
           {error && <p className="upay-error">{error}</p>}
 
           <button type="submit" className="upay-submit-btn" disabled={loading}>
-            {loading ? 'Preparing your sacred path...' : 'Reveal My Divya Upay'}
+            {loading ? 'Preparing your sacred path...' : paid ? 'Reveal My Divya Upay' : 'Get My Divya Upay — ₹29'}
           </button>
+          {!paid && <p className="upay-price-note">One-time payment · Sacred remedies tailored for you</p>}
+          {paid && <p className="upay-paid-note">Payment received — generate anytime today</p>}
         </form>
 
         {(upay || loading) && (
@@ -156,14 +196,12 @@ function DivyaUpayPage() {
                 <span>The devas are preparing your remedies...</span>
               </div>
             )}
-            <div className="upay-text">
-              {upay.split('\n').map((line, i) =>
-                line.trim() ? <p key={i}>{line}</p> : <br key={i} />
-              )}
+            <div className="upay-text markdown-body">
+              {renderMarkdown(upay)}
             </div>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
