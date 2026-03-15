@@ -159,11 +159,10 @@ app.post('/api/chat', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: deityPrompts[deity] + 
-          (language === 'hindi' ? 
-            ' Always respond in Hindi language only. Use Devanagari script for Hindi text.' : 
-            ' Always respond in English language only.') +
-          ' Remember the conversation context and user details mentioned earlier.'
+        content: deityPrompts[deity] +
+          (language === 'hindi' ?
+            ' Always respond in Hindi using Devanagari script.' :
+            ' Use Roman script (English letters) for your response. Mirror the user\'s natural language style — if they write in Hinglish (Hindi words in English script), reply in the same natural Hinglish. If they write in pure English, reply in English. Never force formal English when the person is clearly speaking Hindi in Roman script.')
       },
       // Add conversation history
       ...conversationHistory.map(msg => ({
