@@ -327,7 +327,7 @@ function App() {
       const welcomeMessage = {
         id: Date.now(),
         text: userHasPremium 
-          ? `Welcome, blessed seeker! 🙏 I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
+          ? `Welcome, blessed seeker. I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
           : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
         sender: 'deity',
         deity: deity,
@@ -687,7 +687,7 @@ function App() {
         }
         const welcomeMessage = {
           id: Date.now(),
-          text: `Welcome, blessed seeker! 🙏 Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
+          text: `Welcome, blessed seeker. Your offering has been accepted. I am ${deityName}. You have 50 divine messages. ${deityBlessing}`,
           sender: 'deity',
           deity: deity,
           timestamp: new Date().toLocaleTimeString()
@@ -743,7 +743,7 @@ function App() {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';
                   }} style={{ width: '120px', height: '120px' }}/>
-                  <div className="logo-fallback-large">🕉️</div>
+                  <div className="logo-fallback-large">A</div>
                 </div>
                   <div className="brand-text">
                     <h1 className="welcome-title">Astravedam</h1>
@@ -755,8 +755,7 @@ function App() {
               {/* Immediate CTA */}
               <div className="immediate-cta">
                 <button className="cta-button" onClick={startJourney}>
-                  <span>Begin Your Spiritual Journey</span>
-                  <span className="arrow">→</span>
+                  Begin Your Spiritual Journey
                 </button>
                 <p className="cta-note">
                   Start with free messages from Lord Krishna
@@ -766,17 +765,17 @@ function App() {
               {/* Feature Cards */}
               <div className="features-grid">
                 <div className="feature-card">
-                  <div className="feature-icon">🌅</div>
+                  <div className="feature-icon">✦</div>
                   <h4>Divine Conversations</h4>
                   <p>Engage in meaningful dialogues with AI-powered deities, crafted from authentic scriptures</p>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon">📜</div>
+                  <div className="feature-icon">✧</div>
                   <h4>Authentic Guidance</h4>
                   <p>Receive wisdom based on Bhagavad Gita, Vedas, Puranas, and sacred texts</p>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon">💫</div>
+                  <div className="feature-icon">◈</div>
                   <h4>Personalized Insights</h4>
                   <p>Get tailored spiritual guidance for your unique life situations</p>
                 </div>
@@ -877,10 +876,9 @@ function App() {
                     <h3>{deity.name}</h3>
                     <p>{deity.description}</p>
                     <div className="deity-blessing">
-                      <small>💫 {deity.blessing}</small>
+                      <small>{deity.blessing}</small>
                     </div>
                   </div>
-                  <div className="select-arrow">→</div>
                 </div>
               ))}
             </div>
@@ -915,7 +913,7 @@ function App() {
                     cursor: 'pointer'
                   }}
                 >
-                  ✅ View My Premium Deities
+                  View My Premium Deities
                 </button>
               )}
             </div>
@@ -941,7 +939,7 @@ function App() {
           <div className="chat-header">
             {/* Left: back */}
             <button className="back-button" onClick={goBackToSelection}>
-              ← Back
+              Back
             </button>
 
             {/* Center: deity identity */}
@@ -973,8 +971,8 @@ function App() {
               )}
 
               {messages.length > 0 && (
-                <button className="clear-chat-button" onClick={clearChat} title="Clear chat">
-                  🧹
+                <button className="clear-chat-button" onClick={clearChat}>
+                  Clear
                 </button>
               )}
             </div>
@@ -1062,7 +1060,6 @@ function App() {
                 ) : (
                   <>
                     Send Prayer
-                    <span className="prayer-icon">🙏</span>
                   </>
                 )}
               </button>
@@ -1084,7 +1081,6 @@ function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
     <div className="premium-modal-overlay">
       <div className="premium-modal">
         <div className="premium-header">
-          <div className="premium-icon">🌟</div>
           <h2>Divine Messages Exhausted</h2>
           <button className="close-modal" onClick={onClose}>×</button>
         </div>
