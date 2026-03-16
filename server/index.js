@@ -545,7 +545,7 @@ app.post('/api/sade-sati', aiLimiter, async (req, res) => {
       model: 'gpt-4o-mini',
       messages: [{
         role: 'system',
-        content: `You are an expert Vedic astrologer specializing in Saturn transits (Shani). Saturn is currently in Pisces (Meen Rashi) as of early 2025. Sade Sati occurs when Saturn is in the same sign as the Moon (peak), or the sign immediately before (rising phase) or after (setting phase) the Moon sign — a 7.5-year period. Dhaiya (Kantaka Shani) occurs when Saturn is in the 4th or 8th house from the natal Moon sign. Calculate the person's current Saturn relationship and give detailed, compassionate guidance. ${langInstruction}`
+        content: `You are an expert Vedic astrologer specializing in Saturn transits (Shani). Saturn is currently in Aries (Mesh Rashi) as of 2026, having transited from Pisces in late March 2025. Sade Sati occurs when Saturn is in the same sign as the Moon (peak), or the sign immediately before (rising phase) or after (setting phase) the Moon sign — a 7.5-year period. Dhaiya (Kantaka Shani) occurs when Saturn is in the 4th or 8th house from the natal Moon sign. Calculate the person's current Saturn relationship and give detailed, compassionate guidance. ${langInstruction}`
       }, {
         role: 'user',
         content: `Generate a Sade Sati and Dhaiya report for:

@@ -49,13 +49,22 @@ function groupByMonth(festivals) {
   );
 }
 
+function isPast(dateStr) {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  return new Date(dateStr + 'T00:00:00') < now;
+}
+
 function FestivalPage({ navigateTo }) {
-  const [filter, setFilter] = useState('all');
-  const [lang, setLang]     = useState('english');
+  const [filter, setFilter]     = useState('all');
+  const [lang, setLang]         = useState('english');
+  const [hidePast, setHidePast] = useState(true);
 
   const filtered = useMemo(() =>
-    FESTIVALS.filter(f => filter === 'all' || f.type === filter)
-  , [filter]);
+    FESTIVALS.filter(f =>
+      (filter === 'all' || f.type === filter) &&
+      (!hidePast || !isPast(f.date))
+    )
+  , [filter, hidePast]);
 
   const grouped = useMemo(() => groupByMonth(filtered), [filtered]);
 
@@ -90,6 +99,12 @@ function FestivalPage({ navigateTo }) {
             {tab.label}
           </button>
         ))}
+        <button
+          className={`festival-filter-btn festival-filter-past ${!hidePast ? 'active' : ''}`}
+          onClick={() => setHidePast(v => !v)}
+        >
+          {hidePast ? '📅 Show Past' : '🙈 Hide Past'}
+        </button>
       </div>
 
       {/* Calendar */}
