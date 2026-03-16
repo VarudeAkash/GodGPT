@@ -448,7 +448,7 @@ export const FESTIVALS = [
     type: 'festival',
     deity: 'Krishna',
     icon: '🪔',
-    description: 'Second day of Diwali — commemorates Krishna's victory over demon Narakasura.',
+    description: "Second day of Diwali — commemorates Krishna's victory over demon Narakasura.",
   },
   {
     date: '2025-10-31',
