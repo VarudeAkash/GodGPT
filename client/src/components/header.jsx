@@ -2,162 +2,149 @@ import { useState } from 'react';
 import './Header.css';
 import Login from './Login.jsx';
 
-function Header({ user, navigateTo }) {
+const NAV_ITEMS = [
+  { label: 'Home',    screen: 'welcome' },
+  { label: 'Today',   screen: 'panchang' },
+  { label: 'Chat',    screen: 'deity-select' },
+  { label: 'Kundali', screen: 'kundali' },
+  { label: 'Upay',    screen: 'divya-upay' },
+  { label: 'Blog',    screen: 'blog' },
+];
+
+const MORE_ITEMS = [
+  { label: 'Kundali Milan',   screen: 'kundali-milan', icon: '💑' },
+  { label: 'Muhurat Finder',  screen: 'muhurat',       icon: '🕐' },
+  { label: 'Sade Sati',       screen: 'sade-sati',     icon: '🪐' },
+  { label: 'Varshphal',       screen: 'varshphal',     icon: '📅' },
+  { label: 'Festivals',       screen: 'festivals',     icon: '🪔' },
+];
+
+const BOTTOM_TABS = [
+  { label: 'Home',    screen: 'welcome',      icon: '⌂' },
+  { label: 'Today',   screen: 'panchang',     icon: '◉' },
+  { label: 'Chat',    screen: 'deity-select', icon: '✦' },
+  { label: 'Kundali', screen: 'kundali',      icon: '✧' },
+  { label: 'Menu',    screen: null,           icon: '···' },
+];
+
+function Header({ user, navigateTo, currentScreen }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [logoError, setLogoError] = useState(false);
-  const [showMore, setShowMore] = useState(false);
+  const [logoError, setLogoError]   = useState(false);
+  const [showMore, setShowMore]     = useState(false);
 
   const nav = (screen) => {
+    if (!screen) return;
     if (navigateTo) navigateTo(screen);
     else window.location.hash = screen;
     setIsMenuOpen(false);
+    setShowMore(false);
   };
 
   return (
-    <header className="header">
-      <div className="header-background"></div>
-      <div className="header-container">
-        {/* Left section */}
-        <div className="left-section">
-          <button
-            className={`mobile-menu-btn ${isMenuOpen ? 'open' : ''}`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <span className="menu-dot"></span>
-            <span className="menu-dot"></span>
-            <span className="menu-dot"></span>
-          </button>
+    <>
+      {/* ── Desktop: floating pill ────────────────────────────────── */}
+      <header className="header-pill">
+        {/* Logo mark */}
+        <button className="pill-logo" onClick={() => nav('welcome')}>
+          <div className="pill-logo-img">
+            {!logoError
+              ? <img src="/logo.png" alt="Astravedam" onError={() => setLogoError(true)} />
+              : <span>A</span>}
+          </div>
+          <span className="pill-logo-name">Astravedam</span>
+        </button>
 
-          <a className="logo" href="#welcome" style={{ textDecoration: 'none' }} onClick={e => { e.preventDefault(); nav('welcome'); }}>
-            <div className="logo-image">
-              {!logoError ? (
-                <img src="/logo.png" alt="Astravedam" onError={() => setLogoError(true)} />
-              ) : (
-                <div className="logo-fallback">A</div>
-              )}
-            </div>
-            <div className="logo-text">
-              <span className="logo-main">Astravedam</span>
-            </div>
-          </a>
-        </div>
+        <div className="pill-divider" />
 
-        {/* Desktop Navigation */}
-        <nav className="desktop-nav">
-          <button className="nav-link nav-btn" onClick={() => nav('welcome')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Home</span>
-          </button>
-          <button className="nav-link nav-btn" onClick={() => nav('panchang')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Today</span>
-          </button>
-          <button className="nav-link nav-btn" onClick={() => nav('deity-select')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Chat</span>
-          </button>
-          <button className="nav-link nav-btn" onClick={() => nav('kundali')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Kundali</span>
-          </button>
-          <button className="nav-link nav-btn" onClick={() => nav('divya-upay')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Upay</span>
-          </button>
-          <button className="nav-link nav-btn" onClick={() => nav('blog')}>
-            <span className="nav-glow"></span>
-            <span className="nav-text">Blog</span>
-          </button>
-          <div className="nav-more-wrapper">
-            <button className="nav-link nav-btn nav-more-btn" onClick={() => setShowMore(v => !v)}>
-              <span className="nav-glow"></span>
-              <span className="nav-text">More {showMore ? '▴' : '▾'}</span>
+        {/* Nav links */}
+        <nav className="pill-nav">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.screen}
+              className={`pill-nav-btn${currentScreen === item.screen ? ' active' : ''}`}
+              onClick={() => nav(item.screen)}
+            >
+              {item.label}
+            </button>
+          ))}
+
+          {/* More dropdown */}
+          <div className="pill-more-wrap">
+            <button
+              className="pill-nav-btn pill-more-btn"
+              onClick={() => setShowMore(v => !v)}
+            >
+              More {showMore ? '▴' : '▾'}
             </button>
             {showMore && (
               <>
-                <div className="nav-dropdown-backdrop" onClick={() => setShowMore(false)} />
-                <div className="nav-dropdown">
-                  <button className="nav-dropdown-item" onClick={() => { nav('kundali-milan'); setShowMore(false); }}>💑 Kundali Milan</button>
-                  <button className="nav-dropdown-item" onClick={() => { nav('muhurat'); setShowMore(false); }}>🕐 Muhurat Finder</button>
-                  <button className="nav-dropdown-item" onClick={() => { nav('sade-sati'); setShowMore(false); }}>🪐 Sade Sati</button>
-                  <button className="nav-dropdown-item" onClick={() => { nav('varshphal'); setShowMore(false); }}>📅 Varshphal</button>
-                  <button className="nav-dropdown-item" onClick={() => { nav('festivals'); setShowMore(false); }}>🪔 Festivals</button>
+                <div className="pill-dropdown-backdrop" onClick={() => setShowMore(false)} />
+                <div className="pill-dropdown">
+                  {MORE_ITEMS.map(item => (
+                    <button
+                      key={item.screen}
+                      className="pill-dropdown-item"
+                      onClick={() => nav(item.screen)}
+                    >
+                      {item.icon} {item.label}
+                    </button>
+                  ))}
                 </div>
               </>
             )}
           </div>
-          <Login user={user} />
         </nav>
 
-        {/* Overlay */}
-        {isMenuOpen && (
-          <div
-            className={`mobile-overlay ${isMenuOpen ? 'visible' : ''}`}
-            onClick={() => setIsMenuOpen(false)}
-          ></div>
-        )}
-      </div>
+        <div className="pill-divider" />
 
-      {/* Mobile Navigation */}
-      <div className={`mobile-nav ${isMenuOpen ? 'open' : ''}`}>
-        <div className="mobile-nav-background"></div>
-        <div className="mobile-nav-content">
-          <div className="mobile-nav-header">
-            <div className="logo">
-              <div className="logo-image">
-                {!logoError ? (
-                  <img src="/logo.png" alt="Astravedam" onError={() => setLogoError(true)} />
-                ) : (
-                  <div className="logo-fallback">A</div>
-                )}
-              </div>
-              <div className="logo-text">
-                <span className="logo-main">Astravedam</span>
-              </div>
-            </div>
-          </div>
+        {/* Login */}
+        <div className="pill-login">
+          <Login user={user} />
+        </div>
+      </header>
 
-          <div className="mobile-nav-links">
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('welcome')}>
-              <span className="nav-text">Home</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('panchang')}>
-              <span className="nav-text">Today's Panchang</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('deity-select')}>
-              <span className="nav-text">Chat with Deities</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('kundali')}>
-              <span className="nav-text">Kundali Reading</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('divya-upay')}>
-              <span className="nav-text">Divya Upay</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('kundali-milan')}>
-              <span className="nav-text">Kundali Milan</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('muhurat')}>
-              <span className="nav-text">Muhurat Finder</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('sade-sati')}>
-              <span className="nav-text">Sade Sati Report</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('varshphal')}>
-              <span className="nav-text">Varshphal Reading</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('festivals')}>
-              <span className="nav-text">Festivals & Fasting</span>
-            </button>
-            <button className="nav-link mobile-nav-btn" onClick={() => nav('blog')}>
-              <span className="nav-text">Blog</span>
-            </button>
-            <div className="mobile-login-section">
-              <Login user={user} />
+      {/* ── Mobile: bottom tab bar ────────────────────────────────── */}
+      <nav className="bottom-nav">
+        {BOTTOM_TABS.map(tab => (
+          <button
+            key={tab.label}
+            className={`bottom-tab${currentScreen === tab.screen ? ' active' : ''}`}
+            onClick={() => tab.screen ? nav(tab.screen) : setIsMenuOpen(true)}
+          >
+            <span className="bottom-tab-icon">{tab.icon}</span>
+            <span className="bottom-tab-label">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ── Mobile: full-screen overlay menu ─────────────────────── */}
+      {isMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setIsMenuOpen(false)} />
+      )}
+      <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
+        <div className="mobile-menu-header">
+          <div className="mobile-menu-logo">
+            <div className="pill-logo-img">
+              {!logoError
+                ? <img src="/logo.png" alt="Astravedam" onError={() => setLogoError(true)} />
+                : <span>A</span>}
             </div>
+            <span className="pill-logo-name">Astravedam</span>
           </div>
+          <button className="mobile-menu-close" onClick={() => setIsMenuOpen(false)}>✕</button>
+        </div>
+        <div className="mobile-menu-links">
+          {[...NAV_ITEMS, ...MORE_ITEMS].map(item => (
+            <button key={item.screen} className="mobile-menu-item" onClick={() => nav(item.screen)}>
+              {item.icon && <span>{item.icon}</span>} {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="mobile-menu-login">
+          <Login user={user} />
         </div>
       </div>
-    </header>
+    </>
   );
 }
 

@@ -732,7 +732,7 @@ function App() {
 
   return (
     <>
-    <Header user={user} navigateTo={navigateTo} />
+    <Header user={user} navigateTo={navigateTo} currentScreen={currentScreen} />
     <div className="main-content">
       <BuyMoreModal
         isOpen={showBuyMoreModal}
