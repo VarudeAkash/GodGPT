@@ -22,8 +22,13 @@ function KundaliChart({ ascendant }) {
     rashi: RASHI_LIST[(ascIdx + i) % 12].split(' ')[0],
   }));
 
+  // North Indian chart layout (clockwise from Lagna at top-left):
+  //  1   12   11   10
+  //  2  [center]    9
+  //  3  [center]    8
+  //  4    5    6    7
   const positions = [
-    [1,1],[0,2],[0,3],[1,3],[2,3],[3,3],[3,2],[3,1],[3,0],[2,0],[1,0],[0,1],
+    [0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],
   ];
 
   const cells = Array(4).fill(null).map(() => Array(4).fill(null));
@@ -202,7 +207,7 @@ function KundaliPage({ user }) {
 
           <div className="kundali-chart-section">
             <KundaliChart ascendant={ascendant} />
-            <p className="kundali-chart-note">North Indian style chart</p>
+            <p className="kundali-chart-note">North Indian style · Approximate lagna</p>
           </div>
         </div>
       )}
