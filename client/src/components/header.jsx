@@ -97,9 +97,15 @@ function Header({ user, navigateTo, currentScreen }) {
 
         <div className="pill-divider" />
 
-        {/* Login */}
+        {/* Login / Profile */}
         <div className="pill-login">
-          <Login user={user} />
+          {user
+            ? <button className="pill-profile-btn" onClick={() => nav('profile')}>
+                <img src={user.photoURL} alt={user.displayName} className="pill-avatar" />
+                <span className="pill-profile-name">{user.displayName?.split(' ')[0]}</span>
+              </button>
+            : <Login user={user} />
+          }
         </div>
       </header>
 

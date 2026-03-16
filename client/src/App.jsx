@@ -15,6 +15,7 @@ import MuhuratPage from './components/MuhuratPage.jsx';
 import SadeSatiPage from './components/SadeSatiPage.jsx';
 import VarshphalPage from './components/VarshphalPage.jsx';
 import FestivalPage from './components/FestivalPage.jsx';
+import ProfilePage from './components/ProfilePage.jsx';
 import './firebase.js';
 import firebase from 'firebase/compat/app';
 import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
@@ -88,6 +89,7 @@ function App() {
     else if (hash === 'sade-sati')     { setCurrentScreen('sade-sati'); }
     else if (hash === 'varshphal')     { setCurrentScreen('varshphal'); }
     else if (hash === 'festivals')     { setCurrentScreen('festivals'); }
+    else if (hash === 'profile')       { setCurrentScreen('profile'); }
     else if (!hash || hash === 'welcome') { setCurrentScreen('welcome'); }
 
     // Handle browser back/forward
@@ -115,6 +117,7 @@ function App() {
       else if (newHash === 'sade-sati')     { setCurrentScreen('sade-sati'); }
       else if (newHash === 'varshphal')     { setCurrentScreen('varshphal'); }
       else if (newHash === 'festivals')     { setCurrentScreen('festivals'); }
+      else if (newHash === 'profile')       { setCurrentScreen('profile'); }
       else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
         setCurrentScreen('welcome');
         setSelectedDeity(null);
@@ -908,6 +911,7 @@ function App() {
       {currentScreen === 'sade-sati'     && <SadeSatiPage user={user} />}
       {currentScreen === 'varshphal'     && <VarshphalPage user={user} />}
       {currentScreen === 'festivals'     && <FestivalPage navigateTo={navigateTo} />}
+      {currentScreen === 'profile'      && <ProfilePage user={user} navigateTo={navigateTo} />}
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (
