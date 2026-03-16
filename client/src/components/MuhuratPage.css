@@ -1,0 +1,197 @@
+.muhurat-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 3rem;
+  min-height: 100vh;
+}
+
+.muhurat-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.muhurat-hero h1 {
+  font-size: 2.2rem;
+  color: #E6D3B3;
+  margin: 0 0 0.6rem;
+}
+
+.muhurat-hero p {
+  color: rgba(212,193,165,0.7);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto 1rem;
+  line-height: 1.7;
+}
+
+.muhurat-lang {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.muhurat-lang button {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(212,193,165,0.7);
+  border-radius: 8px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.muhurat-lang button.active {
+  background: rgba(139,0,0,0.3);
+  border-color: rgba(139,0,0,0.6);
+  color: #E6D3B3;
+}
+
+.muhurat-form-section {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.muhurat-form {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.muhurat-form h3 {
+  color: #E6D3B3;
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(212,193,165,0.6);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: #E6D3B3;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: rgba(139,0,0,0.6);
+}
+
+.form-group input::placeholder {
+  color: rgba(212,193,165,0.3);
+}
+
+.form-group select option {
+  background: #1a0a06;
+  color: #E6D3B3;
+}
+
+.form-error {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.muhurat-submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #8B0000, #4B0082);
+  color: #FFE4C4;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 0.5rem;
+}
+
+.muhurat-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.muhurat-submit-btn:hover:not(:disabled) { opacity: 0.88; }
+
+.muhurat-price-note {
+  color: rgba(212,193,165,0.5);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+.muhurat-paid-note {
+  color: rgba(201,169,110,0.7);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+/* Result */
+.muhurat-result {
+  max-width: 800px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.25);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.muhurat-result h3 {
+  color: #c9a96e;
+  font-size: 1.2rem;
+  margin: 0 0 1.5rem;
+}
+
+.muhurat-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: rgba(212,193,165,0.7);
+  font-size: 0.95rem;
+}
+
+.muhurat-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(139,0,0,0.2);
+  border-top-color: #8B0000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.muhurat-result-text p {
+  color: #D4C1A5;
+  line-height: 1.8;
+  margin: 0 0 0.8rem;
+  font-size: 0.97rem;
+}
+
+@media (max-width: 768px) {
+  .form-row { grid-template-columns: 1fr; }
+}

@@ -5,6 +5,7 @@ import Login from './Login.jsx';
 function Header({ user, navigateTo }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   const nav = (screen) => {
     if (navigateTo) navigateTo(screen);
@@ -67,6 +68,21 @@ function Header({ user, navigateTo }) {
             <span className="nav-glow"></span>
             <span className="nav-text">Blog</span>
           </button>
+          <div className="nav-more-wrapper" onMouseEnter={() => setShowMore(true)} onMouseLeave={() => setShowMore(false)}>
+            <button className="nav-link nav-btn nav-more-btn">
+              <span className="nav-glow"></span>
+              <span className="nav-text">More ▾</span>
+            </button>
+            {showMore && (
+              <div className="nav-dropdown">
+                <button className="nav-dropdown-item" onClick={() => { nav('kundali-milan'); setShowMore(false); }}>💑 Kundali Milan</button>
+                <button className="nav-dropdown-item" onClick={() => { nav('muhurat'); setShowMore(false); }}>🕐 Muhurat Finder</button>
+                <button className="nav-dropdown-item" onClick={() => { nav('sade-sati'); setShowMore(false); }}>🪐 Sade Sati</button>
+                <button className="nav-dropdown-item" onClick={() => { nav('varshphal'); setShowMore(false); }}>📅 Varshphal</button>
+                <button className="nav-dropdown-item" onClick={() => { nav('festivals'); setShowMore(false); }}>🪔 Festivals</button>
+              </div>
+            )}
+          </div>
           <Login user={user} />
         </nav>
 
@@ -113,6 +129,21 @@ function Header({ user, navigateTo }) {
             </button>
             <button className="nav-link mobile-nav-btn" onClick={() => nav('divya-upay')}>
               <span className="nav-text">Divya Upay</span>
+            </button>
+            <button className="nav-link mobile-nav-btn" onClick={() => nav('kundali-milan')}>
+              <span className="nav-text">Kundali Milan</span>
+            </button>
+            <button className="nav-link mobile-nav-btn" onClick={() => nav('muhurat')}>
+              <span className="nav-text">Muhurat Finder</span>
+            </button>
+            <button className="nav-link mobile-nav-btn" onClick={() => nav('sade-sati')}>
+              <span className="nav-text">Sade Sati Report</span>
+            </button>
+            <button className="nav-link mobile-nav-btn" onClick={() => nav('varshphal')}>
+              <span className="nav-text">Varshphal Reading</span>
+            </button>
+            <button className="nav-link mobile-nav-btn" onClick={() => nav('festivals')}>
+              <span className="nav-text">Festivals & Fasting</span>
             </button>
             <button className="nav-link mobile-nav-btn" onClick={() => nav('blog')}>
               <span className="nav-text">Blog</span>

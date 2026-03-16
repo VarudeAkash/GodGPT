@@ -10,6 +10,11 @@ import PanchangPage from './components/PanchangPage.jsx';
 import KundaliPage from './components/KundaliPage.jsx';
 import DivyaUpayPage from './components/DivyaUpayPage.jsx';
 import BlogPage from './components/BlogPage.jsx';
+import KundaliMilanPage from './components/KundaliMilanPage.jsx';
+import MuhuratPage from './components/MuhuratPage.jsx';
+import SadeSatiPage from './components/SadeSatiPage.jsx';
+import VarshphalPage from './components/VarshphalPage.jsx';
+import FestivalPage from './components/FestivalPage.jsx';
 import './firebase.js';
 import firebase from 'firebase/compat/app';
 import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
@@ -76,8 +81,13 @@ function App() {
     else if (hash === 'privacy')      { setCurrentScreen('privacy'); }
     else if (hash === 'panchang')     { setCurrentScreen('panchang'); }
     else if (hash === 'kundali')      { setCurrentScreen('kundali'); }
-    else if (hash === 'divya-upay')   { setCurrentScreen('divya-upay'); }
-    else if (hash === 'blog')         { setCurrentScreen('blog'); }
+    else if (hash === 'divya-upay')    { setCurrentScreen('divya-upay'); }
+    else if (hash === 'blog')          { setCurrentScreen('blog'); }
+    else if (hash === 'kundali-milan') { setCurrentScreen('kundali-milan'); }
+    else if (hash === 'muhurat')       { setCurrentScreen('muhurat'); }
+    else if (hash === 'sade-sati')     { setCurrentScreen('sade-sati'); }
+    else if (hash === 'varshphal')     { setCurrentScreen('varshphal'); }
+    else if (hash === 'festivals')     { setCurrentScreen('festivals'); }
     else if (!hash || hash === 'welcome') { setCurrentScreen('welcome'); }
 
     // Handle browser back/forward
@@ -98,8 +108,13 @@ function App() {
       else if (newHash === 'privacy')    { setCurrentScreen('privacy'); }
       else if (newHash === 'panchang')   { setCurrentScreen('panchang'); }
       else if (newHash === 'kundali')    { setCurrentScreen('kundali'); }
-      else if (newHash === 'divya-upay') { setCurrentScreen('divya-upay'); }
-      else if (newHash === 'blog')       { setCurrentScreen('blog'); }
+      else if (newHash === 'divya-upay')    { setCurrentScreen('divya-upay'); }
+      else if (newHash === 'blog')          { setCurrentScreen('blog'); }
+      else if (newHash === 'kundali-milan') { setCurrentScreen('kundali-milan'); }
+      else if (newHash === 'muhurat')       { setCurrentScreen('muhurat'); }
+      else if (newHash === 'sade-sati')     { setCurrentScreen('sade-sati'); }
+      else if (newHash === 'varshphal')     { setCurrentScreen('varshphal'); }
+      else if (newHash === 'festivals')     { setCurrentScreen('festivals'); }
       else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
         setCurrentScreen('welcome');
         setSelectedDeity(null);
@@ -847,8 +862,13 @@ function App() {
       {currentScreen === 'privacy'    && <Privacy />}
       {currentScreen === 'panchang'   && <PanchangPage user={user} />}
       {currentScreen === 'kundali'    && <KundaliPage user={user} API_URL={API_URL} />}
-      {currentScreen === 'divya-upay' && <DivyaUpayPage user={user} />}
-      {currentScreen === 'blog'       && <BlogPage navigateTo={navigateTo} />}
+      {currentScreen === 'divya-upay'    && <DivyaUpayPage user={user} />}
+      {currentScreen === 'blog'          && <BlogPage navigateTo={navigateTo} />}
+      {currentScreen === 'kundali-milan' && <KundaliMilanPage user={user} />}
+      {currentScreen === 'muhurat'       && <MuhuratPage user={user} />}
+      {currentScreen === 'sade-sati'     && <SadeSatiPage user={user} />}
+      {currentScreen === 'varshphal'     && <VarshphalPage user={user} />}
+      {currentScreen === 'festivals'     && <FestivalPage navigateTo={navigateTo} />}
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (

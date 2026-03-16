@@ -338,6 +338,295 @@ Cover: likely ascendant sign and personality, Moon sign and emotional nature, ke
   }
 });
 
+// ── Kundali Milan ────────────────────────────────────────────────────────────
+app.post('/api/create-milan-order', async (_req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 9900,
+      currency: 'INR',
+      receipt: `milan_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Kundali Milan', price: '₹99' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Milan order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
+app.post('/api/kundali-milan', async (req, res) => {
+  const { person1, person2, language = 'english' } = req.body;
+  if (!person1 || !person2) return res.status(400).json({ error: 'Both persons data are required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are an expert Vedic astrologer specializing in Ashtakoot Kundali matching (Milan). Analyze compatibility based on the eight koots: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi. Give a total score out of 36. Provide detailed analysis for each koot, overall compatibility strengths and challenges, and specific remedies if needed. Speak with warmth and precision. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Perform Ashtakoot Kundali Milan for these two persons:
+
+Person 1:
+Name: ${person1.name}
+Date of Birth: ${person1.dob}
+Time of Birth: ${person1.tob || 'unknown'}
+Place of Birth: ${person1.pob}
+
+Person 2:
+Name: ${person2.name}
+Date of Birth: ${person2.dob}
+Time of Birth: ${person2.tob || 'unknown'}
+Place of Birth: ${person2.pob}
+
+Provide: Ashtakoot scores for each koot, total out of 36, overall compatibility analysis, key strengths, potential challenges, and any recommended remedies. Be specific and insightful, not generic.`
+      }],
+      max_tokens: 1000,
+      temperature: 0.8,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Kundali Milan error:', error);
+    res.status(500).json({ error: 'Could not generate compatibility reading' });
+  }
+});
+
+// ── Muhurat Finder ────────────────────────────────────────────────────────────
+app.post('/api/create-muhurat-order', async (_req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 4900,
+      currency: 'INR',
+      receipt: `muhurat_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Muhurat Finder', price: '₹49' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Muhurat order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
+app.post('/api/muhurat', async (req, res) => {
+  const { eventType, date, location, language = 'english' } = req.body;
+  if (!eventType || !date || !location) return res.status(400).json({ error: 'Event type, date, and location are required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are an expert in Vedic muhurta shastra — the science of auspicious timing. Analyze dates and give precise guidance on auspicious time windows based on tithi, nakshatra, vara (weekday), yoga, and karana. Speak with authority and warmth. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Find the Muhurat for a ${eventType} on ${date} at location: ${location}.
+
+Analyze this date and provide:
+1. Tithi (lunar day) and its auspiciousness for this event
+2. Nakshatra (lunar mansion) and its suitability
+3. Vara (weekday) analysis
+4. Yoga and Karana details
+5. Specific auspicious time windows (morning/afternoon/evening) with ratings
+6. What to avoid on this day
+7. Specific mantras or rituals to perform before the event
+
+Be specific and practical. If the date is not ideal, suggest what can be done to improve auspiciousness.`
+      }],
+      max_tokens: 800,
+      temperature: 0.8,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Muhurat error:', error);
+    res.status(500).json({ error: 'Could not generate muhurat reading' });
+  }
+});
+
+// ── Sade Sati ─────────────────────────────────────────────────────────────────
+app.post('/api/create-sadesati-order', async (_req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 4900,
+      currency: 'INR',
+      receipt: `sadesati_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Sade Sati Report', price: '₹49' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Sade Sati order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
+app.post('/api/sade-sati', async (req, res) => {
+  const { name, moonSign, dob, language = 'english' } = req.body;
+  if (!name || !moonSign) return res.status(400).json({ error: 'Name and moon sign are required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are an expert Vedic astrologer specializing in Saturn transits (Shani). Saturn is currently in Pisces (Meen Rashi) as of early 2025. Sade Sati occurs when Saturn is in the same sign as the Moon (peak), or the sign immediately before (rising phase) or after (setting phase) the Moon sign — a 7.5-year period. Dhaiya (Kantaka Shani) occurs when Saturn is in the 4th or 8th house from the natal Moon sign. Calculate the person's current Saturn relationship and give detailed, compassionate guidance. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Generate a Sade Sati and Dhaiya report for:
+Name: ${name}
+Moon Sign (Rashi): ${moonSign}
+Date of Birth: ${dob || 'not provided'}
+
+Saturn is currently in Pisces (Meen). Please provide:
+1. Whether this person is currently in Sade Sati or Dhaiya (or neither)
+2. If in Sade Sati: which phase (rising/peak/setting) and approximate duration remaining
+3. If in Dhaiya: which type (4th or 8th) and duration remaining
+4. Effects on different life areas: career, finances, health, relationships, mental state
+5. Intensity level and what to expect
+6. Specific remedies: mantras (especially Shani mantras), donations, fasting days, gemstones, behavioral practices
+7. Silver lining and growth opportunities this period offers
+
+Be specific, honest, and compassionate — not fear-mongering.`
+      }],
+      max_tokens: 800,
+      temperature: 0.8,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Sade Sati error:', error);
+    res.status(500).json({ error: 'Could not generate Sade Sati report' });
+  }
+});
+
+// ── Varshphal ─────────────────────────────────────────────────────────────────
+app.post('/api/create-varshphal-order', async (_req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 7900,
+      currency: 'INR',
+      receipt: `varshphal_${Date.now()}`,
+      payment_capture: 1,
+      notes: { product: 'Varshphal Annual Reading', price: '₹79' }
+    });
+    res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
+  } catch (error) {
+    console.error('Varshphal order error:', error);
+    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+  }
+});
+
+app.post('/api/varshphal', async (req, res) => {
+  const { name, dob, tob, pob, year, language = 'english' } = req.body;
+  if (!name || !dob || !pob) return res.status(400).json({ error: 'Name, date of birth, and place of birth are required' });
+
+  try {
+    const { OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const langInstruction = language === 'hindi'
+      ? 'Respond entirely in Hindi using Devanagari script.'
+      : 'Respond in English.';
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: `You are an expert Vedic astrologer specializing in Varshphal (Solar Return / Annual Charts). You analyze the chart cast at the exact moment the Sun returns to its natal degree in a given year. Give comprehensive, specific annual forecasts based on the Varshphal lord (Varshesha), key planetary positions, and dasha influences. Speak with warmth and precision. ${langInstruction}`
+      }, {
+        role: 'user',
+        content: `Generate a Varshphal (Annual Reading) for:
+Name: ${name}
+Date of Birth: ${dob}
+Time of Birth: ${tob || 'unknown'}
+Place of Birth: ${pob}
+Year for Reading: ${year || new Date().getFullYear()}
+
+Provide a comprehensive year-ahead reading covering:
+1. Key themes and overall energy for this year
+2. Career and professional life — best months, opportunities, cautions
+3. Finance and wealth — periods of gains and expenditure
+4. Health and vitality — areas to watch, protective periods
+5. Relationships and family — significant developments
+6. 3-4 best months of the year for important actions
+7. 2-3 challenging months requiring extra care
+8. Practical monthly guidance summary
+9. Key remedies for challenges this year
+
+Be specific, grounded, and actionable — not vague or generic.`
+      }],
+      max_tokens: 800,
+      temperature: 0.8,
+      stream: true,
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    });
+    for await (const chunk of stream) {
+      res.write(chunk.choices[0]?.delta?.content || '');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Varshphal error:', error);
+    res.status(500).json({ error: 'Could not generate annual reading' });
+  }
+});
+
 // ── Divya Upay ───────────────────────────────────────────────────────────────
 app.post('/api/divya-upay', async (req, res) => {
   const { situation, category, sign, favoriteDeity = 'ganesha', language = 'english' } = req.body;
