@@ -68,19 +68,22 @@ function Header({ user, navigateTo }) {
             <span className="nav-glow"></span>
             <span className="nav-text">Blog</span>
           </button>
-          <div className="nav-more-wrapper" onMouseEnter={() => setShowMore(true)} onMouseLeave={() => setShowMore(false)}>
-            <button className="nav-link nav-btn nav-more-btn">
+          <div className="nav-more-wrapper">
+            <button className="nav-link nav-btn nav-more-btn" onClick={() => setShowMore(v => !v)}>
               <span className="nav-glow"></span>
-              <span className="nav-text">More ▾</span>
+              <span className="nav-text">More {showMore ? '▴' : '▾'}</span>
             </button>
             {showMore && (
-              <div className="nav-dropdown">
-                <button className="nav-dropdown-item" onClick={() => { nav('kundali-milan'); setShowMore(false); }}>💑 Kundali Milan</button>
-                <button className="nav-dropdown-item" onClick={() => { nav('muhurat'); setShowMore(false); }}>🕐 Muhurat Finder</button>
-                <button className="nav-dropdown-item" onClick={() => { nav('sade-sati'); setShowMore(false); }}>🪐 Sade Sati</button>
-                <button className="nav-dropdown-item" onClick={() => { nav('varshphal'); setShowMore(false); }}>📅 Varshphal</button>
-                <button className="nav-dropdown-item" onClick={() => { nav('festivals'); setShowMore(false); }}>🪔 Festivals</button>
-              </div>
+              <>
+                <div className="nav-dropdown-backdrop" onClick={() => setShowMore(false)} />
+                <div className="nav-dropdown">
+                  <button className="nav-dropdown-item" onClick={() => { nav('kundali-milan'); setShowMore(false); }}>💑 Kundali Milan</button>
+                  <button className="nav-dropdown-item" onClick={() => { nav('muhurat'); setShowMore(false); }}>🕐 Muhurat Finder</button>
+                  <button className="nav-dropdown-item" onClick={() => { nav('sade-sati'); setShowMore(false); }}>🪐 Sade Sati</button>
+                  <button className="nav-dropdown-item" onClick={() => { nav('varshphal'); setShowMore(false); }}>📅 Varshphal</button>
+                  <button className="nav-dropdown-item" onClick={() => { nav('festivals'); setShowMore(false); }}>🪔 Festivals</button>
+                </div>
+              </>
             )}
           </div>
           <Login user={user} />

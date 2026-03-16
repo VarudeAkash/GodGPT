@@ -186,7 +186,7 @@
   min-width: 180px;
   backdrop-filter: blur(20px);
   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-  z-index: 100;
+  z-index: 200;
 }
 
 .nav-dropdown-item {
@@ -207,6 +207,12 @@
 .nav-dropdown-item:hover {
   background: rgba(139,0,0,0.2);
   color: #fff;
+}
+
+.nav-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
 }
 
 /* Button nav links */

@@ -837,6 +837,45 @@ function App() {
                 <span className="feature-card-cta">Read Articles →</span>
               </div>
             </div>
+
+            {/* Third row — 5 more features */}
+            <div className="features-grid-more">
+              <div className="feature-card feature-card--milan" onClick={() => navigateTo('kundali-milan')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">💑</div>
+                <h4>Kundali Milan</h4>
+                <p>Ashtakoot compatibility analysis for marriage matching</p>
+                <span className="feature-card-cta">Match Now →</span>
+              </div>
+              <div className="feature-card feature-card--muhurat" onClick={() => navigateTo('muhurat')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">🕐</div>
+                <h4>Muhurat Finder</h4>
+                <p>Auspicious timing for marriage, business, travel and more</p>
+                <span className="feature-card-cta">Find Muhurat →</span>
+              </div>
+              <div className="feature-card feature-card--sadesati" onClick={() => navigateTo('sade-sati')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">🪐</div>
+                <h4>Sade Sati Report</h4>
+                <p>Saturn's 7.5-year transit and its impact on your moon sign</p>
+                <span className="feature-card-cta">Check Report →</span>
+              </div>
+              <div className="feature-card feature-card--varshphal" onClick={() => navigateTo('varshphal')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">📅</div>
+                <h4>Varshphal</h4>
+                <p>Annual solar return reading — your year ahead, month by month</p>
+                <span className="feature-card-cta">View Reading →</span>
+              </div>
+              <div className="feature-card feature-card--festivals" onClick={() => navigateTo('festivals')}>
+                <div className="feature-card-glow"></div>
+                <div className="feature-icon">🪔</div>
+                <h4>Festival Calendar</h4>
+                <p>Hindu festivals, fasting days and ekadashis for 2025–2026</p>
+                <span className="feature-card-cta">View Calendar →</span>
+              </div>
+            </div>
           </div>
 
           {/* Testimonials — static strip */}
