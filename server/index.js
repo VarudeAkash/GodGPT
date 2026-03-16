@@ -1,6 +1,7 @@
 const express = require('express');
 const Razorpay = require('razorpay');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +22,38 @@ if (process.env.NODE_ENV !== 'production') {
 }
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
+
+// ── Rate limiters ──────────────────────────────────────────────────────────
+
+// Global: 120 requests / 15 min per IP (blocks basic scanners)
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+}));
+
+// Chat: 30 messages / hour per IP  (free Krishna chat abuse)
+const chatLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  message: { error: 'Chat limit reached. Please try again in an hour.' },
+});
+
+// AI generation endpoints: 10 calls / hour per IP
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Generation limit reached. Please try again in an hour.' },
+});
+
+// Order creation: 20 / hour per IP (prevent order spam)
+const orderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many payment requests. Please try again later.' },
+});
 
 // ↓ ADD THIS RAZORPAY INITIALIZATION ↓
 const razorpay = new Razorpay({
@@ -63,7 +96,7 @@ You speak with warmth and a kind of intelligence that doesn't take itself too se
 
 
 // Create Payment Order
-app.post('/api/create-order', async (req, res) => {
+app.post('/api/create-order', orderLimiter, async (req, res) => {
   try {
     const options = {
       amount: 1500, // ₹15 in paise (15 * 100)
@@ -135,7 +168,7 @@ app.post('/api/verify-payment', async (req, res) => {
 
 
 // Kundali order (₹49)
-app.post('/api/create-kundali-order', async (req, res) => {
+app.post('/api/create-kundali-order', orderLimiter, async (req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 4900,
@@ -152,7 +185,7 @@ app.post('/api/create-kundali-order', async (req, res) => {
 });
 
 // Upay order (₹29)
-app.post('/api/create-upay-order', async (req, res) => {
+app.post('/api/create-upay-order', orderLimiter, async (req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 2900,
@@ -170,7 +203,7 @@ app.post('/api/create-upay-order', async (req, res) => {
 
 // Chat endpoint
 // Chat endpoint with streaming for complete responses
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', chatLimiter, async (req, res) => {
   // const { message, deity } = req.body;
   const { message, deity, conversationHistory = [], language = 'english', userMemory = null } = req.body;
   
@@ -247,7 +280,7 @@ app.post('/api/chat', async (req, res) => {
 // ── Daily Horoscope ──────────────────────────────────────────────────────────
 const horoscopeCache = new Map(); // key: `${sign}_${date}_${lang}`
 
-app.post('/api/horoscope', async (req, res) => {
+app.post('/api/horoscope', aiLimiter, async (req, res) => {
   const { sign, language = 'english' } = req.body;
   if (!sign) return res.status(400).json({ error: 'Sign is required' });
 
@@ -291,7 +324,7 @@ app.post('/api/horoscope', async (req, res) => {
 });
 
 // ── Kundali Reading ──────────────────────────────────────────────────────────
-app.post('/api/kundali-reading', async (req, res) => {
+app.post('/api/kundali-reading', aiLimiter, async (req, res) => {
   const { name, dob, tob, pob, language = 'english' } = req.body;
   if (!name || !dob || !pob) return res.status(400).json({ error: 'Name, DOB, and place of birth are required' });
 
@@ -339,7 +372,7 @@ Cover: likely ascendant sign and personality, Moon sign and emotional nature, ke
 });
 
 // ── Kundali Milan ────────────────────────────────────────────────────────────
-app.post('/api/create-milan-order', async (_req, res) => {
+app.post('/api/create-milan-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 9900,
@@ -355,7 +388,7 @@ app.post('/api/create-milan-order', async (_req, res) => {
   }
 });
 
-app.post('/api/kundali-milan', async (req, res) => {
+app.post('/api/kundali-milan', aiLimiter, async (req, res) => {
   const { person1, person2, language = 'english' } = req.body;
   if (!person1 || !person2) return res.status(400).json({ error: 'Both persons data are required' });
 
@@ -411,7 +444,7 @@ Provide: Ashtakoot scores for each koot, total out of 36, overall compatibility 
 });
 
 // ── Muhurat Finder ────────────────────────────────────────────────────────────
-app.post('/api/create-muhurat-order', async (_req, res) => {
+app.post('/api/create-muhurat-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 4900,
@@ -427,7 +460,7 @@ app.post('/api/create-muhurat-order', async (_req, res) => {
   }
 });
 
-app.post('/api/muhurat', async (req, res) => {
+app.post('/api/muhurat', aiLimiter, async (req, res) => {
   const { eventType, date, location, language = 'english' } = req.body;
   if (!eventType || !date || !location) return res.status(400).json({ error: 'Event type, date, and location are required' });
 
@@ -480,7 +513,7 @@ Be specific and practical. If the date is not ideal, suggest what can be done to
 });
 
 // ── Sade Sati ─────────────────────────────────────────────────────────────────
-app.post('/api/create-sadesati-order', async (_req, res) => {
+app.post('/api/create-sadesati-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 4900,
@@ -496,7 +529,7 @@ app.post('/api/create-sadesati-order', async (_req, res) => {
   }
 });
 
-app.post('/api/sade-sati', async (req, res) => {
+app.post('/api/sade-sati', aiLimiter, async (req, res) => {
   const { name, moonSign, dob, language = 'english' } = req.body;
   if (!name || !moonSign) return res.status(400).json({ error: 'Name and moon sign are required' });
 
@@ -552,7 +585,7 @@ Be specific, honest, and compassionate — not fear-mongering.`
 });
 
 // ── Varshphal ─────────────────────────────────────────────────────────────────
-app.post('/api/create-varshphal-order', async (_req, res) => {
+app.post('/api/create-varshphal-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
       amount: 7900,
@@ -568,7 +601,7 @@ app.post('/api/create-varshphal-order', async (_req, res) => {
   }
 });
 
-app.post('/api/varshphal', async (req, res) => {
+app.post('/api/varshphal', aiLimiter, async (req, res) => {
   const { name, dob, tob, pob, year, language = 'english' } = req.body;
   if (!name || !dob || !pob) return res.status(400).json({ error: 'Name, date of birth, and place of birth are required' });
 
@@ -628,7 +661,7 @@ Be specific, grounded, and actionable — not vague or generic.`
 });
 
 // ── Divya Upay ───────────────────────────────────────────────────────────────
-app.post('/api/divya-upay', async (req, res) => {
+app.post('/api/divya-upay', aiLimiter, async (req, res) => {
   const { situation, category, sign, favoriteDeity = 'ganesha', language = 'english' } = req.body;
   if (!situation) return res.status(400).json({ error: 'Situation is required' });
 
@@ -684,7 +717,7 @@ End with a short blessing in the voice of ${favoriteDeity}. Total: 280-320 words
 });
 
 // ── Extract Memory (internal) ─────────────────────────────────────────────────
-app.post('/api/extract-memory', async (req, res) => {
+app.post('/api/extract-memory', aiLimiter, async (req, res) => {
   const { messages = [], existingThemes = [], deity } = req.body;
   if (!messages.length) return res.json({ newThemes: [], sessionSummary: '', significantFacts: [] });
 
