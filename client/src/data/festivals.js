@@ -25,7 +25,7 @@ export const FESTIVALS = [
     type: 'festival',
     deity: 'Surya',
     icon: '☀️',
-    description: 'Sun's transit into Capricorn — a day of holy dips, kite flying, and sesame sweets.',
+    description: "Sun's transit into Capricorn — a day of holy dips, kite flying, and sesame sweets.",
   },
   {
     date: '2025-01-25',
@@ -559,7 +559,7 @@ export const FESTIVALS = [
     type: 'festival',
     deity: 'Surya',
     icon: '☀️',
-    description: 'Sun's transition into Capricorn — holy dips, kite flying, and prayers to the Sun God.',
+    description: "Sun's transition into Capricorn — holy dips, kite flying, and prayers to the Sun God.",
   },
   {
     date: '2026-01-25',
