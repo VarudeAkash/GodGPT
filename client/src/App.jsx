@@ -294,6 +294,12 @@ function App() {
     // Resolve fresh count from source of truth (localStorage / premiumData)
     let freshCount = 50;
 
+    // All deity chats require login
+    if (!user) {
+      alert('Please sign in to chat with the deities.');
+      return;
+    }
+
     // Check Krishna free messages
     if (deity.id === 'krishna') {
       const stored = localStorage.getItem('freeKrishnaMessages');
@@ -793,7 +799,7 @@ function App() {
               <div className="feature-card-glow"></div>
               <div className="featured-inner">
                 <div className="featured-text">
-                  <span className="featured-badge">Free · 50 messages to start</span>
+                  <span className="featured-badge">Sign in · 50 free messages with Krishna</span>
                   <div className="feature-icon">✦</div>
                   <h2>Chat with the Divine</h2>
                   <p>Seek wisdom from Krishna, Shiva, Lakshmi, Hanuman, Saraswati and Ganesha — responses drawn from authentic Vedic scriptures, personalized to your life and questions.</p>
@@ -956,20 +962,18 @@ function App() {
             <div className="selection-footer">
               <p>Each deity offers unique wisdom and perspective for your spiritual journey</p>
               {/* === 🆕 FIXED: Show premium status per deity === */}
-              {userHasPremium && (
-                <button 
+              {user && userHasPremium && (
+                <button
                   className="restore-purchases-btn"
                   onClick={() => {
                     const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
                     let message = "✅ Your Premium Deities:\n\n";
-                    
                     Object.entries(premiumData.purchasedDeities).forEach(([deityId, data]) => {
                       if (data.expiry > Date.now()) {
                         const deityName = deities.find(d => d.id === deityId)?.name || deityId;
                         message += `🙏 ${deityName}: ${data.remainingMessages} messages\n`;
                       }
                     });
-                    
                     alert(message);
                   }}
                   style={{
