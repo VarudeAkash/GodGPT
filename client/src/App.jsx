@@ -166,6 +166,10 @@ function App() {
       if (user) {
         migrateToCloud(user.uid);
 
+        // Always restore free message count from localStorage on login
+        const storedFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
+        setRemainingMessages(storedFree);
+
         // Try Firestore first (cross-device), fall back to localStorage (same device)
         const cloudPremium = await loadPremiumFromCloud(user.uid);
         if (cloudPremium) {
@@ -287,24 +291,25 @@ function App() {
     try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
     catch { premiumData = { purchasedDeities: {} }; }
 
-    // Check Krishna free messages (Bug 1 fix)
+    // Resolve fresh count from source of truth (localStorage / premiumData)
+    let freshCount = 50;
+
+    // Check Krishna free messages
     if (deity.id === 'krishna') {
-      const freeMessages = localStorage.getItem('freeKrishnaMessages');
-      if (!freeMessages) {
-        // First time - set 50 free messages
+      const stored = localStorage.getItem('freeKrishnaMessages');
+      if (!stored) {
         localStorage.setItem('freeKrishnaMessages', '50');
-        setRemainingMessages(50);
+        freshCount = 50;
       } else {
-        const remaining = parseInt(freeMessages);
-        if (remaining <= 0) {
+        freshCount = parseInt(stored);
+        if (freshCount <= 0) {
           setSelectedDeityForPremium(deity);
           setShowPremiumModal(true);
           return;
         }
-        setRemainingMessages(remaining);
       }
-    } 
-    // Check premium deities (Bug 2 fix)
+    }
+    // Check premium deities
     else {
       const deityPremium = premiumData.purchasedDeities[deity.id];
       if (!deityPremium || deityPremium.remainingMessages <= 0 || deityPremium.expiry <= Date.now()) {
@@ -312,8 +317,10 @@ function App() {
         setShowPremiumModal(true);
         return;
       }
-      setRemainingMessages(deityPremium.remainingMessages);
+      freshCount = deityPremium.remainingMessages;
     }
+
+    setRemainingMessages(freshCount);
   
     // 🆕 CHECK if we're selecting the SAME deity that has existing chat
     const savedDeity = localStorage.getItem('selectedDeity');
@@ -339,12 +346,12 @@ function App() {
       // Load existing conversation
       try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
     } else {
-      // Start new conversation
+      // Start new conversation — freshCount is already resolved above, no stale closure
       const welcomeMessage = {
         id: Date.now(),
-        text: userHasPremium 
-          ? `Welcome, blessed seeker. I am ${deity.name}. You have ${remainingMessages} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
-          : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${remainingMessages} free messages. What wisdom do you seek today?`,
+        text: userHasPremium
+          ? `Welcome, blessed seeker. I am ${deity.name}. You have ${freshCount} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
+          : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${freshCount} free messages. What wisdom do you seek today?`,
         sender: 'deity',
         deity: deity,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
