@@ -418,6 +418,8 @@ function App() {
       if (premiumData.purchasedDeities[selectedDeity.id]) {
         premiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
         localStorage.setItem('premiumData', JSON.stringify(premiumData));
+        // Sync to Firestore so re-login restores correct count
+        if (user) savePremiumToCloud(user.uid, premiumData);
       }
     }
     
