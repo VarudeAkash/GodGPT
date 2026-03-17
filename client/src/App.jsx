@@ -127,16 +127,6 @@ function App() {
   
     window.addEventListener('popstate', handlePopState);
   
-    // Load free message count (always)
-    const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
-    if (freeKrishnaMessages) {
-      setRemainingMessages(parseInt(freeKrishnaMessages));
-    } else {
-      localStorage.setItem('freeKrishnaMessages', '50');
-      setRemainingMessages(50);
-    }
-    // Premium state is managed by onAuthStateChanged — not here
-  
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentScreen]);
 
