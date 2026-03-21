@@ -795,7 +795,7 @@ function App() {
                   <div className="feature-icon">✦</div>
                   <h2>Chat with the Divine</h2>
                   <p>Seek wisdom from Krishna, Shiva, Lakshmi, Hanuman, Saraswati and Ganesha — responses drawn from authentic Vedic scriptures, personalized to your life and questions.</p>
-                  <span className="feature-card-cta">Begin Your Journey →</span>
+                  <span className="feature-card-cta">Begin Your Journey</span>
                 </div>
                 <div className="featured-deity-grid">
                   {[
@@ -821,28 +821,28 @@ function App() {
                 <div className="feature-icon">◉</div>
                 <h4>Today's Panchang</h4>
                 <p>Tithi, Nakshatra, Yoga, Rahukala and Muhurat — calculated for your location</p>
-                <span className="feature-card-cta">View Today →</span>
+                <span className="feature-card-cta">View Today</span>
               </div>
               <div className="feature-card feature-card--kundali" onClick={() => navigateTo('kundali')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">✧</div>
                 <h4>Kundali Reading</h4>
                 <p>Personalized Vedic birth chart reading from your name, date, time and place of birth</p>
-                <span className="feature-card-cta">Get Reading →</span>
+                <span className="feature-card-cta">Get Reading</span>
               </div>
               <div className="feature-card feature-card--upay" onClick={() => navigateTo('divya-upay')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">◈</div>
                 <h4>Divya Upay</h4>
                 <p>Sacred remedies — mantras, rituals and practices for your specific situation</p>
-                <span className="feature-card-cta">Find Remedies →</span>
+                <span className="feature-card-cta">Find Remedies</span>
               </div>
               <div className="feature-card feature-card--blog" onClick={() => navigateTo('blog')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">◇</div>
                 <h4>Vedic Wisdom Blog</h4>
                 <p>Deep dives into Panchang, Navagraha, Sade Sati, Vastu and more</p>
-                <span className="feature-card-cta">Read Articles →</span>
+                <span className="feature-card-cta">Read Articles</span>
               </div>
             </div>
 
@@ -853,35 +853,35 @@ function App() {
                 <div className="feature-icon">💑</div>
                 <h4>Kundali Milan</h4>
                 <p>Ashtakoot compatibility analysis for marriage matching</p>
-                <span className="feature-card-cta">Match Now →</span>
+                <span className="feature-card-cta">Match Now</span>
               </div>
               <div className="feature-card feature-card--muhurat" onClick={() => navigateTo('muhurat')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">🕐</div>
                 <h4>Muhurat Finder</h4>
                 <p>Auspicious timing for marriage, business, travel and more</p>
-                <span className="feature-card-cta">Find Muhurat →</span>
+                <span className="feature-card-cta">Find Muhurat</span>
               </div>
               <div className="feature-card feature-card--sadesati" onClick={() => navigateTo('sade-sati')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">🪐</div>
                 <h4>Sade Sati Report</h4>
                 <p>Saturn's 7.5-year transit and its impact on your moon sign</p>
-                <span className="feature-card-cta">Check Report →</span>
+                <span className="feature-card-cta">Check Report</span>
               </div>
               <div className="feature-card feature-card--varshphal" onClick={() => navigateTo('varshphal')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">📅</div>
                 <h4>Varshphal</h4>
                 <p>Annual solar return reading — your year ahead, month by month</p>
-                <span className="feature-card-cta">View Reading →</span>
+                <span className="feature-card-cta">View Reading</span>
               </div>
               <div className="feature-card feature-card--festivals" onClick={() => navigateTo('festivals')}>
                 <div className="feature-card-glow"></div>
                 <div className="feature-icon">🪔</div>
                 <h4>Festival Calendar</h4>
                 <p>Hindu festivals, fasting days and ekadashis for 2025–2026</p>
-                <span className="feature-card-cta">View Calendar →</span>
+                <span className="feature-card-cta">View Calendar</span>
               </div>
             </div>
           </div>

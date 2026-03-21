@@ -115,7 +115,7 @@ function KundaliMilanPage({ user }) {
       {showPayGate === 'pay' && (
         <PaymentGate
           title="Kundali Milan — Compatibility Report"
-          priceDisplay="₹99"
+          priceDisplay="₹49"
           description="Detailed Ashtakoot matching with Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi scores — total out of 36."
           orderEndpoint="/api/create-milan-order"
           user={user}
@@ -131,7 +131,7 @@ function KundaliMilanPage({ user }) {
           </div>
           {error && <p className="form-error">{error}</p>}
           <button type="submit" className="milan-submit-btn" disabled={loading}>
-            {loading ? 'Analyzing compatibility...' : paid ? 'Check Compatibility' : 'Check Compatibility — ₹99'}
+            {loading ? 'Analyzing compatibility...' : paid ? 'Check Compatibility' : 'Check Compatibility — ₹49'}
           </button>
           {!paid && <p className="milan-price-note">One-time payment · Valid for today</p>}
           {paid  && <p className="milan-paid-note">Payment received — check anytime today</p>}

@@ -111,7 +111,7 @@ function DivyaUpayPage({ user }) {
       {showPayGate === 'pay' && (
         <PaymentGate
           title="Divya Upay — Sacred Remedies"
-          priceDisplay="₹29"
+          priceDisplay="₹19"
           description="Personalized Vedic remedies — mantras, rituals, and practices drawn from your sign and chosen deity. Specific to your situation."
           orderEndpoint="/api/create-upay-order"
           user={user}
@@ -181,7 +181,7 @@ function DivyaUpayPage({ user }) {
           {error && <p className="upay-error">{error}</p>}
 
           <button type="submit" className="upay-submit-btn" disabled={loading}>
-            {loading ? 'Preparing your sacred path...' : paid ? 'Reveal My Divya Upay' : 'Get My Divya Upay — ₹29'}
+            {loading ? 'Preparing your sacred path...' : paid ? 'Reveal My Divya Upay' : 'Get My Divya Upay — ₹19'}
           </button>
           {!paid && <p className="upay-price-note">One-time payment · Sacred remedies tailored for you</p>}
           {paid && <p className="upay-paid-note">Payment received — generate anytime today</p>}

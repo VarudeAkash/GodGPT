@@ -167,15 +167,15 @@ app.post('/api/verify-payment', async (req, res) => {
 
 
 
-// Kundali order (₹49)
+// Kundali order (₹14)
 app.post('/api/create-kundali-order', orderLimiter, async (req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 4900,
+      amount: 1400,
       currency: 'INR',
       receipt: `kundali_${Date.now()}`,
       payment_capture: 1,
-      notes: { product: 'Kundali Reading', price: '₹49' }
+      notes: { product: 'Kundali Reading', price: '₹14' }
     });
     res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {
@@ -188,11 +188,11 @@ app.post('/api/create-kundali-order', orderLimiter, async (req, res) => {
 app.post('/api/create-upay-order', orderLimiter, async (req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 2900,
+      amount: 1900,
       currency: 'INR',
       receipt: `upay_${Date.now()}`,
       payment_capture: 1,
-      notes: { product: 'Divya Upay', price: '₹29' }
+      notes: { product: 'Divya Upay', price: '₹19' }
     });
     res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {
@@ -375,11 +375,11 @@ Cover: likely ascendant sign and personality, Moon sign and emotional nature, ke
 app.post('/api/create-milan-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 9900,
+      amount: 4900,
       currency: 'INR',
       receipt: `milan_${Date.now()}`,
       payment_capture: 1,
-      notes: { product: 'Kundali Milan', price: '₹99' }
+      notes: { product: 'Kundali Milan', price: '₹49' }
     });
     res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {
@@ -447,11 +447,11 @@ Provide: Ashtakoot scores for each koot, total out of 36, overall compatibility 
 app.post('/api/create-muhurat-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 4900,
+      amount: 900,
       currency: 'INR',
       receipt: `muhurat_${Date.now()}`,
       payment_capture: 1,
-      notes: { product: 'Muhurat Finder', price: '₹49' }
+      notes: { product: 'Muhurat Finder', price: '₹9' }
     });
     res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {
@@ -588,11 +588,11 @@ Be specific, honest, and compassionate — not fear-mongering.`
 app.post('/api/create-varshphal-order', orderLimiter, async (_req, res) => {
   try {
     const order = await razorpay.orders.create({
-      amount: 7900,
+      amount: 4900,
       currency: 'INR',
       receipt: `varshphal_${Date.now()}`,
       payment_capture: 1,
-      notes: { product: 'Varshphal Annual Reading', price: '₹79' }
+      notes: { product: 'Varshphal Annual Reading', price: '₹49' }
     });
     res.json({ success: true, order_id: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {

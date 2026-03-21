@@ -88,7 +88,7 @@ function VarshphalPage({ user }) {
       {showPayGate === 'pay' && (
         <PaymentGate
           title="Varshphal — Annual Reading"
-          priceDisplay="₹79"
+          priceDisplay="₹49"
           description="Comprehensive Solar Return chart reading — key themes, best months, challenging periods, career, finance, health, and relationships."
           orderEndpoint="/api/create-varshphal-order"
           user={user}
@@ -133,7 +133,7 @@ function VarshphalPage({ user }) {
             </div>
             {error && <p className="form-error">{error}</p>}
             <button type="submit" className="varshphal-submit-btn" disabled={loading}>
-              {loading ? 'Reading the year ahead...' : paid ? 'Get Annual Reading' : 'Get Annual Reading — ₹79'}
+              {loading ? 'Reading the year ahead...' : paid ? 'Get Annual Reading' : 'Get Annual Reading — ₹49'}
             </button>
             {!paid && <p className="varshphal-price-note">One-time payment · Valid for today</p>}
             {paid  && <p className="varshphal-paid-note">Payment received — generate anytime today</p>}

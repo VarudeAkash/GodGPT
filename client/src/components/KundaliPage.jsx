@@ -165,7 +165,7 @@ function KundaliPage({ user }) {
       {showPayGate === 'pay' && (
         <PaymentGate
           title="Personalized Kundali Reading"
-          priceDisplay="₹49"
+          priceDisplay="₹14"
           description="A detailed Vedic birth chart reading based on your name, date, time, and place of birth — specific to you, not generic."
           orderEndpoint="/api/create-kundali-order"
           user={user}
@@ -198,7 +198,7 @@ function KundaliPage({ user }) {
               </div>
               {error && <p className="form-error">{error}</p>}
               <button type="submit" className="kundali-submit-btn" disabled={loading}>
-                {loading ? 'Reading the stars...' : paid ? 'Generate My Kundali' : 'Get My Kundali — ₹49'}
+                {loading ? 'Reading the stars...' : paid ? 'Generate My Kundali' : 'Get My Kundali — ₹14'}
               </button>
               {!paid && <p className="kundali-price-note">One-time payment · Your reading is saved</p>}
               {paid && <p className="kundali-paid-note">Payment received — generate anytime today</p>}

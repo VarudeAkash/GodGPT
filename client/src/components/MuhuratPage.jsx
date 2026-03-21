@@ -97,7 +97,7 @@ function MuhuratPage({ user }) {
       {showPayGate === 'pay' && (
         <PaymentGate
           title="Muhurat Finder"
-          priceDisplay="₹49"
+          priceDisplay="₹9"
           description="Vedic muhurta analysis for your chosen event — tithi, nakshatra, vara, yoga, and specific auspicious time windows."
           orderEndpoint="/api/create-muhurat-order"
           user={user}
@@ -129,7 +129,7 @@ function MuhuratPage({ user }) {
             </div>
             {error && <p className="form-error">{error}</p>}
             <button type="submit" className="muhurat-submit-btn" disabled={loading}>
-              {loading ? 'Consulting the stars...' : paid ? 'Find Muhurat' : 'Find Muhurat — ₹49'}
+              {loading ? 'Consulting the stars...' : paid ? 'Find Muhurat' : 'Find Muhurat — ₹9'}
             </button>
             {!paid && <p className="muhurat-price-note">One-time payment · Valid for today</p>}
             {paid  && <p className="muhurat-paid-note">Payment received — check anytime today</p>}
