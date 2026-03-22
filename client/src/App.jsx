@@ -1,22 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import './App.css';
 import Header from './components/header.jsx';
 import Footer from './components/Footer.jsx';
 import DeityIcon from './components/DeityIcon.jsx';
-import About from './components/About.jsx';
-import Contact from './components/Contact.jsx';
-import Privacy from './components/Privacy.jsx';
-import PanchangPage from './components/PanchangPage.jsx';
-import KundaliPage from './components/KundaliPage.jsx';
-import DivyaUpayPage from './components/DivyaUpayPage.jsx';
-import BlogPage from './components/BlogPage.jsx';
-import KundaliMilanPage from './components/KundaliMilanPage.jsx';
-import MuhuratPage from './components/MuhuratPage.jsx';
-import SadeSatiPage from './components/SadeSatiPage.jsx';
-import VarshphalPage from './components/VarshphalPage.jsx';
-import FestivalPage from './components/FestivalPage.jsx';
-import ProfilePage from './components/ProfilePage.jsx';
-import HoroscopePage from './components/HoroscopePage.jsx';
+
+const About        = lazy(() => import('./components/About.jsx'));
+const Contact      = lazy(() => import('./components/Contact.jsx'));
+const Privacy      = lazy(() => import('./components/Privacy.jsx'));
+const PanchangPage = lazy(() => import('./components/PanchangPage.jsx'));
+const KundaliPage  = lazy(() => import('./components/KundaliPage.jsx'));
+const DivyaUpayPage    = lazy(() => import('./components/DivyaUpayPage.jsx'));
+const BlogPage         = lazy(() => import('./components/BlogPage.jsx'));
+const KundaliMilanPage = lazy(() => import('./components/KundaliMilanPage.jsx'));
+const MuhuratPage      = lazy(() => import('./components/MuhuratPage.jsx'));
+const SadeSatiPage     = lazy(() => import('./components/SadeSatiPage.jsx'));
+const VarshphalPage    = lazy(() => import('./components/VarshphalPage.jsx'));
+const FestivalPage     = lazy(() => import('./components/FestivalPage.jsx'));
+const ProfilePage      = lazy(() => import('./components/ProfilePage.jsx'));
+const HoroscopePage    = lazy(() => import('./components/HoroscopePage.jsx'));
 import './firebase.js';
 import firebase from 'firebase/compat/app';
 import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
@@ -931,20 +932,22 @@ function App() {
         </div>
       )}
 
-      {currentScreen === 'about'      && <About />}
-      {currentScreen === 'contact'    && <Contact />}
-      {currentScreen === 'privacy'    && <Privacy />}
-      {currentScreen === 'panchang'   && <PanchangPage user={user} />}
-      {currentScreen === 'kundali'    && <KundaliPage user={user} API_URL={API_URL} />}
-      {currentScreen === 'divya-upay'    && <DivyaUpayPage user={user} />}
-      {currentScreen === 'blog'          && <BlogPage navigateTo={navigateTo} />}
-      {currentScreen === 'kundali-milan' && <KundaliMilanPage user={user} />}
-      {currentScreen === 'muhurat'       && <MuhuratPage user={user} />}
-      {currentScreen === 'sade-sati'     && <SadeSatiPage user={user} />}
-      {currentScreen === 'varshphal'     && <VarshphalPage user={user} />}
-      {currentScreen === 'festivals'     && <FestivalPage navigateTo={navigateTo} />}
-      {currentScreen === 'profile'      && <ProfilePage user={user} navigateTo={navigateTo} />}
-      {currentScreen === 'horoscope'    && <HoroscopePage navigateTo={navigateTo} />}
+      <Suspense fallback={null}>
+        {currentScreen === 'about'      && <About />}
+        {currentScreen === 'contact'    && <Contact />}
+        {currentScreen === 'privacy'    && <Privacy />}
+        {currentScreen === 'panchang'   && <PanchangPage user={user} />}
+        {currentScreen === 'kundali'    && <KundaliPage user={user} API_URL={API_URL} />}
+        {currentScreen === 'divya-upay'    && <DivyaUpayPage user={user} />}
+        {currentScreen === 'blog'          && <BlogPage navigateTo={navigateTo} />}
+        {currentScreen === 'kundali-milan' && <KundaliMilanPage user={user} />}
+        {currentScreen === 'muhurat'       && <MuhuratPage user={user} />}
+        {currentScreen === 'sade-sati'     && <SadeSatiPage user={user} />}
+        {currentScreen === 'varshphal'     && <VarshphalPage user={user} />}
+        {currentScreen === 'festivals'     && <FestivalPage navigateTo={navigateTo} />}
+        {currentScreen === 'profile'       && <ProfilePage user={user} navigateTo={navigateTo} />}
+        {currentScreen === 'horoscope'     && <HoroscopePage navigateTo={navigateTo} />}
+      </Suspense>
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (
