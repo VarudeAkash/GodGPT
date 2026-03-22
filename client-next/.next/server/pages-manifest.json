@@ -1,0 +1,17 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/deity-select": "pages/deity-select.js",
+  "/horoscope": "pages/horoscope.js",
+  "/panchang": "pages/panchang.js",
+  "/kundali": "pages/kundali.js",
+  "/divya-upay": "pages/divya-upay.js",
+  "/blog": "pages/blog.js",
+  "/kundali-milan": "pages/kundali-milan.js",
+  "/muhurat": "pages/muhurat.js",
+  "/sade-sati": "pages/sade-sati.js",
+  "/varshphal": "pages/varshphal.js",
+  "/festivals": "pages/festivals.js",
+  "/chat": "pages/chat.js"
+}
