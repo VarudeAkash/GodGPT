@@ -16,6 +16,7 @@ import SadeSatiPage from './components/SadeSatiPage.jsx';
 import VarshphalPage from './components/VarshphalPage.jsx';
 import FestivalPage from './components/FestivalPage.jsx';
 import ProfilePage from './components/ProfilePage.jsx';
+import HoroscopePage from './components/HoroscopePage.jsx';
 import './firebase.js';
 import firebase from 'firebase/compat/app';
 import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
@@ -90,6 +91,7 @@ function App() {
     else if (hash === 'varshphal')     { setCurrentScreen('varshphal'); }
     else if (hash === 'festivals')     { setCurrentScreen('festivals'); }
     else if (hash === 'profile')       { setCurrentScreen('profile'); }
+    else if (hash === 'horoscope')     { setCurrentScreen('horoscope'); }
     else if (!hash || hash === 'welcome') { setCurrentScreen('welcome'); }
 
     // Handle browser back/forward
@@ -118,6 +120,7 @@ function App() {
       else if (newHash === 'varshphal')     { setCurrentScreen('varshphal'); }
       else if (newHash === 'festivals')     { setCurrentScreen('festivals'); }
       else if (newHash === 'profile')       { setCurrentScreen('profile'); }
+      else if (newHash === 'horoscope')     { setCurrentScreen('horoscope'); }
       else if ((!newHash || newHash === 'welcome') && currentScreen !== 'welcome') {
         setCurrentScreen('welcome');
         setSelectedDeity(null);
@@ -143,6 +146,30 @@ function App() {
       setRemainingMessages(50);
     }
   }, []);
+  // Dynamic page titles per screen
+  useEffect(() => {
+    const titles = {
+      welcome:       'Astravedam — AI Vedic Astrology & Spiritual Guidance',
+      'deity-select':'Choose Your Deity — Astravedam',
+      chat:          selectedDeity ? `Chat with ${selectedDeity.name} — Astravedam` : 'Divine Chat — Astravedam',
+      horoscope:     'Aaj Ka Rashifal — Daily Horoscope for All 12 Rashis | Astravedam',
+      panchang:      "Today's Panchang & Tithi | Astravedam",
+      kundali:       'Kundali Reading — Vedic Birth Chart | Astravedam',
+      'divya-upay':  'Divya Upay — Sacred Vedic Remedies | Astravedam',
+      'kundali-milan':'Kundali Milan — Compatibility Report | Astravedam',
+      muhurat:       'Muhurat Finder — Auspicious Timing | Astravedam',
+      'sade-sati':   'Sade Sati Report — Saturn Transit | Astravedam',
+      varshphal:     'Varshphal — Annual Reading | Astravedam',
+      festivals:     'Hindu Festival Calendar 2026 | Astravedam',
+      blog:          'Vedic Wisdom Blog — Astravedam',
+      profile:       'My Profile — Astravedam',
+      about:         'About Astravedam',
+      contact:       'Contact — Astravedam',
+      privacy:       'Privacy Policy — Astravedam',
+    };
+    document.title = titles[currentScreen] || 'Astravedam — AI Vedic Astrology & Spiritual Guidance';
+  }, [currentScreen, selectedDeity]);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
@@ -917,6 +944,7 @@ function App() {
       {currentScreen === 'varshphal'     && <VarshphalPage user={user} />}
       {currentScreen === 'festivals'     && <FestivalPage navigateTo={navigateTo} />}
       {currentScreen === 'profile'      && <ProfilePage user={user} navigateTo={navigateTo} />}
+      {currentScreen === 'horoscope'    && <HoroscopePage navigateTo={navigateTo} />}
 
       {/* Deity Selection Screen */}
       {currentScreen === 'deity-select' && (

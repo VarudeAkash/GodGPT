@@ -3,12 +3,13 @@ import './Header.css';
 import Login from './Login.jsx';
 
 const NAV_ITEMS = [
-  { label: 'Home',    screen: 'welcome' },
-  { label: 'Today',   screen: 'panchang' },
-  { label: 'Chat',    screen: 'deity-select' },
-  { label: 'Kundali', screen: 'kundali' },
-  { label: 'Upay',    screen: 'divya-upay' },
-  { label: 'Blog',    screen: 'blog' },
+  { label: 'Home',      screen: 'welcome' },
+  { label: 'Rashifal',  screen: 'horoscope' },
+  { label: 'Today',     screen: 'panchang' },
+  { label: 'Chat',      screen: 'deity-select' },
+  { label: 'Kundali',   screen: 'kundali' },
+  { label: 'Upay',      screen: 'divya-upay' },
+  { label: 'Blog',      screen: 'blog' },
 ];
 
 const MORE_ITEMS = [
@@ -20,11 +21,11 @@ const MORE_ITEMS = [
 ];
 
 const BOTTOM_TABS = [
-  { label: 'Home',    screen: 'welcome',      icon: '⌂' },
-  { label: 'Today',   screen: 'panchang',     icon: '◉' },
-  { label: 'Chat',    screen: 'deity-select', icon: '✦' },
-  { label: 'Kundali', screen: 'kundali',      icon: '✧' },
-  { label: 'Menu',    screen: null,           icon: '···' },
+  { label: 'Home',     screen: 'welcome',      icon: '⌂' },
+  { label: 'Rashifal', screen: 'horoscope',    icon: '♈' },
+  { label: 'Chat',     screen: 'deity-select', icon: '✦' },
+  { label: 'Kundali',  screen: 'kundali',      icon: '✧' },
+  { label: 'Menu',     screen: null,           icon: '···' },
 ];
 
 function Header({ user, navigateTo, currentScreen }) {
