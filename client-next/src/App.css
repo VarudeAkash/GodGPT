@@ -1114,6 +1114,9 @@ body {
 }
 
 .deity-premium-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
