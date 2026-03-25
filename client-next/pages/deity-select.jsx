@@ -269,7 +269,13 @@ export default function DeitySelect() {
   return (
     <>
       <Head>
-        <title>Choose Your Deity — Astravedam</title>
+        <title>Chat with Hindu Deities — Krishna, Shiva, Lakshmi | Astravedam</title>
+        <meta name="description" content="Choose your divine guide and start a spiritual conversation. Chat with Lord Krishna, Shiva, Lakshmi, Hanuman, Saraswati or Ganesha. First 50 messages with Krishna are free." />
+        <link rel="canonical" href="https://astravedam.com/deity-select" />
+        <meta property="og:title" content="Chat with Hindu Deities | Astravedam" />
+        <meta property="og:description" content="Chat with Krishna, Shiva, Lakshmi, Hanuman, Saraswati or Ganesha. AI-powered spiritual guidance from authentic Vedic scriptures." />
+        <meta property="og:url" content="https://astravedam.com/deity-select" />
+        <meta property="og:image" content="https://astravedam.com/logo.png" />
       </Head>
       <div className="app deity-select-screen">
         <BuyMoreModal

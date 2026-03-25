@@ -11,6 +11,12 @@ export default function Home() {
     <>
       <Head>
         <title>Astravedam — AI Vedic Astrology &amp; Spiritual Guidance</title>
+        <meta name="description" content="Chat with Lord Krishna, Shiva, Lakshmi and more Hindu deities. Get free Kundali readings, daily horoscope, Panchang, Muhurat and sacred Vedic remedies — powered by AI." />
+        <link rel="canonical" href="https://astravedam.com/" />
+        <meta property="og:title" content="Astravedam — AI Vedic Astrology & Spiritual Guidance" />
+        <meta property="og:description" content="Chat with Hindu deities, get personalized Kundali readings, daily horoscopes and sacred remedies — powered by AI, rooted in Vedic wisdom." />
+        <meta property="og:url" content="https://astravedam.com/" />
+        <meta property="og:image" content="https://astravedam.com/logo.png" />
       </Head>
       <div className="app welcome-screen">
         <div className="temple-background"></div>
