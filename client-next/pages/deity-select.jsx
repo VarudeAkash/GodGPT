@@ -13,7 +13,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 export default function DeitySelect() {
   const router = useRouter();
-  const { user, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages } = useAuth();
+  const { user, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages, premiumData, setPremiumData } = useAuth();
   const { deities, setSelectedDeity, setMessages, setDeityMemory } = useChat();
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
@@ -23,10 +23,6 @@ export default function DeitySelect() {
   const paymentTimeoutRef = useRef(null);
 
   const selectDeity = async (deity) => {
-    let premiumData;
-    try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-    catch { premiumData = { purchasedDeities: {} }; }
-
     let freshCount = 50;
 
     // All deity chats require login
@@ -52,7 +48,7 @@ export default function DeitySelect() {
     }
     // Check premium deities
     else {
-      const deityPremium = premiumData.purchasedDeities[deity.id];
+      const deityPremium = (premiumData.purchasedDeities || {})[deity.id];
       if (!deityPremium || deityPremium.remainingMessages <= 0 || deityPremium.expiry <= Date.now()) {
         setSelectedDeityForPremium(deity);
         setShowPremiumModal(true);
@@ -195,24 +191,22 @@ export default function DeitySelect() {
       const verificationData = await verificationResponse.json();
 
       if (verificationData.success) {
-        let existingData;
-        try { existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { existingData = { purchasedDeities: {} }; }
-
-        existingData.purchasedDeities[deityId] = {
-          remainingMessages: 50,
-          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
-          purchaseDate: Date.now(),
-          paymentId: response.razorpay_payment_id
+        const updatedPremium = {
+          ...premiumData,
+          purchasedDeities: {
+            ...(premiumData.purchasedDeities || {}),
+            [deityId]: {
+              remainingMessages: 50,
+              expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
+              purchaseDate: Date.now(),
+              paymentId: response.razorpay_payment_id
+            }
+          },
+          userHasPremium: true
         };
-        existingData.userHasPremium = true;
 
-        localStorage.setItem('premiumData', JSON.stringify(existingData));
-
-        // Sync premium to Firestore for cross-device access
-        if (user) {
-          savePremiumToCloud(user.uid, existingData);
-        }
+        setPremiumData(updatedPremium);
+        savePremiumToCloud(user.uid, updatedPremium);
 
         setUserHasPremium(true);
         setRemainingMessages(50);
@@ -329,9 +323,8 @@ export default function DeitySelect() {
               <button
                 className="restore-purchases-btn"
                 onClick={() => {
-                  const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
                   let message = "Your Premium Deities:\n\n";
-                  Object.entries(premiumData.purchasedDeities).forEach(([deityId, data]) => {
+                  Object.entries(premiumData.purchasedDeities || {}).forEach(([deityId, data]) => {
                     if (data.expiry > Date.now()) {
                       const deityName = deities.find(d => d.id === deityId)?.name || deityId;
                       message += `${deityName}: ${data.remainingMessages} messages\n`;

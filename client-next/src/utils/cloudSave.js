@@ -1,13 +1,11 @@
 // client-next/src/utils/cloudSave.js
 import firebase from '../firebase.js';
 
-const getDb = () => firebase.firestore();
-
 // Save premium data to cloud
 export const savePremiumToCloud = async (userId, premiumData) => {
   try {
-    const premiumRef = db.collection('users').doc(userId);
-    await premiumRef.set({ premiumData }, { merge: true });
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).set({ premiumData }, { merge: true });
   } catch (error) {
     console.error('Cloud premium save failed:', error);
   }
@@ -16,8 +14,8 @@ export const savePremiumToCloud = async (userId, premiumData) => {
 // Load premium data from cloud
 export const loadPremiumFromCloud = async (userId) => {
   try {
-    const premiumRef = db.collection('users').doc(userId);
-    const doc = await premiumRef.get();
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(userId).get();
     if (doc.exists && doc.data().premiumData) {
       return doc.data().premiumData;
     }

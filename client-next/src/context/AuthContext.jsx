@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import firebase from '../firebase.js';
-import { migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from '../utils/cloudSave.js';
+import { loadPremiumFromCloud } from '../utils/cloudSave.js';
 
 const AuthContext = createContext(null);
 
@@ -9,51 +9,31 @@ export function AuthProvider({ children }) {
   const [userHasPremium, setUserHasPremium] = useState(false);
   const [remainingMessages, setRemainingMessages] = useState(50);
   const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    // Initialize free Krishna messages
-    if (typeof window !== 'undefined') {
-      const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
-      if (!freeKrishnaMessages) {
-        localStorage.setItem('freeKrishnaMessages', '50');
-      }
-    }
-  }, []);
+  const [premiumData, setPremiumData] = useState({ purchasedDeities: {} });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const unsubscribe = firebase.auth().onAuthStateChanged(async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        migrateToCloud(firebaseUser.uid);
         const storedFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
         setRemainingMessages(storedFree);
         const cloudPremium = await loadPremiumFromCloud(firebaseUser.uid);
         if (cloudPremium) {
-          localStorage.setItem('premiumData', JSON.stringify(cloudPremium));
+          setPremiumData(cloudPremium);
           const hasActive = Object.values(cloudPremium.purchasedDeities || {}).some(
             d => d.expiry > Date.now() && d.remainingMessages > 0
           );
-          if (hasActive) setUserHasPremium(true);
+          setUserHasPremium(hasActive);
         } else {
-          const localPremium = localStorage.getItem('premiumData');
-          if (localPremium) {
-            try {
-              const data = JSON.parse(localPremium);
-              const hasActive = Object.values(data.purchasedDeities || {}).some(
-                d => d.expiry > Date.now() && d.remainingMessages > 0
-              );
-              if (hasActive) {
-                setUserHasPremium(true);
-                savePremiumToCloud(firebaseUser.uid, data);
-              }
-            } catch { /* ignore */ }
-          }
+          setPremiumData({ purchasedDeities: {} });
+          setUserHasPremium(false);
         }
       } else {
         const freeMessages = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
         setRemainingMessages(freeMessages);
         setUserHasPremium(false);
+        setPremiumData({ purchasedDeities: {} });
       }
       setAuthLoading(false);
     });
@@ -61,7 +41,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages, authLoading }}>
+    <AuthContext.Provider value={{ user, setUser, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages, authLoading, premiumData, setPremiumData }}>
       {children}
     </AuthContext.Provider>
   );
