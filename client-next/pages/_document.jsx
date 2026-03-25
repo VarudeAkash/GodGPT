@@ -48,6 +48,14 @@ export default function Document() {
           ]
         })}} />
         <script src="https://checkout.razorpay.com/v1/checkout.js" />
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-3LYD3K2BY8" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-3LYD3K2BY8');
+        `}} />
       </Head>
       <body>
         <Main />
