@@ -495,8 +495,8 @@ export default function Chat() {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Ask ${selectedDeity.name} for guidance...`}
-                rows="2"
+                placeholder={`Message ${selectedDeity.name}...`}
+                rows="1"
                 disabled={isLoading}
               />
               <button
@@ -505,16 +505,7 @@ export default function Chat() {
                 className="send-button-chat"
                 style={{ background: selectedDeity.color }}
               >
-                {isLoading ? (
-                  <>
-                    <div className="spinner"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    Send Prayer
-                  </>
-                )}
+                {isLoading ? <div className="spinner"></div> : '↑'}
               </button>
             </div>
           </div>

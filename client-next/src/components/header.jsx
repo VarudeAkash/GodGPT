@@ -30,16 +30,16 @@ const NAV_ITEMS = [
 ];
 
 const MORE_ITEMS = [
-  { label: 'Kundali Milan',   screen: 'kundali-milan', icon: '💑' },
-  { label: 'Muhurat Finder',  screen: 'muhurat',       icon: '🕐' },
-  { label: 'Sade Sati',       screen: 'sade-sati',     icon: '🪐' },
-  { label: 'Varshphal',       screen: 'varshphal',     icon: '📅' },
-  { label: 'Festivals',       screen: 'festivals',     icon: '🪔' },
+  { label: 'Kundali Milan',   screen: 'kundali-milan', icon: '◈' },
+  { label: 'Muhurat Finder',  screen: 'muhurat',       icon: '◉' },
+  { label: 'Sade Sati',       screen: 'sade-sati',     icon: '◎' },
+  { label: 'Varshphal',       screen: 'varshphal',     icon: '◇' },
+  { label: 'Festivals',       screen: 'festivals',     icon: '✶' },
 ];
 
 const BOTTOM_TABS = [
   { label: 'Home',     screen: 'welcome',      icon: '⌂' },
-  { label: 'Rashifal', screen: 'horoscope',    icon: '♈' },
+  { label: 'Rashifal', screen: 'horoscope',    icon: '✶' },
   { label: 'Chat',     screen: 'deity-select', icon: '✦' },
   { label: 'Kundali',  screen: 'kundali',      icon: '✧' },
   { label: 'Menu',     screen: null,           icon: '···' },

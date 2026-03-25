@@ -101,7 +101,6 @@ export default function HoroscopePage({ navigateTo }) {
             style={{ '--rashi-color': RASHI_COLORS[rashi.id] }}
             onClick={() => selectRashi(rashi.id)}
           >
-            <span className="rashi-symbol">{rashi.symbol}</span>
             <span className="rashi-name">{rashi.name}</span>
             <span className="rashi-english">{rashi.english}</span>
           </button>
@@ -111,7 +110,6 @@ export default function HoroscopePage({ navigateTo }) {
       {selectedRashi && (
         <div className="horoscope-result" style={{ '--rashi-color': RASHI_COLORS[selectedRashi] }}>
           <div className="horoscope-result-header">
-            <span className="horoscope-result-symbol">{selectedData?.symbol}</span>
             <div>
               <h2>{selectedData?.name} Rashifal</h2>
               <p className="horoscope-ruler">Ruler: {RASHI_RULERS[selectedRashi]}</p>
