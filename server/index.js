@@ -133,32 +133,33 @@ app.post('/api/verify-payment', async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   try {
-    // Create expected signature
     const crypto = require('crypto');
+    const secret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', secret)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest('hex');
 
-    // Verify signature
+    console.log('[verify-payment] order:', razorpay_order_id, 'payment:', razorpay_payment_id);
+    console.log('[verify-payment] match:', expectedSignature === razorpay_signature);
+
     if (expectedSignature === razorpay_signature) {
-      // Payment successful
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'Payment verified successfully',
         payment_id: razorpay_payment_id
       });
     } else {
-      res.status(400).json({ 
-        success: false, 
-        error: 'Payment verification failed' 
+      res.status(400).json({
+        success: false,
+        error: 'Payment verification failed'
       });
     }
   } catch (error) {
     console.error('Payment verification error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Payment verification failed' 
+    res.status(500).json({
+      success: false,
+      error: 'Payment verification failed'
     });
   }
 });
