@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
+import { saveKundaliReading, loadKundaliReadings, checkKundaliPaid } from '../utils/cloudSave.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
@@ -10,9 +11,7 @@ const RASHI_LIST = [
   'Dhanu (Sagittarius)','Makar (Capricorn)','Kumbh (Aquarius)','Meen (Pisces)',
 ];
 
-const HOUSE_LABELS = [
-  'I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII',
-];
+const HOUSE_LABELS = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
 function KundaliChart({ ascendant }) {
   const ascIdx = ascendant || 0;
@@ -21,11 +20,6 @@ function KundaliChart({ ascendant }) {
     rashi: RASHI_LIST[(ascIdx + i) % 12].split(' ')[0],
   }));
 
-  // North Indian chart layout (clockwise from Lagna at top-left):
-  //  1   12   11   10
-  //  2  [center]    9
-  //  3  [center]    8
-  //  4    5    6    7
   const positions = [
     [0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],
   ];
@@ -71,19 +65,34 @@ function KundaliPage({ user }) {
   const [ascendant, setAscendant] = useState(0);
   const [lang, setLang]           = useState('english');
   const [error, setError]         = useState('');
-  // Payment state
-  const [showPayGate, setShowPayGate] = useState(false);
-  const [paid, setPaid]               = useState(false);
-  const [pendingForm, setPendingForm] = useState(null);
 
+  const [showPayGate, setShowPayGate]   = useState(false);
+  const [paid, setPaid]                 = useState(false);
+  const [pendingForm, setPendingForm]   = useState(null);
+
+  // Saved readings
+  const [savedReadings, setSavedReadings]       = useState([]);
+  const [loadingHistory, setLoadingHistory]     = useState(false);
+  const [activeReading, setActiveReading]       = useState(null); // reading being viewed from history
+  const [showHistory, setShowHistory]           = useState(false);
+
+  // On mount: restore form, check paid status and load history
   useEffect(() => {
-    document.title = 'Free Kundali Reading | Astravedam';
     const saved = localStorage.getItem('kundaliForm');
     if (saved) { try { setForm(JSON.parse(saved)); } catch { /* ignore */ } }
-    // Check if already paid this session
-    const paidKey = `kundali_paid_${new Date().toDateString()}`;
-    if (localStorage.getItem(paidKey)) setPaid(true);
-  }, []);
+
+    if (user) {
+      setLoadingHistory(true);
+      Promise.all([
+        checkKundaliPaid(user.uid),
+        loadKundaliReadings(user.uid),
+      ]).then(([isPaid, readings]) => {
+        setPaid(isPaid);
+        setSavedReadings(readings);
+        setLoadingHistory(false);
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const updated = { ...form, [e.target.name]: e.target.value };
@@ -98,19 +107,15 @@ function KundaliPage({ user }) {
       return;
     }
     setError('');
+    setActiveReading(null);
 
-    // Not logged in
     if (!user) { setShowPayGate('login'); return; }
-
-    // Not paid
     if (!paid) { setPendingForm({ ...form }); setShowPayGate('pay'); return; }
 
     generateReading(form);
   };
 
   const onPaymentSuccess = (paymentId) => {
-    const paidKey = `kundali_paid_${new Date().toDateString()}`;
-    localStorage.setItem(paidKey, paymentId);
     setPaid(true);
     setShowPayGate(false);
     generateReading(pendingForm || form);
@@ -119,10 +124,15 @@ function KundaliPage({ user }) {
   const generateReading = async (formData) => {
     setLoading(true);
     setReading('');
+    setShowHistory(false);
+
+    let currentAscendant = 0;
     if (formData.tob) {
       const [h] = formData.tob.split(':').map(Number);
-      setAscendant(Math.floor(h / 2) % 12);
+      currentAscendant = Math.floor(h / 2) % 12;
+      setAscendant(currentAscendant);
     }
+
     try {
       const res = await fetch(`${API_URL}/api/kundali-reading`, {
         method: 'POST',
@@ -130,6 +140,7 @@ function KundaliPage({ user }) {
         body: JSON.stringify({ ...formData, language: lang }),
       });
       if (!res.ok) throw new Error();
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let text = '';
@@ -139,6 +150,22 @@ function KundaliPage({ user }) {
         text += decoder.decode(value, { stream: true });
         setReading(text);
       }
+
+      // Save to Firestore after complete
+      if (user && text) {
+        saveKundaliReading(user.uid, {
+          name: formData.name,
+          dob: formData.dob,
+          tob: formData.tob,
+          pob: formData.pob,
+          language: lang,
+          ascendant: currentAscendant,
+          reading: text,
+        }).then(() => {
+          // Refresh history list
+          loadKundaliReadings(user.uid).then(setSavedReadings);
+        });
+      }
     } catch {
       setReading('The cosmic reading could not be completed at this time. Please try again.');
     } finally {
@@ -146,16 +173,59 @@ function KundaliPage({ user }) {
     }
   };
 
+  const viewSavedReading = (saved) => {
+    setActiveReading(saved);
+    setReading(saved.reading);
+    setAscendant(saved.ascendant || 0);
+    setForm({ name: saved.name, dob: saved.dob, tob: saved.tob || '', pob: saved.pob });
+    setShowHistory(false);
+    setShowPayGate(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const formatDate = (firestoreTimestamp) => {
+    if (!firestoreTimestamp) return '';
+    const date = firestoreTimestamp.toDate ? firestoreTimestamp.toDate() : new Date(firestoreTimestamp);
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
   return (
     <div className="kundali-page">
       <div className="kundali-hero">
         <h1>Janma Kundali</h1>
-        <p>Your birth chart reveals the cosmic blueprint of your life — your strengths, challenges, and destiny.</p>
+        <p>Your birth chart reveals the cosmic blueprint of your life - your strengths, challenges, and destiny.</p>
         <div className="kundali-lang">
           <button className={lang === 'english' ? 'active' : ''} onClick={() => setLang('english')}>EN</button>
           <button className={lang === 'hindi'   ? 'active' : ''} onClick={() => setLang('hindi')}>हिं</button>
         </div>
       </div>
+
+      {/* Previous Readings Section */}
+      {user && savedReadings.length > 0 && (
+        <div className="kundali-history-section">
+          <button
+            className="kundali-history-toggle"
+            onClick={() => setShowHistory(v => !v)}
+          >
+            {showHistory ? 'Hide' : 'View'} My Previous Readings ({savedReadings.length})
+          </button>
+
+          {showHistory && (
+            <div className="kundali-history-list">
+              {savedReadings.map((r) => (
+                <div key={r.id} className="kundali-history-card" onClick={() => viewSavedReading(r)}>
+                  <div className="kundali-history-name">{r.name}</div>
+                  <div className="kundali-history-meta">
+                    {r.dob} · {r.pob} · {r.language === 'hindi' ? 'Hindi' : 'English'}
+                  </div>
+                  <div className="kundali-history-date">{formatDate(r.createdAt)}</div>
+                  <span className="kundali-history-view">View Reading →</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {showPayGate === 'login' && (
         <LoginWall message="Sign in to get your Kundali reading" />
@@ -165,7 +235,7 @@ function KundaliPage({ user }) {
         <PaymentGate
           title="Personalized Kundali Reading"
           priceDisplay="₹14"
-          description="A detailed Vedic birth chart reading based on your name, date, time, and place of birth — specific to you, not generic."
+          description="A detailed Vedic birth chart reading based on your name, date, time, and place of birth - specific to you, not generic. Saved permanently to your account."
           orderEndpoint="/api/create-kundali-order"
           user={user}
           onSuccess={onPaymentSuccess}
@@ -176,7 +246,7 @@ function KundaliPage({ user }) {
         <div className="kundali-layout">
           <div className="kundali-form-section">
             <form onSubmit={handleSubmit} className="kundali-form">
-              <h3>Enter Birth Details</h3>
+              <h3>{activeReading ? `Reading for ${activeReading.name}` : 'Enter Birth Details'}</h3>
               <div className="form-group">
                 <label>Full Name</label>
                 <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" />
@@ -199,8 +269,8 @@ function KundaliPage({ user }) {
               <button type="submit" className="kundali-submit-btn" disabled={loading}>
                 {loading ? 'Reading the stars...' : paid ? 'Generate My Kundali' : 'Get My Kundali — ₹14'}
               </button>
-              {!paid && <p className="kundali-price-note">One-time payment · Your reading is saved</p>}
-              {paid && <p className="kundali-paid-note">Payment received — generate anytime today</p>}
+              {!paid && <p className="kundali-price-note">One-time payment · Reading saved to your account forever</p>}
+              {paid && <p className="kundali-paid-note">You have access - generate for any birth details</p>}
             </form>
           </div>
 
@@ -213,7 +283,7 @@ function KundaliPage({ user }) {
 
       {(reading || loading) && !showPayGate && (
         <div className="kundali-reading">
-          <h3>Your Cosmic Reading — {form.name}</h3>
+          <h3>Your Cosmic Reading - {form.name}</h3>
           {loading && !reading && (
             <div className="kundali-reading-loading">
               <div className="kundali-spinner"></div>

@@ -256,8 +256,95 @@
   font-size: 0.97rem;
 }
 
+.kundali-price-note {
+  font-size: 0.78rem;
+  color: rgba(212,193,165,0.45);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+
+.kundali-paid-note {
+  font-size: 0.78rem;
+  color: rgba(100,200,120,0.7);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+
+/* History section */
+.kundali-history-section {
+  margin-bottom: 2rem;
+}
+
+.kundali-history-toggle {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(139,0,0,0.3);
+  color: rgba(212,193,165,0.8);
+  border-radius: 10px;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.kundali-history-toggle:hover {
+  background: rgba(139,0,0,0.15);
+  color: #E6D3B3;
+  border-color: rgba(139,0,0,0.5);
+}
+
+.kundali-history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.kundali-history-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(139,0,0,0.2);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.kundali-history-card:hover {
+  background: rgba(139,0,0,0.1);
+  border-color: rgba(139,0,0,0.45);
+  transform: translateY(-1px);
+}
+
+.kundali-history-name {
+  font-size: 1rem;
+  color: #E6D3B3;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.kundali-history-meta {
+  font-size: 0.8rem;
+  color: rgba(212,193,165,0.55);
+  margin-bottom: 0.3rem;
+}
+
+.kundali-history-date {
+  font-size: 0.75rem;
+  color: rgba(212,193,165,0.4);
+  margin-bottom: 0.6rem;
+}
+
+.kundali-history-view {
+  font-size: 0.8rem;
+  color: rgba(201,169,110,0.8);
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .kundali-layout { grid-template-columns: 1fr; }
   .kundali-chart-section { order: -1; }
   .form-row { grid-template-columns: 1fr; }
+  .kundali-history-list { grid-template-columns: 1fr; }
 }

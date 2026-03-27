@@ -1,69 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { BLOG_POSTS } from '../data/blogs.js';
 
-export function BlogPost({ slug, onBack }) {
-  const post = BLOG_POSTS.find(p => p.slug === slug);
-
-  useEffect(() => {
-    if (post) document.title = `${post.title} | Astravedam`;
-    window.scrollTo(0, 0);
-  }, [post]);
-
-  if (!post) return (
-    <div className="blog-not-found">
-      <p>Post not found.</p>
-      <button onClick={onBack} className="blog-back-btn">Back to Blog</button>
-    </div>
-  );
-
-  return (
-    <div className="blog-post-page">
-      <button onClick={onBack} className="blog-back-btn">Back to Blog</button>
-
-      <div className="blog-post-header">
-        <div className="blog-post-meta">
-          <span className="blog-category">{post.category}</span>
-          <span className="blog-dot">·</span>
-          <span className="blog-read-time">{post.readTime}</span>
-          <span className="blog-dot">·</span>
-          <span className="blog-date">{post.date}</span>
-        </div>
-        <h1 className="blog-post-title">{post.title}</h1>
-        <p className="blog-post-excerpt">{post.excerpt}</p>
-      </div>
-
-      <div className="blog-post-content">
-        {post.sections.map((section, i) => (
-          <div key={i} className="blog-section">
-            <h2>{section.heading}</h2>
-            {section.content.split('\n\n').map((para, j) => (
-              <p key={j}>{para}</p>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function BlogPage({ navigateTo }) {
-  const [activePost, setActivePost] = useState(null);
+  const router = useRouter();
   const [filter, setFilter] = useState('All');
-
-  useEffect(() => {
-    document.title = "Blog — Vedic Wisdom & Astrology | Astravedam";
-  }, []);
 
   const categories = ['All', ...new Set(BLOG_POSTS.map(p => p.category))];
   const filtered = filter === 'All' ? BLOG_POSTS : BLOG_POSTS.filter(p => p.category === filter);
-
-  if (activePost) {
-    return (
-      <div className="blog-page">
-        <BlogPost slug={activePost} onBack={() => setActivePost(null)} />
-      </div>
-    );
-  }
 
   return (
     <div className="blog-page">
@@ -86,7 +30,7 @@ function BlogPage({ navigateTo }) {
 
       <div className="blog-grid">
         {filtered.map(post => (
-          <article key={post.slug} className="blog-card" onClick={() => setActivePost(post.slug)}>
+          <article key={post.slug} className="blog-card" onClick={() => router.push(`/blog/${post.slug}`)}>
             <div className="blog-card-meta">
               <span className="blog-category">{post.category}</span>
               <span className="blog-read-time">{post.readTime}</span>

@@ -29,17 +29,14 @@ export const loadPremiumFromCloud = async (userId) => {
 // Save chat to cloud
 export const saveChatToCloud = async (userId, deityId, messages) => {
   try {
-    const chatRef = db.collection('chats').doc(userId).collection('deityChats').doc(deityId);
-    
-    await chatRef.set({
-      messages: messages,
+    const db = firebase.firestore();
+    await db.collection('chats').doc(userId).collection('deityChats').doc(deityId).set({
+      messages,
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
       deity: deityId,
       messageCount: messages.length
     }, { merge: true });
-    
-  } catch (error) {
-    // Fallback to localStorage
+  } catch {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
   }
 };
@@ -47,32 +44,50 @@ export const saveChatToCloud = async (userId, deityId, messages) => {
 // Load chat from cloud
 export const loadChatFromCloud = async (userId, deityId) => {
   try {
-    const chatRef = db.collection('chats').doc(userId).collection('deityChats').doc(deityId);
-    const chatDoc = await chatRef.get();
-    
-    if (chatDoc.exists) {
-      return chatDoc.data().messages;
-    }
-    return null;
-  } catch (error) {
+    const db = firebase.firestore();
+    const chatDoc = await db.collection('chats').doc(userId).collection('deityChats').doc(deityId).get();
+    return chatDoc.exists ? chatDoc.data().messages : null;
+  } catch {
     return null;
   }
 };
 
-// Migrate localStorage to cloud
-export const migrateToCloud = async (userId) => {
+// Save a Kundali reading to cloud
+export const saveKundaliReading = async (userId, { name, dob, tob, pob, language, ascendant, reading }) => {
   try {
-    const savedDeity = localStorage.getItem('selectedDeity');
-    const savedMessages = localStorage.getItem('chatMessages');
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).collection('kundaliReadings').add({
+      name, dob, tob, pob, language, ascendant, reading,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    // Mark user as having paid for Kundali (permanent)
+    await db.collection('users').doc(userId).set({ kundaliPaid: true }, { merge: true });
+  } catch (error) {
+    console.error('Kundali save failed:', error);
+  }
+};
 
-    if (savedDeity && savedMessages) {
-      let deity, messages;
-      try { deity = JSON.parse(savedDeity); } catch { return; }
-      try { messages = JSON.parse(savedMessages); } catch { return; }
+// Load all Kundali readings for a user
+export const loadKundaliReadings = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    const snap = await db.collection('users').doc(userId).collection('kundaliReadings')
+      .orderBy('createdAt', 'desc')
+      .limit(10)
+      .get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch {
+    return [];
+  }
+};
 
-      if (messages.length > 0) {
-        await saveChatToCloud(userId, deity.id, messages);
-      }
-    }
-  } catch { /* ignore */ }
+// Check if user has paid for Kundali
+export const checkKundaliPaid = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(userId).get();
+    return !!(doc.exists && doc.data().kundaliPaid);
+  } catch {
+    return false;
+  }
 };
