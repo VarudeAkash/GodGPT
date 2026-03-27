@@ -15,6 +15,9 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
+// Trust Render's proxy (required for express-rate-limit to work correctly)
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = ['https://astravedam.com', 'https://www.astravedam.com'];
 if (process.env.NODE_ENV !== 'production') {
