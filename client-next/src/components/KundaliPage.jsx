@@ -151,8 +151,8 @@ function KundaliPage({ user }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name || !form.dob || !form.pob) {
-      setError('Please fill in name, date of birth, and place of birth.');
+    if (!form.name || !form.dob || !form.tob || !form.pob) {
+      setError('Please fill in all fields. Time of birth is required for an accurate chart.');
       return;
     }
     setError('');
@@ -247,34 +247,6 @@ function KundaliPage({ user }) {
         </div>
       </div>
 
-      {/* My Kundalis Section — always visible when user has readings */}
-      {user && savedReadings.length > 0 && (
-        <div className="kundali-my-section">
-          <div className="kundali-my-header">
-            <h2>My Kundalis</h2>
-            <span className="kundali-my-count">{savedReadings.length} saved</span>
-          </div>
-          <div className="kundali-my-grid">
-            {savedReadings.map((r) => (
-              <div
-                key={r.id}
-                className={`kundali-my-card${activeReading?.id === r.id ? ' active' : ''}`}
-                onClick={() => viewSavedReading(r)}
-              >
-                <div className="kundali-my-card-name">{r.name}</div>
-                <div className="kundali-my-card-dob">{r.dob}{r.tob ? ` · ${r.tob}` : ''}</div>
-                <div className="kundali-my-card-pob">{r.pob}</div>
-                <div className="kundali-my-card-footer">
-                  <span className="kundali-my-card-lang">{r.language === 'hindi' ? 'हिं' : 'EN'}</span>
-                  <span className="kundali-my-card-date">{formatDate(r.createdAt)}</span>
-                  <span className="kundali-my-card-cta">{activeReading?.id === r.id ? 'Viewing ✓' : 'View →'}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {showPayGate === 'login' && (
         <LoginWall message="Sign in to get your Kundali reading" />
       )}
@@ -305,7 +277,7 @@ function KundaliPage({ user }) {
                   <input type="date" name="dob" value={form.dob} onChange={handleChange} />
                 </div>
                 <div className="form-group">
-                  <label>Time of Birth (optional)</label>
+                  <label>Time of Birth</label>
                   <input type="time" name="tob" value={form.tob} onChange={handleChange} />
                 </div>
               </div>
@@ -355,6 +327,34 @@ function KundaliPage({ user }) {
           )}
           <div className="kundali-reading-text markdown-body">
             {renderMarkdown(reading)}
+          </div>
+        </div>
+      )}
+
+      {/* My Kundalis Section — below everything */}
+      {user && savedReadings.length > 0 && (
+        <div className="kundali-my-section">
+          <div className="kundali-my-header">
+            <h2>My Kundalis</h2>
+            <span className="kundali-my-count">{savedReadings.length} saved</span>
+          </div>
+          <div className="kundali-my-grid">
+            {savedReadings.map((r) => (
+              <div
+                key={r.id}
+                className={`kundali-my-card${activeReading?.id === r.id ? ' active' : ''}`}
+                onClick={() => viewSavedReading(r)}
+              >
+                <div className="kundali-my-card-name">{r.name}</div>
+                <div className="kundali-my-card-dob">{r.dob}{r.tob ? ` · ${r.tob}` : ''}</div>
+                <div className="kundali-my-card-pob">{r.pob}</div>
+                <div className="kundali-my-card-footer">
+                  <span className="kundali-my-card-lang">{r.language === 'hindi' ? 'हिं' : 'EN'}</span>
+                  <span className="kundali-my-card-date">{formatDate(r.createdAt)}</span>
+                  <span className="kundali-my-card-cta">{activeReading?.id === r.id ? 'Viewing ✓' : 'View →'}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

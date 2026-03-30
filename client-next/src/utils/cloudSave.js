@@ -60,8 +60,8 @@ export const saveKundaliReading = async (userId, { name, dob, tob, pob, language
       name, dob, tob, pob, language, ascendant, reading,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    // Mark user as having paid for Kundali (permanent)
-    await db.collection('users').doc(userId).set({ kundaliPaid: true }, { merge: true });
+    // Consume the paid credit — next generation requires a new payment
+    await db.collection('users').doc(userId).set({ kundaliPaid: false }, { merge: true });
   } catch (error) {
     console.error('Kundali save failed:', error);
   }
