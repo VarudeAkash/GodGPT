@@ -126,13 +126,6 @@ function KundaliPage({ user }) {
     setReading('');
     setShowHistory(false);
 
-    let currentAscendant = 0;
-    if (formData.tob) {
-      const [h] = formData.tob.split(':').map(Number);
-      currentAscendant = Math.floor(h / 2) % 12;
-      setAscendant(currentAscendant);
-    }
-
     try {
       const res = await fetch(`${API_URL}/api/kundali-reading`, {
         method: 'POST',
@@ -140,6 +133,11 @@ function KundaliPage({ user }) {
         body: JSON.stringify({ ...formData, language: lang }),
       });
       if (!res.ok) throw new Error();
+
+      // Real ascendant index from server (Prokerala calculation)
+      const ascHeader = res.headers.get('X-Ascendant');
+      const currentAscendant = ascHeader !== null ? parseInt(ascHeader, 10) : 0;
+      setAscendant(currentAscendant);
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
@@ -162,7 +160,6 @@ function KundaliPage({ user }) {
           ascendant: currentAscendant,
           reading: text,
         }).then(() => {
-          // Refresh history list
           loadKundaliReadings(user.uid).then(setSavedReadings);
         });
       }

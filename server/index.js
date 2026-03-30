@@ -23,7 +23,7 @@ const allowedOrigins = ['https://astravedam.com', 'https://www.astravedam.com'];
 if (process.env.NODE_ENV !== 'production') {
   allowedOrigins.push('http://localhost:5173');
 }
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true, exposedHeaders: ['X-Ascendant'] }));
 app.use(express.json());
 
 // ── Rate limiters ──────────────────────────────────────────────────────────
@@ -325,6 +325,81 @@ app.post('/api/horoscope', aiLimiter, async (req, res) => {
   }
 });
 
+// ── Prokerala helpers ─────────────────────────────────────────────────────────
+let _prokeralaToken = null;
+let _prokeralaTokenExpiry = 0;
+
+async function getProkeralaToken() {
+  if (_prokeralaToken && Date.now() < _prokeralaTokenExpiry) return _prokeralaToken;
+  const res = await fetch('https://api.prokerala.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: process.env.PROKERALA_CLIENT_ID,
+      client_secret: process.env.PROKERALA_CLIENT_SECRET,
+    }).toString(),
+  });
+  const data = await res.json();
+  if (!data.access_token) throw new Error('Prokerala token failed');
+  _prokeralaToken = data.access_token;
+  _prokeralaTokenExpiry = Date.now() + ((data.expires_in || 3600) - 60) * 1000;
+  return _prokeralaToken;
+}
+
+async function geocodePlace(place) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'Astravedam/1.0' } });
+  const data = await res.json();
+  if (!data || !data.length) throw new Error('Place not found: ' + place);
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+}
+
+async function getTimezoneOffset(lat, lon) {
+  try {
+    const res = await fetch(`https://timeapi.io/api/TimeZone/coordinate?latitude=${lat}&longitude=${lon}`);
+    const data = await res.json();
+    const secs = data.currentUtcOffset?.seconds;
+    if (secs != null) {
+      const abs = Math.abs(secs);
+      const h = Math.floor(abs / 3600);
+      const m = Math.floor((abs % 3600) / 60);
+      return `${secs >= 0 ? '+' : '-'}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+  } catch { /* fall through */ }
+  // Fallback: estimate from longitude
+  const h = Math.round(lon / 15);
+  return `${h >= 0 ? '+' : '-'}${String(Math.abs(h)).padStart(2, '0')}:00`;
+}
+
+async function getPlanetPositions(dob, tob, lat, lon, tzOffset) {
+  const token = await getProkeralaToken();
+  const time = tob ? `${tob}:00` : '00:00:00';
+  const datetime = `${dob}T${time}${tzOffset}`;
+  const params = new URLSearchParams({ ayanamsa: '1', coordinates: `${lat},${lon}`, datetime });
+  const res = await fetch(
+    `https://api.prokerala.com/v2/astrology/planet-position?${params}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) throw new Error(`Prokerala API ${res.status}`);
+  const json = await res.json();
+  return json.data?.planet_position || [];
+}
+
+function formatChartForPrompt(planets, hasTob) {
+  const ORDER = [100, 1, 0, 4, 2, 3, 5, 6, 101, 102];
+  const NAMES = { 0:'Sun', 1:'Moon', 2:'Mercury', 3:'Venus', 4:'Mars', 5:'Jupiter', 6:'Saturn', 100:'Ascendant (Lagna)', 101:'Rahu', 102:'Ketu' };
+  return ORDER
+    .filter(id => hasTob || id !== 100)
+    .map(id => planets.find(p => p.id === id))
+    .filter(Boolean)
+    .map(p => {
+      const retro = p.is_retrograde ? ' [Retrograde]' : '';
+      return `${NAMES[p.id] || p.name}: ${p.rasi?.name} at ${(p.degree || 0).toFixed(1)}°${retro}`;
+    })
+    .join('\n');
+}
+
 // ── Kundali Reading ──────────────────────────────────────────────────────────
 app.post('/api/kundali-reading', aiLimiter, async (req, res) => {
   const { name, dob, tob, pob, language = 'english' } = req.body;
@@ -334,27 +409,46 @@ app.post('/api/kundali-reading', aiLimiter, async (req, res) => {
     const { OpenAI } = await import('openai');
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+    // Get real planetary positions from Prokerala
+    let chartText = '';
+    let ascendantIndex = 0;
+    try {
+      const { lat, lon } = await geocodePlace(pob);
+      const tzOffset = await getTimezoneOffset(lat, lon);
+      const planets = await getPlanetPositions(dob, tob, lat, lon, tzOffset);
+      const lagna = planets.find(p => p.id === 100);
+      if (lagna && tob) ascendantIndex = lagna.rasi?.id ?? 0;
+      chartText = formatChartForPrompt(planets, !!tob);
+    } catch (e) {
+      console.error('Chart calculation failed, falling back to GPT-only:', e.message);
+    }
+
     const langInstruction = language === 'hindi'
       ? 'Respond entirely in Hindi using Devanagari script.'
       : 'Respond in English.';
+
+    const chartSection = chartText
+      ? `\nActual planetary positions (Lahiri ayanamsa, Vedic sidereal):\n${chartText}\n`
+      : '';
+    const tobNote = tob ? `Time of Birth: ${tob}` : 'Time of Birth: not provided (skip ascendant analysis)';
 
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{
         role: 'system',
-        content: `You are a learned Vedic astrologer giving a Janma Kundali reading. Speak with warmth and precision. Provide meaningful insights without being vague. ${langInstruction}`
+        content: `You are a learned Vedic Jyotish astrologer giving a Janma Kundali reading. ${chartText ? 'The planetary positions below are astronomically calculated — interpret them accurately.' : 'Birth time was not provided so focus on date-based insights.'} Speak with depth and warmth. Be specific to this chart, not generic. ${langInstruction}`
       }, {
         role: 'user',
         content: `Give a Vedic birth chart reading for:
 Name: ${name}
 Date of Birth: ${dob}
-Time of Birth: ${tob || 'unknown'}
+${tobNote}
 Place of Birth: ${pob}
-
-Cover: likely ascendant sign and personality, Moon sign and emotional nature, key life themes from the chart, practical guidance for this person's path. Where birth time is unknown, focus on the date-based insights. Be specific to this person — not generic. Keep to 300-350 words.`
+${chartSection}
+Cover: ${tob ? 'ascendant sign and physical/personality traits, ' : ''}Moon sign and emotional nature, key planetary strengths and challenges, important life themes, and practical guidance for this person's path. 350-400 words.`
       }],
-      max_tokens: 700,
-      temperature: 0.82,
+      max_tokens: 800,
+      temperature: 0.75,
       stream: true,
     });
 
@@ -362,6 +456,7 @@ Cover: likely ascendant sign and personality, Moon sign and emotional nature, ke
       'Content-Type': 'text/plain; charset=utf-8',
       'Transfer-Encoding': 'chunked',
       'Cache-Control': 'no-cache',
+      'X-Ascendant': String(ascendantIndex),
     });
     for await (const chunk of stream) {
       res.write(chunk.choices[0]?.delta?.content || '');
