@@ -224,9 +224,10 @@ function KundaliPage({ user }) {
     setReading(saved.reading);
     setAscendant(saved.ascendant || 0);
     setForm({ name: saved.name, dob: saved.dob, tob: saved.tob || '', pob: saved.pob });
-    setShowHistory(false);
     setShowPayGate(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      document.getElementById('kundali-reading-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   const formatDate = (firestoreTimestamp) => {
@@ -246,30 +247,31 @@ function KundaliPage({ user }) {
         </div>
       </div>
 
-      {/* Previous Readings Section */}
+      {/* My Kundalis Section — always visible when user has readings */}
       {user && savedReadings.length > 0 && (
-        <div className="kundali-history-section">
-          <button
-            className="kundali-history-toggle"
-            onClick={() => setShowHistory(v => !v)}
-          >
-            {showHistory ? 'Hide' : 'View'} My Previous Readings ({savedReadings.length})
-          </button>
-
-          {showHistory && (
-            <div className="kundali-history-list">
-              {savedReadings.map((r) => (
-                <div key={r.id} className="kundali-history-card" onClick={() => viewSavedReading(r)}>
-                  <div className="kundali-history-name">{r.name}</div>
-                  <div className="kundali-history-meta">
-                    {r.dob} · {r.pob} · {r.language === 'hindi' ? 'Hindi' : 'English'}
-                  </div>
-                  <div className="kundali-history-date">{formatDate(r.createdAt)}</div>
-                  <span className="kundali-history-view">View Reading →</span>
+        <div className="kundali-my-section">
+          <div className="kundali-my-header">
+            <h2>My Kundalis</h2>
+            <span className="kundali-my-count">{savedReadings.length} saved</span>
+          </div>
+          <div className="kundali-my-grid">
+            {savedReadings.map((r) => (
+              <div
+                key={r.id}
+                className={`kundali-my-card${activeReading?.id === r.id ? ' active' : ''}`}
+                onClick={() => viewSavedReading(r)}
+              >
+                <div className="kundali-my-card-name">{r.name}</div>
+                <div className="kundali-my-card-dob">{r.dob}{r.tob ? ` · ${r.tob}` : ''}</div>
+                <div className="kundali-my-card-pob">{r.pob}</div>
+                <div className="kundali-my-card-footer">
+                  <span className="kundali-my-card-lang">{r.language === 'hindi' ? 'हिं' : 'EN'}</span>
+                  <span className="kundali-my-card-date">{formatDate(r.createdAt)}</span>
+                  <span className="kundali-my-card-cta">{activeReading?.id === r.id ? 'Viewing ✓' : 'View →'}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -343,8 +345,8 @@ function KundaliPage({ user }) {
       )}
 
       {(reading || loading) && !showPayGate && (
-        <div className="kundali-reading">
-          <h3>Your Cosmic Reading - {form.name}</h3>
+        <div className="kundali-reading" id="kundali-reading-section">
+          <h3>{activeReading ? `Kundali Reading — ${activeReading.name}` : `Your Cosmic Reading — ${form.name}`}</h3>
           {loading && !reading && (
             <div className="kundali-reading-loading">
               <div className="kundali-spinner"></div>
