@@ -110,4 +110,19 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://astravedam.com/blog/rahu-ketu-axis-karmic-nodes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://astravedam.com/blog/moon-sign-vs-sun-sign-vedic-astrology</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://astravedam.com/blog/jupiter-transit-2025-effects-all-rashis</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
