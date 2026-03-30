@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
 import { saveKundaliReading, loadKundaliReadings, checkKundaliPaid } from '../utils/cloudSave.js';
@@ -73,8 +73,14 @@ function KundaliPage({ user }) {
   // Saved readings
   const [savedReadings, setSavedReadings]       = useState([]);
   const [loadingHistory, setLoadingHistory]     = useState(false);
-  const [activeReading, setActiveReading]       = useState(null); // reading being viewed from history
+  const [activeReading, setActiveReading]       = useState(null);
   const [showHistory, setShowHistory]           = useState(false);
+
+  // Place autocomplete
+  const [pobSuggestions, setPobSuggestions]     = useState([]);
+  const [pobLoading, setPobLoading]             = useState(false);
+  const pobDebounceRef                          = useRef(null);
+  const pobWrapperRef                           = useRef(null);
 
   // On mount: restore form, check paid status and load history
   useEffect(() => {
@@ -94,10 +100,53 @@ function KundaliPage({ user }) {
     }
   }, [user]);
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (pobWrapperRef.current && !pobWrapperRef.current.contains(e.target)) {
+        setPobSuggestions([]);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   const handleChange = (e) => {
     const updated = { ...form, [e.target.name]: e.target.value };
     setForm(updated);
     localStorage.setItem('kundaliForm', JSON.stringify(updated));
+
+    if (e.target.name === 'pob') {
+      const q = e.target.value.trim();
+      clearTimeout(pobDebounceRef.current);
+      if (q.length < 3) { setPobSuggestions([]); return; }
+      pobDebounceRef.current = setTimeout(async () => {
+        setPobLoading(true);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const data = await res.json();
+          setPobSuggestions(data.map(r => {
+            const a = r.address || {};
+            const city = a.city || a.town || a.village || a.county || '';
+            const state = a.state || '';
+            const country = a.country || '';
+            const label = [city, state, country].filter(Boolean).join(', ');
+            return { label: label || r.display_name.split(',').slice(0, 3).join(','), full: r.display_name };
+          }));
+        } catch { setPobSuggestions([]); }
+        finally { setPobLoading(false); }
+      }, 350);
+    }
+  };
+
+  const selectPob = (label) => {
+    const updated = { ...form, pob: label };
+    setForm(updated);
+    localStorage.setItem('kundaliForm', JSON.stringify(updated));
+    setPobSuggestions([]);
   };
 
   const handleSubmit = (e) => {
@@ -258,9 +307,24 @@ function KundaliPage({ user }) {
                   <input type="time" name="tob" value={form.tob} onChange={handleChange} />
                 </div>
               </div>
-              <div className="form-group">
+              <div className="form-group pob-autocomplete" ref={pobWrapperRef}>
                 <label>Place of Birth</label>
-                <input name="pob" value={form.pob} onChange={handleChange} placeholder="City, Country (e.g. Mumbai, India)" />
+                <input
+                  name="pob"
+                  value={form.pob}
+                  onChange={handleChange}
+                  onFocus={() => form.pob.length >= 3 && handleChange({ target: { name: 'pob', value: form.pob } })}
+                  placeholder="Start typing city name..."
+                  autoComplete="off"
+                />
+                {pobLoading && <div className="pob-loading">Searching...</div>}
+                {pobSuggestions.length > 0 && (
+                  <ul className="pob-suggestions">
+                    {pobSuggestions.map((s, i) => (
+                      <li key={i} onMouseDown={() => selectPob(s.label)}>{s.label}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
               {error && <p className="form-error">{error}</p>}
               <button type="submit" className="kundali-submit-btn" disabled={loading}>
@@ -273,7 +337,7 @@ function KundaliPage({ user }) {
 
           <div className="kundali-chart-section">
             <KundaliChart ascendant={ascendant} />
-            <p className="kundali-chart-note">North Indian style · Approximate lagna</p>
+            <p className="kundali-chart-note">North Indian style · Lahiri ayanamsa</p>
           </div>
         </div>
       )}

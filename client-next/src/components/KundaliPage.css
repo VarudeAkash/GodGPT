@@ -256,6 +256,47 @@
   font-size: 0.97rem;
 }
 
+/* Place autocomplete */
+.pob-autocomplete {
+  position: relative;
+}
+
+.pob-loading {
+  font-size: 0.75rem;
+  color: rgba(212,193,165,0.45);
+  padding: 0.3rem 0;
+}
+
+.pob-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #1a0a0a;
+  border: 1px solid rgba(139,0,0,0.4);
+  border-radius: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.pob-suggestions li {
+  padding: 0.6rem 1rem;
+  font-size: 0.88rem;
+  color: #D4C1A5;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pob-suggestions li:hover {
+  background: rgba(139,0,0,0.2);
+  color: #E6D3B3;
+}
+
 .kundali-price-note {
   font-size: 0.78rem;
   color: rgba(212,193,165,0.45);
