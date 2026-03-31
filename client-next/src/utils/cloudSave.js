@@ -1,32 +1,8 @@
 // client-next/src/utils/cloudSave.js
 import firebase from '../firebase.js';
 
-// Save premium data to cloud
-export const savePremiumToCloud = async (userId, premiumData) => {
-  try {
-    const db = firebase.firestore();
-    await db.collection('users').doc(userId).set({ premiumData }, { merge: true });
-  } catch (error) {
-    console.error('Cloud premium save failed:', error);
-  }
-};
+// ─── CHAT ────────────────────────────────────────────────────────────────────
 
-// Load premium data from cloud
-export const loadPremiumFromCloud = async (userId) => {
-  try {
-    const db = firebase.firestore();
-    const doc = await db.collection('users').doc(userId).get();
-    if (doc.exists && doc.data().premiumData) {
-      return doc.data().premiumData;
-    }
-    return null;
-  } catch (error) {
-    console.error('Cloud premium load failed:', error);
-    return null;
-  }
-};
-
-// Save chat to cloud
 export const saveChatToCloud = async (userId, deityId, messages) => {
   try {
     const db = firebase.firestore();
@@ -37,11 +13,10 @@ export const saveChatToCloud = async (userId, deityId, messages) => {
       messageCount: messages.length
     }, { merge: true });
   } catch {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
+    // silent — chat history is non-critical
   }
 };
 
-// Load chat from cloud
 export const loadChatFromCloud = async (userId, deityId) => {
   try {
     const db = firebase.firestore();
@@ -52,7 +27,106 @@ export const loadChatFromCloud = async (userId, deityId) => {
   }
 };
 
-// Save a Kundali reading to cloud
+// ─── USER DATA ───────────────────────────────────────────────────────────────
+
+// Load the full user Firestore document
+export const loadUserData = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(userId).get();
+    if (!doc.exists) return {};
+    return doc.data();
+  } catch { return {}; }
+};
+
+// Ensure user document exists and Krishna free messages are initialized.
+// Only sets freeKrishnaMessages if the field is missing (new user).
+// Returns the current Krishna count.
+export const initKrishnaIfNeeded = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(userId).get();
+    if (!doc.exists || doc.data().freeKrishnaMessages === undefined) {
+      await db.collection('users').doc(userId).set({ freeKrishnaMessages: 50 }, { merge: true });
+      return 50;
+    }
+    return doc.data().freeKrishnaMessages;
+  } catch { return 50; }
+};
+
+// ─── MESSAGE COUNT — ATOMIC OPERATIONS ───────────────────────────────────────
+
+// Atomic decrement for Krishna free messages
+export const decrementKrishnaCount = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).update({
+      freeKrishnaMessages: firebase.firestore.FieldValue.increment(-1),
+    });
+  } catch (err) { console.error('decrementKrishnaCount failed:', err); }
+};
+
+// Atomic restore for Krishna (called on API error to undo decrement)
+export const restoreKrishnaCount = async (userId) => {
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).update({
+      freeKrishnaMessages: firebase.firestore.FieldValue.increment(1),
+    });
+  } catch { /* best-effort */ }
+};
+
+// Atomic decrement for premium deity
+export const decrementPremiumCount = async (userId, deityId) => {
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).update({
+      [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(-1),
+    });
+  } catch (err) { console.error('decrementPremiumCount failed:', err); }
+};
+
+// Atomic restore for premium deity (called on API error)
+export const restorePremiumCount = async (userId, deityId) => {
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).update({
+      [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(1),
+    });
+  } catch { /* best-effort */ }
+};
+
+// ─── PAYMENT ─────────────────────────────────────────────────────────────────
+
+// Save a successful premium purchase to Firestore (sets count to 50 + metadata)
+export const savePremiumPurchase = async (userId, deityId, { expiry, purchaseDate, paymentId }) => {
+  const db = firebase.firestore();
+  const updates = {
+    [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: 50,
+    [`premiumData.purchasedDeities.${deityId}.expiry`]: expiry,
+    [`premiumData.purchasedDeities.${deityId}.purchaseDate`]: purchaseDate,
+    [`premiumData.purchasedDeities.${deityId}.paymentId`]: paymentId,
+    'premiumData.userHasPremium': true,
+  };
+  try {
+    // update() is atomic and preserves other fields via dot-notation
+    await db.collection('users').doc(userId).update(updates);
+  } catch {
+    // Document might not exist yet (edge case) — create it
+    await db.collection('users').doc(userId).set({
+      freeKrishnaMessages: 50,
+      premiumData: {
+        purchasedDeities: {
+          [deityId]: { remainingMessages: 50, expiry, purchaseDate, paymentId },
+        },
+        userHasPremium: true,
+      },
+    }, { merge: true });
+  }
+};
+
+// ─── KUNDALI ─────────────────────────────────────────────────────────────────
+
 export const saveKundaliReading = async (userId, { name, dob, tob, pob, language, ascendant, reading }) => {
   try {
     const db = firebase.firestore();
@@ -67,7 +141,6 @@ export const saveKundaliReading = async (userId, { name, dob, tob, pob, language
   }
 };
 
-// Load all Kundali readings for a user
 export const loadKundaliReadings = async (userId) => {
   try {
     const db = firebase.firestore();
@@ -81,7 +154,6 @@ export const loadKundaliReadings = async (userId) => {
   }
 };
 
-// Check if user has paid for Kundali
 export const checkKundaliPaid = async (userId) => {
   try {
     const db = firebase.firestore();

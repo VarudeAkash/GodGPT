@@ -19,7 +19,13 @@ const ProfilePage      = lazy(() => import('./components/ProfilePage.jsx'));
 const HoroscopePage    = lazy(() => import('./components/HoroscopePage.jsx'));
 import './firebase.js';
 import firebase from 'firebase/compat/app';
-import { saveChatToCloud, loadChatFromCloud, migrateToCloud, savePremiumToCloud, loadPremiumFromCloud } from './utils/cloudSave.js';
+import {
+  saveChatToCloud, loadChatFromCloud,
+  loadUserData, initKrishnaIfNeeded,
+  decrementKrishnaCount, restoreKrishnaCount,
+  decrementPremiumCount, restorePremiumCount,
+  savePremiumPurchase,
+} from './utils/cloudSave.js';
 import { loadDeityMemory, updateDeityMemoryAfterChat, buildMemoryContext } from './utils/deityMemory.js';
 
 
@@ -138,14 +144,6 @@ function App() {
     fetchDeities();
   }, []);
 
-  // === 🆕 ADD: Initialize free Krishna messages on app start ===
-  useEffect(() => {
-    const freeKrishnaMessages = localStorage.getItem('freeKrishnaMessages');
-    if (!freeKrishnaMessages) {
-      localStorage.setItem('freeKrishnaMessages', '50');
-      setRemainingMessages(50);
-    }
-  }, []);
   // Dynamic page titles per screen
   useEffect(() => {
     const titles = {
@@ -176,47 +174,27 @@ function App() {
   }, [messages]);
 
 
-// Add this useEffect in App.jsx
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
       setUser(user);
       if (user) {
-        migrateToCloud(user.uid);
+        // Firestore is the single source of truth — no localStorage for counts
+        const data = await loadUserData(user.uid);
 
-        // Always restore free message count from localStorage on login
-        const storedFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
-        setRemainingMessages(storedFree);
-
-        // Try Firestore first (cross-device), fall back to localStorage (same device)
-        const cloudPremium = await loadPremiumFromCloud(user.uid);
-        if (cloudPremium) {
-          localStorage.setItem('premiumData', JSON.stringify(cloudPremium));
-          const hasActive = Object.values(cloudPremium.purchasedDeities || {}).some(
-            d => d.expiry > Date.now() && d.remainingMessages > 0
-          );
-          if (hasActive) setUserHasPremium(true);
-        } else {
-          // No Firestore record — check localStorage (e.g. purchased before cloud sync was added)
-          const localPremium = localStorage.getItem('premiumData');
-          if (localPremium) {
-            try {
-              const data = JSON.parse(localPremium);
-              const hasActive = Object.values(data.purchasedDeities || {}).some(
-                d => d.expiry > Date.now() && d.remainingMessages > 0
-              );
-              if (hasActive) {
-                setUserHasPremium(true);
-                // Migrate this old purchase up to Firestore
-                savePremiumToCloud(user.uid, data);
-              }
-            } catch { /* ignore */ }
-          }
+        // New user: initialize Krishna free messages in Firestore
+        if (data.freeKrishnaMessages === undefined) {
+          await initKrishnaIfNeeded(user.uid);
         }
+
+        // Set premium status from Firestore
+        const purchasedDeities = data?.premiumData?.purchasedDeities || {};
+        const hasActive = Object.values(purchasedDeities).some(
+          d => d.expiry > Date.now() && d.remainingMessages > 0
+        );
+        if (hasActive) setUserHasPremium(true);
       } else {
-        // Sign-out: reset state only — keep localStorage so re-login on same device works
-        const freeMessages = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
-        setRemainingMessages(freeMessages);
         setUserHasPremium(false);
+        setRemainingMessages(50);
         setSelectedDeity(null);
         setMessages([]);
         setDeityMemory(null);
@@ -304,37 +282,28 @@ function App() {
 
   // === MODIFIED: selectDeity ===
   const selectDeity = async (deity) => {
-    let premiumData;
-    try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-    catch { premiumData = { purchasedDeities: {} }; }
-
-    // Resolve fresh count from source of truth (localStorage / premiumData)
-    let freshCount = 50;
-
     // All deity chats require login
     if (!user) {
       alert('Please sign in to chat with the deities.');
       return;
     }
 
-    // Check Krishna free messages
+    // Read fresh counts from Firestore — single source of truth
+    const userData = await loadUserData(user.uid);
+    let freshCount;
+
     if (deity.id === 'krishna') {
-      const stored = localStorage.getItem('freeKrishnaMessages');
-      if (!stored) {
-        localStorage.setItem('freeKrishnaMessages', '50');
-        freshCount = 50;
-      } else {
-        freshCount = parseInt(stored);
-        if (freshCount <= 0) {
-          setSelectedDeityForPremium(deity);
-          setShowPremiumModal(true);
-          return;
-        }
+      freshCount = userData.freeKrishnaMessages;
+      if (freshCount === undefined) {
+        freshCount = await initKrishnaIfNeeded(user.uid);
       }
-    }
-    // Check premium deities
-    else {
-      const deityPremium = premiumData.purchasedDeities[deity.id];
+      if (freshCount <= 0) {
+        setSelectedDeityForPremium(deity);
+        setShowPremiumModal(true);
+        return;
+      }
+    } else {
+      const deityPremium = userData?.premiumData?.purchasedDeities?.[deity.id];
       if (!deityPremium || deityPremium.remainingMessages <= 0 || deityPremium.expiry <= Date.now()) {
         setSelectedDeityForPremium(deity);
         setShowPremiumModal(true);
@@ -364,17 +333,24 @@ function App() {
     setSelectedDeity(deity);
     setCurrentScreen('chat');
     
-    // 🆕 FIX: Load existing messages if same deity, otherwise welcome
+    // Load chat history — prefer Firestore (cross-device), fall back to localStorage
+    if (user) {
+      const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
+      if (cloudMessages && cloudMessages.length > 0) {
+        setMessages(cloudMessages);
+        localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
+        return;
+      }
+    }
+    // No cloud history — use localStorage if same deity, else show welcome
     if (isSameDeity && savedMessages) {
-      // Load existing conversation
       try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
     } else {
-      // Start new conversation — freshCount is already resolved above, no stale closure
       const welcomeMessage = {
         id: Date.now(),
-        text: userHasPremium
-          ? `Welcome, blessed seeker. I am ${deity.name}. You have ${freshCount} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`
-          : `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${freshCount} free messages. What wisdom do you seek today?`,
+        text: deity.id === 'krishna' && !userHasPremium
+          ? `Welcome, seeker. I am ${deity.name}. ${deity.blessing} You have ${freshCount} free messages. What wisdom do you seek today?`
+          : `Welcome, blessed seeker. I am ${deity.name}. You have ${freshCount} divine messages remaining. ${deity.blessing} What wisdom do you seek today?`,
         sender: 'deity',
         deity: deity,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -428,26 +404,15 @@ function App() {
 
     // Save to localStorage
     localStorage.setItem('chatMessages', JSON.stringify(newMessages));
-    
-    // Decrement message count for ALL users (including free Krishna)
+
+    // Decrement React state immediately for UI feedback
     setRemainingMessages(prev => prev - 1);
 
-    // === 🆕 FIXED: Update per-deity message count in localStorage ===
+    // Atomically decrement in Firestore — single source of truth
     if (selectedDeity.id === 'krishna' && !userHasPremium) {
-      // Update free Krishna messages
-      const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
-      localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
+      if (user) decrementKrishnaCount(user.uid);
     } else {
-      // Update premium deity messages
-      let premiumData;
-      try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-      catch { premiumData = { purchasedDeities: {} }; }
-      if (premiumData.purchasedDeities[selectedDeity.id]) {
-        premiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
-        localStorage.setItem('premiumData', JSON.stringify(premiumData));
-        // Sync to Firestore so re-login restores correct count
-        if (user) savePremiumToCloud(user.uid, premiumData);
-      }
+      if (user) decrementPremiumCount(user.uid, selectedDeity.id);
     }
     
     try {
@@ -527,19 +492,12 @@ function App() {
       setMessages(errorMessages);
       localStorage.setItem('chatMessages', JSON.stringify(errorMessages));
       
-      // Restore message count on error for all users
+      // Restore message count on API error (undo decrement)
       setRemainingMessages(prev => prev + 1);
       if (selectedDeity.id === 'krishna' && !userHasPremium) {
-        const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '0');
-        localStorage.setItem('freeKrishnaMessages', (currentFree + 1).toString());
+        if (user) restoreKrishnaCount(user.uid);
       } else {
-        let premiumData;
-        try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { premiumData = { purchasedDeities: {} }; }
-        if (premiumData.purchasedDeities[selectedDeity.id]) {
-          premiumData.purchasedDeities[selectedDeity.id].remainingMessages += 1;
-          localStorage.setItem('premiumData', JSON.stringify(premiumData));
-        }
+        if (user) restorePremiumCount(user.uid, selectedDeity.id);
       }
     } finally {
       setIsLoading(false);
@@ -699,24 +657,15 @@ function App() {
       const verificationData = await verificationResponse.json();
       
       if (verificationData.success) {
-        // === 🆕 FIXED: Save per-deity premium data ===
-        let existingData;
-        try { existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { existingData = { purchasedDeities: {} }; }
-        
-        existingData.purchasedDeities[deityId] = {
-          remainingMessages: 50,
-          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
-          purchaseDate: Date.now(),
-          paymentId: response.razorpay_payment_id
-        };
-        existingData.userHasPremium = true;
-        
-        localStorage.setItem('premiumData', JSON.stringify(existingData));
+        const expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
 
-        // Sync premium to Firestore for cross-device access
+        // Save purchase to Firestore — single source of truth
         if (user) {
-          savePremiumToCloud(user.uid, existingData);
+          await savePremiumPurchase(user.uid, deityId, {
+            expiry,
+            purchaseDate: Date.now(),
+            paymentId: response.razorpay_payment_id,
+          });
         }
 
         setUserHasPremium(true);
@@ -987,15 +936,19 @@ function App() {
               {user && userHasPremium && (
                 <button
                   className="restore-purchases-btn"
-                  onClick={() => {
-                    const premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}');
+                  onClick={async () => {
+                    if (!user) return;
+                    const userData = await loadUserData(user.uid);
+                    const purchased = userData?.premiumData?.purchasedDeities || {};
                     let message = "✅ Your Premium Deities:\n\n";
-                    Object.entries(premiumData.purchasedDeities).forEach(([deityId, data]) => {
+                    Object.entries(purchased).forEach(([deityId, data]) => {
                       if (data.expiry > Date.now()) {
                         const deityName = deities.find(d => d.id === deityId)?.name || deityId;
                         message += `🙏 ${deityName}: ${data.remainingMessages} messages\n`;
                       }
                     });
+                    const krishnaCount = userData?.freeKrishnaMessages ?? 50;
+                    message += `\n🕉 Lord Krishna (free): ${krishnaCount} messages`;
                     alert(message);
                   }}
                   style={{
