@@ -35,7 +35,6 @@ export function AuthProvider({ children }) {
           }
 
           setUserData(data);
-          setRemainingMessages(data.freeKrishnaMessages ?? 50);
 
           const nextPremiumData = data.premiumData || { purchasedDeities: {} };
           setPremiumData(nextPremiumData);

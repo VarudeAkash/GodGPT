@@ -28,6 +28,13 @@ export default function Chat() {
   const paymentTimeoutRef = useRef(null);
   const memoryDebounceRef = useRef(null);
 
+  const getActivePremiumForDeity = () => {
+    const deityPremium = (premiumData.purchasedDeities || {})[selectedDeity?.id];
+    if (!deityPremium) return null;
+    if (deityPremium.expiry <= Date.now()) return null;
+    return deityPremium;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -39,18 +46,15 @@ export default function Chat() {
   useEffect(() => {
     if (!selectedDeity) return;
 
-    if (selectedDeity.id === 'krishna') {
-      if (user) {
-        setRemainingMessages(userData.freeKrishnaMessages ?? 50);
-      } else {
-        setRemainingMessages(parseInt(localStorage.getItem('freeKrishnaMessages') || '50'));
-      }
+    const activePremium = getActivePremiumForDeity();
+    if (activePremium) {
+      setRemainingMessages(activePremium.remainingMessages);
       return;
     }
 
-    const deityPremium = (premiumData.purchasedDeities || {})[selectedDeity.id];
-    if (deityPremium && deityPremium.expiry > Date.now()) {
-      setRemainingMessages(deityPremium.remainingMessages);
+    if (selectedDeity.id === 'krishna') {
+      if (user) setRemainingMessages(userData.freeKrishnaMessages ?? 50);
+      else setRemainingMessages(parseInt(localStorage.getItem('freeKrishnaMessages') || '50'));
     }
   }, [selectedDeity, user, userData, premiumData, setRemainingMessages]);
 
@@ -140,14 +144,17 @@ export default function Chat() {
   const sendMessage = async () => {
     if (!inputMessage.trim() || !selectedDeity || isLoading) return;
 
+    const activePremium = getActivePremiumForDeity();
+    const usingKrishnaFree = selectedDeity.id === 'krishna' && !activePremium;
+
     // Check message limits for ALL deities (including Krishna after first 50)
-    if (userHasPremium && remainingMessages <= 0) {
+    if (selectedDeity.id !== 'krishna' && remainingMessages <= 0) {
       setShowBuyMoreModal(true);
       return;
     }
 
     // Check if free Krishna messages are exhausted
-    if (selectedDeity.id === 'krishna' && !userHasPremium && remainingMessages <= 0) {
+    if (selectedDeity.id === 'krishna' && remainingMessages <= 0) {
       setShowBuyMoreModal(true);
       return;
     }
@@ -172,7 +179,7 @@ export default function Chat() {
 
     // Persist the decrement against the shared account record
     try {
-      if (selectedDeity.id === 'krishna' && !userHasPremium) {
+      if (usingKrishnaFree) {
         if (user) {
           await decrementKrishnaCount(user.uid);
         } else {
@@ -276,7 +283,7 @@ export default function Chat() {
 
       // Restore message count on error for all users
       setRemainingMessages(prev => prev + 1);
-      if (selectedDeity.id === 'krishna' && !userHasPremium) {
+      if (usingKrishnaFree) {
         if (user) {
           await restoreKrishnaCount(user.uid);
         } else {
