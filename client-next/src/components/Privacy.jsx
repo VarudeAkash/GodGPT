@@ -79,8 +79,9 @@ function Privacy() {
             <div className="privacy-section">
               <h3>Data Storage & Security</h3>
               <p>
-                Your chat conversations are stored locally in your browser using localStorage. 
-                This means your spiritual discussions remain private on your device and are not transmitted to our servers.
+                Some preferences are stored locally in your browser for convenience. If you are signed in,
+                chat history and certain feature entitlements may also be stored in our Firebase database so
+                your experience can continue across devices.
               </p>
               <p>
                 Payment information is handled securely by compliant payment processors. 

@@ -54,6 +54,39 @@ export const initKrishnaIfNeeded = async (userId) => {
   } catch { return 50; }
 };
 
+// ─── FEATURE ENTITLEMENTS ────────────────────────────────────────────────────
+
+const featureDateKey = () => new Date().toISOString().slice(0, 10);
+
+export const checkFeaturePaid = async (userId, featureKey) => {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(userId).get();
+    if (!doc.exists) return false;
+    const data = doc.data();
+    return data?.featurePayments?.[featureKey]?.dateKey === featureDateKey();
+  } catch {
+    return false;
+  }
+};
+
+export const saveFeaturePayment = async (userId, featureKey, paymentId) => {
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(userId).set({
+      featurePayments: {
+        [featureKey]: {
+          paymentId,
+          dateKey: featureDateKey(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+      },
+    }, { merge: true });
+  } catch (error) {
+    console.error('saveFeaturePayment failed:', error);
+  }
+};
+
 // ─── MESSAGE COUNT — ATOMIC OPERATIONS ───────────────────────────────────────
 
 // Atomic decrement for Krishna free messages

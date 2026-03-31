@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { RASHI_NAMES } from '../utils/panchang.js';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
+import { checkFeaturePaid, saveFeaturePayment } from '../utils/cloudSave.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
@@ -40,13 +41,31 @@ function DivyaUpayPage({ user }) {
     document.title = "Divya Upay — Your Sacred Remedies | Astravedam";
     const savedRashi = localStorage.getItem('userRashi');
     if (savedRashi) setRashi(savedRashi);
-    const paidKey = `upay_paid_${new Date().toDateString()}`;
-    if (localStorage.getItem(paidKey)) setPaid(true);
   }, []);
 
-  const onPaymentSuccess = (paymentId) => {
-    const paidKey = `upay_paid_${new Date().toDateString()}`;
-    localStorage.setItem(paidKey, paymentId);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPaidStatus = async () => {
+      if (!user) {
+        if (!cancelled) setPaid(false);
+        return;
+      }
+      const isPaid = await checkFeaturePaid(user.uid, 'divyaUpay');
+      if (!cancelled) setPaid(isPaid);
+    };
+
+    loadPaidStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const onPaymentSuccess = async (paymentId) => {
+    if (user) {
+      await saveFeaturePayment(user.uid, 'divyaUpay', paymentId);
+    }
     setPaid(true);
     setShowPayGate(false);
     generateUpay(pendingSubmit || { situation, category, rashi, deity });

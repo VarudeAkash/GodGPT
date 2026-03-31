@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
+import { checkFeaturePaid, saveFeaturePayment } from '../utils/cloudSave.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
@@ -26,9 +27,26 @@ function MuhuratPage({ user }) {
 
   useEffect(() => {
     document.title = 'Muhurat Finder | Astravedam';
-    const paidKey = `muhurat_paid_${new Date().toDateString()}`;
-    if (localStorage.getItem(paidKey)) setPaid(true);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPaidStatus = async () => {
+      if (!user) {
+        if (!cancelled) setPaid(false);
+        return;
+      }
+      const isPaid = await checkFeaturePaid(user.uid, 'muhurat');
+      if (!cancelled) setPaid(isPaid);
+    };
+
+    loadPaidStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -44,9 +62,10 @@ function MuhuratPage({ user }) {
     generateResult(form);
   };
 
-  const onPaymentSuccess = (paymentId) => {
-    const paidKey = `muhurat_paid_${new Date().toDateString()}`;
-    localStorage.setItem(paidKey, paymentId);
+  const onPaymentSuccess = async (paymentId) => {
+    if (user) {
+      await saveFeaturePayment(user.uid, 'muhurat', paymentId);
+    }
     setPaid(true);
     setShowPayGate(false);
     generateResult(pendingForm || form);

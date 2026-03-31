@@ -6,14 +6,14 @@ import { useChat } from '../src/context/ChatContext';
 import DeityIcon from '../src/components/DeityIcon';
 import BuyMoreModal from '../src/components/BuyMoreModal';
 import PremiumModal from '../src/components/PremiumModal';
-import { saveChatToCloud, savePremiumToCloud } from '../src/utils/cloudSave.js';
+import { saveChatToCloud, loadChatFromCloud, decrementKrishnaCount, restoreKrishnaCount, decrementPremiumCount, restorePremiumCount, savePremiumPurchase } from '../src/utils/cloudSave.js';
 import { loadDeityMemory, updateDeityMemoryAfterChat, buildMemoryContext } from '../src/utils/deityMemory.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 export default function Chat() {
   const router = useRouter();
-  const { user, userHasPremium, remainingMessages, setRemainingMessages } = useAuth();
+  const { user, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages, premiumData, setPremiumData, userData } = useAuth();
   const { selectedDeity, setSelectedDeity, messages, setMessages, deityMemory, setDeityMemory } = useChat();
 
   const [inputMessage, setInputMessage] = useState('');
@@ -36,26 +36,66 @@ export default function Chat() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (!selectedDeity) return;
+
+    if (selectedDeity.id === 'krishna') {
+      if (user) {
+        setRemainingMessages(userData.freeKrishnaMessages ?? 50);
+      } else {
+        setRemainingMessages(parseInt(localStorage.getItem('freeKrishnaMessages') || '50'));
+      }
+      return;
+    }
+
+    const deityPremium = (premiumData.purchasedDeities || {})[selectedDeity.id];
+    if (deityPremium && deityPremium.expiry > Date.now()) {
+      setRemainingMessages(deityPremium.remainingMessages);
+    }
+  }, [selectedDeity, user, userData, premiumData, setRemainingMessages]);
+
   // Guard: if no selectedDeity, redirect to deity-select
   useEffect(() => {
-    if (!selectedDeity && typeof window !== 'undefined') {
-      const saved = localStorage.getItem('selectedDeity');
-      if (saved) {
-        try {
-          const deity = JSON.parse(saved);
-          setSelectedDeity(deity);
-          const savedMessages = localStorage.getItem('chatMessages');
-          if (savedMessages) {
-            try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
-          }
-        } catch {
-          router.replace('/deity-select');
-        }
-      } else {
-        router.replace('/deity-select');
-      }
+    if (selectedDeity || typeof window === 'undefined') return;
+
+    const saved = localStorage.getItem('selectedDeity');
+    if (!saved) {
+      router.replace('/deity-select');
+      return;
     }
-  }, [selectedDeity]);
+
+    let cancelled = false;
+
+    const restoreChatState = async () => {
+      try {
+        const deity = JSON.parse(saved);
+        if (cancelled) return;
+        setSelectedDeity(deity);
+
+        if (user) {
+          const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
+          if (!cancelled && cloudMessages && cloudMessages.length > 0) {
+            setMessages(cloudMessages);
+            localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
+            return;
+          }
+        }
+
+        const savedMessages = localStorage.getItem('chatMessages');
+        if (!cancelled && savedMessages) {
+          try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
+        }
+      } catch {
+        if (!cancelled) router.replace('/deity-select');
+      }
+    };
+
+    restoreChatState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDeity, user, router, setMessages, setSelectedDeity]);
 
   if (!selectedDeity) {
     return null;
@@ -130,19 +170,25 @@ export default function Chat() {
     // Decrement message count for ALL users (including free Krishna)
     setRemainingMessages(prev => prev - 1);
 
-    // Update per-deity message count in localStorage
+    // Persist the decrement against the shared account record
     if (selectedDeity.id === 'krishna' && !userHasPremium) {
-      const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
-      localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
+      if (user) {
+        await decrementKrishnaCount(user.uid);
+      } else {
+        const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
+        localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
+      }
     } else {
-      let premiumData;
-      try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-      catch { premiumData = { purchasedDeities: {} }; }
-      if (premiumData.purchasedDeities[selectedDeity.id]) {
-        premiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
-        localStorage.setItem('premiumData', JSON.stringify(premiumData));
-        // Sync to Firestore so re-login restores correct count
-        if (user) savePremiumToCloud(user.uid, premiumData);
+      if (user) {
+        await decrementPremiumCount(user.uid, selectedDeity.id);
+      } else {
+        let localPremiumData;
+        try { localPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+        catch { localPremiumData = { purchasedDeities: {} }; }
+        if (localPremiumData.purchasedDeities[selectedDeity.id]) {
+          localPremiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
+          localStorage.setItem('premiumData', JSON.stringify(localPremiumData));
+        }
       }
     }
 
@@ -224,15 +270,23 @@ export default function Chat() {
       // Restore message count on error for all users
       setRemainingMessages(prev => prev + 1);
       if (selectedDeity.id === 'krishna' && !userHasPremium) {
-        const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '0');
-        localStorage.setItem('freeKrishnaMessages', (currentFree + 1).toString());
+        if (user) {
+          await restoreKrishnaCount(user.uid);
+        } else {
+          const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '0');
+          localStorage.setItem('freeKrishnaMessages', (currentFree + 1).toString());
+        }
       } else {
-        let premiumData;
-        try { premiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { premiumData = { purchasedDeities: {} }; }
-        if (premiumData.purchasedDeities[selectedDeity.id]) {
-          premiumData.purchasedDeities[selectedDeity.id].remainingMessages += 1;
-          localStorage.setItem('premiumData', JSON.stringify(premiumData));
+        if (user) {
+          await restorePremiumCount(user.uid, selectedDeity.id);
+        } else {
+          let localPremiumData;
+          try { localPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+          catch { localPremiumData = { purchasedDeities: {} }; }
+          if (localPremiumData.purchasedDeities[selectedDeity.id]) {
+            localPremiumData.purchasedDeities[selectedDeity.id].remainingMessages += 1;
+            localStorage.setItem('premiumData', JSON.stringify(localPremiumData));
+          }
         }
       }
     } finally {
@@ -337,20 +391,47 @@ export default function Chat() {
       const verificationData = await verificationResponse.json();
 
       if (verificationData.success) {
-        let existingData;
-        try { existingData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { existingData = { purchasedDeities: {} }; }
+        const purchaseDate = Date.now();
+        const expiry = purchaseDate + (30 * 24 * 60 * 60 * 1000);
 
-        existingData.purchasedDeities[selectedDeityForPremium.id] = {
-          remainingMessages: 50,
-          expiry: Date.now() + (30 * 24 * 60 * 60 * 1000),
-          purchaseDate: Date.now(),
-          paymentId: response.razorpay_payment_id
+        const nextPremiumData = {
+          ...premiumData,
+          purchasedDeities: {
+            ...(premiumData.purchasedDeities || {}),
+            [selectedDeityForPremium.id]: {
+              remainingMessages: 50,
+              expiry,
+              purchaseDate,
+              paymentId: response.razorpay_payment_id
+            }
+          },
+          userHasPremium: true
         };
-        existingData.userHasPremium = true;
-        localStorage.setItem('premiumData', JSON.stringify(existingData));
 
-        if (user) savePremiumToCloud(user.uid, existingData);
+        if (user) {
+          await savePremiumPurchase(user.uid, selectedDeityForPremium.id, {
+            expiry,
+            purchaseDate,
+            paymentId: response.razorpay_payment_id
+          });
+        }
+
+        setPremiumData(nextPremiumData);
+        setUserHasPremium(true);
+
+        const existingData = {
+          purchasedDeities: {
+            ...(JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}').purchasedDeities || {}),
+            [selectedDeityForPremium.id]: {
+              remainingMessages: 50,
+              expiry,
+              purchaseDate,
+              paymentId: response.razorpay_payment_id
+            }
+          },
+          userHasPremium: true
+        };
+        localStorage.setItem('premiumData', JSON.stringify(existingData));
 
         setRemainingMessages(50);
         setShowPremiumModal(false);

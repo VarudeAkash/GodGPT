@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
 import { RASHI_NAMES } from '../utils/panchang.js';
+import { checkFeaturePaid, saveFeaturePayment } from '../utils/cloudSave.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
@@ -17,9 +18,26 @@ function SadeSatiPage({ user }) {
 
   useEffect(() => {
     document.title = 'Sade Sati & Dhaiya Report | Astravedam';
-    const paidKey = `sadesati_paid_${new Date().toDateString()}`;
-    if (localStorage.getItem(paidKey)) setPaid(true);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPaidStatus = async () => {
+      if (!user) {
+        if (!cancelled) setPaid(false);
+        return;
+      }
+      const isPaid = await checkFeaturePaid(user.uid, 'sadeSati');
+      if (!cancelled) setPaid(isPaid);
+    };
+
+    loadPaidStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -35,9 +53,10 @@ function SadeSatiPage({ user }) {
     generateResult(form);
   };
 
-  const onPaymentSuccess = (paymentId) => {
-    const paidKey = `sadesati_paid_${new Date().toDateString()}`;
-    localStorage.setItem(paidKey, paymentId);
+  const onPaymentSuccess = async (paymentId) => {
+    if (user) {
+      await saveFeaturePayment(user.uid, 'sadeSati', paymentId);
+    }
     setPaid(true);
     setShowPayGate(false);
     generateResult(pendingForm || form);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { renderMarkdown } from '../utils/renderMarkdown.jsx';
 import { LoginWall, PaymentGate } from './PayGate.jsx';
+import { checkFeaturePaid, saveFeaturePayment } from '../utils/cloudSave.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
@@ -19,9 +20,26 @@ function KundaliMilanPage({ user }) {
 
   useEffect(() => {
     document.title = 'Kundali Milan — Compatibility | Astravedam';
-    const paidKey = `milan_paid_${new Date().toDateString()}`;
-    if (localStorage.getItem(paidKey)) setPaid(true);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPaidStatus = async () => {
+      if (!user) {
+        if (!cancelled) setPaid(false);
+        return;
+      }
+      const isPaid = await checkFeaturePaid(user.uid, 'kundaliMilan');
+      if (!cancelled) setPaid(isPaid);
+    };
+
+    loadPaidStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleChange1 = (e) => setPerson1(p => ({ ...p, [e.target.name]: e.target.value }));
   const handleChange2 = (e) => setPerson2(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -38,9 +56,10 @@ function KundaliMilanPage({ user }) {
     generateResult({ person1, person2 });
   };
 
-  const onPaymentSuccess = (paymentId) => {
-    const paidKey = `milan_paid_${new Date().toDateString()}`;
-    localStorage.setItem(paidKey, paymentId);
+  const onPaymentSuccess = async (paymentId) => {
+    if (user) {
+      await saveFeaturePayment(user.uid, 'kundaliMilan', paymentId);
+    }
     setPaid(true);
     setShowPayGate(false);
     generateResult(pendingData || { person1, person2 });

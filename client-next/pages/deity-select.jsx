@@ -6,14 +6,14 @@ import { useChat } from '../src/context/ChatContext';
 import DeityIcon from '../src/components/DeityIcon';
 import BuyMoreModal from '../src/components/BuyMoreModal';
 import PremiumModal from '../src/components/PremiumModal';
-import { savePremiumToCloud, loadChatFromCloud } from '../src/utils/cloudSave.js';
+import { loadChatFromCloud, loadUserData, initKrishnaIfNeeded, savePremiumPurchase } from '../src/utils/cloudSave.js';
 import { loadDeityMemory } from '../src/utils/deityMemory.js';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 export default function DeitySelect() {
   const router = useRouter();
-  const { user, userHasPremium, setUserHasPremium, remainingMessages, setRemainingMessages, premiumData, setPremiumData } = useAuth();
+  const { user, userHasPremium, setUserHasPremium, setRemainingMessages, premiumData, setPremiumData } = useAuth();
   const { deities, setSelectedDeity, setMessages, setDeityMemory } = useChat();
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
@@ -23,32 +23,30 @@ export default function DeitySelect() {
   const paymentTimeoutRef = useRef(null);
 
   const selectDeity = async (deity) => {
-    let freshCount = 50;
-
     // All deity chats require login
     if (!user) {
       alert('Please sign in to chat with the deities.');
       return;
     }
 
+    const latestUserData = await loadUserData(user.uid);
+    let freshCount = 50;
+
     // Check Krishna free messages
     if (deity.id === 'krishna') {
-      const stored = localStorage.getItem('freeKrishnaMessages');
-      if (!stored) {
-        localStorage.setItem('freeKrishnaMessages', '50');
-        freshCount = 50;
-      } else {
-        freshCount = parseInt(stored);
-        if (freshCount <= 0) {
-          setSelectedDeityForPremium(deity);
-          setShowPremiumModal(true);
-          return;
-        }
+      freshCount = latestUserData.freeKrishnaMessages;
+      if (freshCount === undefined) {
+        freshCount = await initKrishnaIfNeeded(user.uid);
+      }
+      if (freshCount <= 0) {
+        setSelectedDeityForPremium(deity);
+        setShowPremiumModal(true);
+        return;
       }
     }
     // Check premium deities
     else {
-      const deityPremium = (premiumData.purchasedDeities || {})[deity.id];
+      const deityPremium = latestUserData?.premiumData?.purchasedDeities?.[deity.id];
       if (!deityPremium || deityPremium.remainingMessages <= 0 || deityPremium.expiry <= Date.now()) {
         setSelectedDeityForPremium(deity);
         setShowPremiumModal(true);
@@ -75,7 +73,18 @@ export default function DeitySelect() {
     localStorage.setItem('selectedDeity', JSON.stringify(deity));
     setSelectedDeity(deity);
 
-    // Load existing messages if same deity, otherwise welcome
+    // Prefer cloud chat history for signed-in users so devices stay in sync.
+    if (user) {
+      const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
+      if (cloudMessages && cloudMessages.length > 0) {
+        setMessages(cloudMessages);
+        localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
+        router.push('/chat');
+        return;
+      }
+    }
+
+    // Fall back to local history for this browser only if cloud is empty.
     if (isSameDeity && savedMessages) {
       try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
     } else {
@@ -191,14 +200,16 @@ export default function DeitySelect() {
       const verificationData = await verificationResponse.json();
 
       if (verificationData.success) {
+        const purchaseDate = Date.now();
+        const expiry = purchaseDate + (30 * 24 * 60 * 60 * 1000);
         const updatedPremium = {
           ...premiumData,
           purchasedDeities: {
             ...(premiumData.purchasedDeities || {}),
             [deityId]: {
               remainingMessages: 50,
-              expiry: Date.now() + (30 * 24 * 60 * 60 * 1000), // 30 days
-              purchaseDate: Date.now(),
+              expiry,
+              purchaseDate,
               paymentId: response.razorpay_payment_id
             }
           },
@@ -206,7 +217,11 @@ export default function DeitySelect() {
         };
 
         setPremiumData(updatedPremium);
-        savePremiumToCloud(user.uid, updatedPremium);
+        await savePremiumPurchase(user.uid, deityId, {
+          expiry,
+          purchaseDate,
+          paymentId: response.razorpay_payment_id
+        });
 
         setUserHasPremium(true);
         setRemainingMessages(50);
