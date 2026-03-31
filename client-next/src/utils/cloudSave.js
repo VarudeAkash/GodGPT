@@ -114,12 +114,28 @@ export const restoreKrishnaCount = async (userId) => {
 
 // Atomic decrement for premium deity
 export const decrementPremiumCount = async (userId, deityId) => {
+  const fieldPath = `premiumData.purchasedDeities.${deityId}.remainingMessages`;
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).set({
-      [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(-1),
-    }, { merge: true });
+    await db.collection('users').doc(userId).update({
+      [fieldPath]: firebase.firestore.FieldValue.increment(-1),
+    });
   } catch (err) {
+    // If nested premium map is missing, create the minimum shape and retry once.
+    if (err?.code === 'not-found') {
+      const db = firebase.firestore();
+      await db.collection('users').doc(userId).set({
+        premiumData: {
+          purchasedDeities: {
+            [deityId]: { remainingMessages: 0 },
+          },
+        },
+      }, { merge: true });
+      await db.collection('users').doc(userId).update({
+        [fieldPath]: firebase.firestore.FieldValue.increment(-1),
+      });
+      return;
+    }
     console.error('decrementPremiumCount failed:', err);
     throw err;
   }
@@ -127,11 +143,12 @@ export const decrementPremiumCount = async (userId, deityId) => {
 
 // Atomic restore for premium deity (called on API error)
 export const restorePremiumCount = async (userId, deityId) => {
+  const fieldPath = `premiumData.purchasedDeities.${deityId}.remainingMessages`;
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).set({
-      [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(1),
-    }, { merge: true });
+    await db.collection('users').doc(userId).update({
+      [fieldPath]: firebase.firestore.FieldValue.increment(1),
+    });
   } catch { /* best-effort */ }
 };
 
