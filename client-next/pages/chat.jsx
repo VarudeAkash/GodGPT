@@ -171,25 +171,32 @@ export default function Chat() {
     setRemainingMessages(prev => prev - 1);
 
     // Persist the decrement against the shared account record
-    if (selectedDeity.id === 'krishna' && !userHasPremium) {
-      if (user) {
-        await decrementKrishnaCount(user.uid);
+    try {
+      if (selectedDeity.id === 'krishna' && !userHasPremium) {
+        if (user) {
+          await decrementKrishnaCount(user.uid);
+        } else {
+          const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
+          localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
+        }
       } else {
-        const currentFree = parseInt(localStorage.getItem('freeKrishnaMessages') || '50');
-        localStorage.setItem('freeKrishnaMessages', (currentFree - 1).toString());
-      }
-    } else {
-      if (user) {
-        await decrementPremiumCount(user.uid, selectedDeity.id);
-      } else {
-        let localPremiumData;
-        try { localPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
-        catch { localPremiumData = { purchasedDeities: {} }; }
-        if (localPremiumData.purchasedDeities[selectedDeity.id]) {
-          localPremiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
-          localStorage.setItem('premiumData', JSON.stringify(localPremiumData));
+        if (user) {
+          await decrementPremiumCount(user.uid, selectedDeity.id);
+        } else {
+          let localPremiumData;
+          try { localPremiumData = JSON.parse(localStorage.getItem('premiumData') || '{"purchasedDeities":{}}'); }
+          catch { localPremiumData = { purchasedDeities: {} }; }
+          if (localPremiumData.purchasedDeities[selectedDeity.id]) {
+            localPremiumData.purchasedDeities[selectedDeity.id].remainingMessages -= 1;
+            localStorage.setItem('premiumData', JSON.stringify(localPremiumData));
+          }
         }
       }
+    } catch {
+      setRemainingMessages(prev => prev + 1);
+      setIsLoading(false);
+      alert('Message count could not be updated. Please refresh and try again.');
+      return;
     }
 
     try {

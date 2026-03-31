@@ -93,19 +93,22 @@ export const saveFeaturePayment = async (userId, featureKey, paymentId) => {
 export const decrementKrishnaCount = async (userId) => {
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).update({
+    await db.collection('users').doc(userId).set({
       freeKrishnaMessages: firebase.firestore.FieldValue.increment(-1),
-    });
-  } catch (err) { console.error('decrementKrishnaCount failed:', err); }
+    }, { merge: true });
+  } catch (err) {
+    console.error('decrementKrishnaCount failed:', err);
+    throw err;
+  }
 };
 
 // Atomic restore for Krishna (called on API error to undo decrement)
 export const restoreKrishnaCount = async (userId) => {
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).update({
+    await db.collection('users').doc(userId).set({
       freeKrishnaMessages: firebase.firestore.FieldValue.increment(1),
-    });
+    }, { merge: true });
   } catch { /* best-effort */ }
 };
 
@@ -113,19 +116,22 @@ export const restoreKrishnaCount = async (userId) => {
 export const decrementPremiumCount = async (userId, deityId) => {
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).update({
+    await db.collection('users').doc(userId).set({
       [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(-1),
-    });
-  } catch (err) { console.error('decrementPremiumCount failed:', err); }
+    }, { merge: true });
+  } catch (err) {
+    console.error('decrementPremiumCount failed:', err);
+    throw err;
+  }
 };
 
 // Atomic restore for premium deity (called on API error)
 export const restorePremiumCount = async (userId, deityId) => {
   try {
     const db = firebase.firestore();
-    await db.collection('users').doc(userId).update({
+    await db.collection('users').doc(userId).set({
       [`premiumData.purchasedDeities.${deityId}.remainingMessages`]: firebase.firestore.FieldValue.increment(1),
-    });
+    }, { merge: true });
   } catch { /* best-effort */ }
 };
 
