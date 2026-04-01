@@ -17,6 +17,7 @@ import '../src/components/About.css';
 import '../src/components/Contact.css';
 import '../src/components/Privacy.css';
 import '../src/components/HoroscopePage.css';
+import '../src/mobile-consistency.css';
 import { AuthProvider } from '../src/context/AuthContext';
 import { ChatProvider } from '../src/context/ChatContext';
 import Header from '../src/components/header';

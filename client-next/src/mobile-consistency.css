@@ -1,0 +1,325 @@
+@media (max-width: 768px) {
+  :root {
+    --mobile-page-x: 0.85rem;
+    --mobile-page-top: 5.1rem;
+    --mobile-page-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    --mobile-card-pad: 0.95rem;
+    --mobile-card-radius: 14px;
+    --mobile-title-size: clamp(1.75rem, 8.4vw, 2.15rem);
+  }
+
+  .welcome-hero {
+    padding: 1.4rem var(--mobile-page-x) 1rem !important;
+  }
+
+  .brand-section {
+    gap: 0.65rem;
+  }
+
+  .logo-large {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+  }
+
+  .welcome-title {
+    font-size: clamp(1.6rem, 8vw, 2rem) !important;
+    line-height: 1.12;
+  }
+
+  .welcome-tagline {
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+  }
+
+  .features-section,
+  .testimonials-strip {
+    padding-left: var(--mobile-page-x) !important;
+    padding-right: var(--mobile-page-x) !important;
+  }
+
+  .feature-card,
+  .feature-card--featured,
+  .testimonial-card {
+    border-radius: 16px;
+    padding: 1rem !important;
+  }
+
+  .featured-inner {
+    gap: 0.9rem;
+  }
+
+  .featured-text h2 {
+    font-size: 1.28rem;
+    line-height: 1.2;
+  }
+
+  .featured-text p {
+    font-size: 0.92rem;
+    line-height: 1.48;
+  }
+
+  .features-grid,
+  .features-grid-secondary,
+  .features-grid-more {
+    grid-template-columns: 1fr !important;
+    gap: 0.8rem !important;
+    margin: 1rem 0;
+  }
+
+  .selection-container,
+  .blog-page,
+  .blog-post-page,
+  .festival-page,
+  .upay-page,
+  .horoscope-page,
+  .panchang-page,
+  .kundali-page,
+  .milan-page,
+  .muhurat-page,
+  .sadesati-page,
+  .varshphal-page,
+  .profile-page {
+    padding-left: var(--mobile-page-x) !important;
+    padding-right: var(--mobile-page-x) !important;
+    padding-top: var(--mobile-page-top) !important;
+    padding-bottom: var(--mobile-page-bottom) !important;
+  }
+
+  .about-container,
+  .contact-container,
+  .privacy-container {
+    padding: var(--mobile-page-top) var(--mobile-page-x) var(--mobile-page-bottom) !important;
+  }
+
+  .selection-header,
+  .blog-hero,
+  .festival-hero,
+  .upay-hero,
+  .kundali-hero,
+  .milan-hero,
+  .muhurat-hero,
+  .sadesati-hero,
+  .varshphal-hero,
+  .panchang-hero,
+  .horoscope-header,
+  .about-heading-section,
+  .contact-heading-section,
+  .privacy-heading-section {
+    margin-bottom: 1.15rem;
+  }
+
+  .selection-header h1,
+  .blog-hero h1,
+  .festival-hero h1,
+  .upay-hero h1,
+  .kundali-hero h1,
+  .milan-hero h1,
+  .muhurat-hero h1,
+  .sadesati-hero h1,
+  .varshphal-hero h1,
+  .panchang-hero h1,
+  .horoscope-title,
+  .about-heading-section h2,
+  .contact-heading-section h2,
+  .privacy-heading-section h2,
+  .faq-section h3,
+  .about-cta h3 {
+    font-size: var(--mobile-title-size) !important;
+    line-height: 1.14;
+  }
+
+  .selection-header p,
+  .blog-hero p,
+  .festival-hero p,
+  .upay-hero p,
+  .kundali-hero p,
+  .milan-hero p,
+  .muhurat-hero p,
+  .sadesati-hero p,
+  .varshphal-hero p,
+  .panchang-date,
+  .horoscope-subtitle,
+  .contact-heading-section p {
+    font-size: 0.96rem !important;
+    line-height: 1.46;
+    max-width: 34ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .deities-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .deity-card-select {
+    border-radius: 16px;
+    padding: 0.92rem 0.86rem !important;
+    gap: 0.7rem !important;
+  }
+
+  .deity-avatar-select {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 13px !important;
+  }
+
+  .deity-info-select h3 {
+    font-size: 1.08rem !important;
+    margin-bottom: 0.15rem;
+  }
+
+  .deity-info-select p {
+    font-size: 0.86rem !important;
+    margin-bottom: 0.2rem;
+    line-height: 1.36;
+  }
+
+  .deity-blessing small {
+    font-size: 0.72rem !important;
+  }
+
+  .kundali-layout,
+  .milan-two-col,
+  .form-row,
+  .panchang-grid,
+  .rashi-grid,
+  .faq-grid,
+  .simple-contact-methods,
+  .values-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.72rem !important;
+  }
+
+  .blog-card,
+  .festival-card,
+  .pancha-card,
+  .horoscope-section,
+  .horoscope-result,
+  .kundali-form-section,
+  .kundali-reading,
+  .milan-person-form,
+  .milan-result,
+  .muhurat-form,
+  .muhurat-result,
+  .sadesati-form,
+  .sadesati-result,
+  .varshphal-form,
+  .varshphal-result,
+  .upay-form,
+  .upay-section,
+  .upay-result,
+  .profile-card,
+  .about-content,
+  .contact-content,
+  .privacy-content,
+  .contact-card,
+  .response-info,
+  .faq-item,
+  .privacy-section,
+  .info-item,
+  .paygate-wall {
+    border-radius: var(--mobile-card-radius);
+    padding: var(--mobile-card-pad) !important;
+  }
+
+  .rashi-card,
+  .rashi-btn {
+    min-height: 84px;
+    border-radius: 12px;
+    padding: 0.72rem 0.35rem !important;
+  }
+
+  .form-group {
+    margin-bottom: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .input-container-chat textarea {
+    font-size: 0.92rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .kundali-submit-btn,
+  .milan-submit-btn,
+  .muhurat-submit-btn,
+  .sadesati-submit-btn,
+  .varshphal-submit-btn,
+  .upay-submit-btn,
+  .paygate-btn,
+  .profile-btn,
+  .purchase-button,
+  .secondary-button {
+    min-height: 40px;
+    padding: 0.72rem 0.85rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .site-footer {
+    margin-top: 2rem;
+    padding: 1.7rem var(--mobile-page-x) calc(5.1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .footer-main {
+    gap: 1.1rem;
+    padding-bottom: 1rem;
+  }
+
+  .paygate-modal-overlay {
+    padding: 0.7rem;
+  }
+
+  .paygate-modal {
+    width: min(500px, 100%);
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --mobile-page-x: 0.66rem;
+    --mobile-page-top: 4.9rem;
+    --mobile-card-pad: 0.82rem;
+    --mobile-title-size: clamp(1.56rem, 7.8vw, 1.9rem);
+  }
+
+  .welcome-title {
+    font-size: clamp(1.48rem, 7.6vw, 1.82rem) !important;
+  }
+
+  .selection-header p,
+  .blog-hero p,
+  .festival-hero p,
+  .upay-hero p,
+  .kundali-hero p,
+  .milan-hero p,
+  .muhurat-hero p,
+  .sadesati-hero p,
+  .varshphal-hero p,
+  .panchang-date,
+  .horoscope-subtitle,
+  .contact-heading-section p {
+    font-size: 0.9rem !important;
+  }
+
+  .deity-avatar-select {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 11px !important;
+  }
+
+  .deity-info-select h3 {
+    font-size: 1rem !important;
+  }
+
+  .deity-info-select p {
+    font-size: 0.8rem !important;
+  }
+
+  .rashi-card,
+  .rashi-btn {
+    min-height: 78px;
+  }
+}
