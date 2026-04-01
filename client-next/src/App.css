@@ -1501,3 +1501,249 @@ body {
 .message-counter {
   margin: 0;
 }
+
+/* Chat Header + Mobile Layout Fixes */
+.counter-badge {
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.counter-badge.free {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+@media (max-width: 768px) {
+  .chat-layout {
+    padding: 0;
+  }
+
+  .chat-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "back deity"
+      "controls controls";
+    gap: 0.6rem 0.75rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .chat-header > .back-button {
+    grid-area: back;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+  }
+
+  .deity-header-info {
+    grid-area: deity;
+    justify-content: flex-start;
+    min-width: 0;
+    gap: 0.55rem;
+  }
+
+  .deity-chat-info {
+    min-width: 0;
+  }
+
+  .deity-chat-info h2 {
+    font-size: 1rem;
+    line-height: 1.2;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chat-header-controls {
+    grid-area: controls;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    gap: 0.45rem;
+  }
+
+  .language-selector {
+    padding: 3px;
+  }
+
+  .lang-btn {
+    padding: 7px 12px;
+    font-size: 0.8rem;
+  }
+
+  .clear-chat-button {
+    padding: 0.42rem 0.62rem;
+    font-size: 0.85rem;
+  }
+
+  .counter-badge {
+    font-size: 0.78rem;
+    padding: 0.36rem 0.55rem;
+  }
+
+  .messages-area-chat {
+    padding: 0.75rem 0.7rem 0.35rem;
+  }
+
+  .message-chat {
+    max-width: 92%;
+  }
+
+  .message-bubble-chat {
+    padding: 0.6rem 0.82rem;
+    border-radius: 16px;
+  }
+
+  .message-text-chat {
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  .input-area-chat {
+    padding: 0.6rem 0.7rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .chat-header {
+    gap: 0.5rem;
+    padding: 0.52rem 0.58rem;
+  }
+
+  .deity-chat-info h2 {
+    font-size: 0.92rem;
+  }
+
+  .chat-header-controls {
+    gap: 0.35rem;
+  }
+
+  .clear-chat-button {
+    display: none;
+  }
+
+  .message-chat {
+    max-width: 95%;
+  }
+}
+
+/* Premium / Buy More Modal Mobile Fixes */
+.premium-modal-overlay {
+  z-index: 2400;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) 12px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.premium-modal {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - max(24px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+  margin-top: 0;
+  padding: 1.15rem;
+  border-radius: 20px;
+}
+
+.premium-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.close-modal {
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 1.3rem;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .premium-modal-overlay {
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .premium-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 0.95rem;
+    border-radius: 16px;
+  }
+
+  .premium-header {
+    margin-bottom: 0.6rem;
+    padding-right: 2.4rem;
+  }
+
+  .premium-header h2 {
+    font-size: 2rem;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .deity-premium-preview {
+    padding: 0.8rem;
+    margin-bottom: 0.65rem;
+    border-radius: 12px;
+  }
+
+  .deity-premium-preview h3 {
+    font-size: 1.15rem;
+    margin: 0.45rem 0 0.3rem;
+  }
+
+  .deity-premium-preview p {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .pricing-card {
+    padding: 0.65rem;
+    margin-bottom: 0.65rem;
+    border-radius: 12px;
+  }
+
+  .price {
+    font-size: 2.2rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .package-details h4 {
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .package-details li {
+    padding: 0.44rem 0;
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .purchase-button {
+    padding: 0.95rem 0.9rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    min-height: 46px;
+    gap: 0.5rem;
+  }
+
+  .secondary-button {
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-size: 0.92rem;
+  }
+
+  .free-option p {
+    font-size: 0.86rem;
+    line-height: 1.35;
+  }
+}
