@@ -13,6 +13,7 @@ function PanchangPage({ user }) {
   const [locationNote, setLocationNote] = useState('');
   const [lang, setLang] = useState('english');
   const [dailyLimitReached, setDailyLimitReached] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     document.title = "Today's Panchang & Horoscope | Astravedam";
@@ -37,6 +38,10 @@ function PanchangPage({ user }) {
     if (savedRashi) setSelectedRashi(savedRashi);
   }, []);
 
+  useEffect(() => {
+    if (user && showLoginModal) setShowLoginModal(false);
+  }, [user, showLoginModal]);
+
   const fetchHoroscope = async (rashiId) => {
     setSelectedRashi(rashiId);
     localStorage.setItem('userRashi', rashiId);
@@ -46,7 +51,12 @@ function PanchangPage({ user }) {
     if (cached) { setHoroscope(cached); setDailyLimitReached(false); return; }
 
     // Require login
-    if (!user) { setHoroscope(''); setDailyLimitReached(false); return; }
+    if (!user) {
+      setHoroscope('');
+      setDailyLimitReached(false);
+      setShowLoginModal(true);
+      return;
+    }
 
     // Daily limit: 1 fresh API call per day
     const limitKey = `horoscope_generated_${new Date().toDateString()}`;
@@ -166,8 +176,11 @@ function PanchangPage({ user }) {
         </div>
         <p className="horoscope-sub">Select your Moon sign (Chandra Rashi) for today's prediction</p>
 
-        {!user && (
-          <LoginWall message="Sign in to view your daily Rashifal" />
+        {showLoginModal && (
+          <LoginWall
+            message="Sign in to view your daily Rashifal"
+            onClose={() => setShowLoginModal(false)}
+          />
         )}
 
         <div className="rashi-grid">

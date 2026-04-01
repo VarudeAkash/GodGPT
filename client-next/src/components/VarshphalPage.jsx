@@ -39,6 +39,10 @@ function VarshphalPage({ user }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (user && showPayGate === 'login') setShowPayGate(false);
+  }, [user, showPayGate]);
+
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = (e) => {
@@ -100,7 +104,7 @@ function VarshphalPage({ user }) {
       </div>
 
       {showPayGate === 'login' && (
-        <LoginWall message="Sign in to get your Varshphal reading" />
+        <LoginWall message="Sign in to get your Varshphal reading" onClose={() => setShowPayGate(false)} />
       )}
 
       {showPayGate === 'pay' && (

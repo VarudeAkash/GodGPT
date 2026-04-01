@@ -62,6 +62,10 @@ function DivyaUpayPage({ user }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (user && showPayGate === 'login') setShowPayGate(false);
+  }, [user, showPayGate]);
+
   const onPaymentSuccess = async (paymentId) => {
     if (user) {
       await saveFeaturePayment(user.uid, 'divyaUpay', paymentId);
@@ -123,7 +127,7 @@ function DivyaUpayPage({ user }) {
       </div>
 
       {showPayGate === 'login' && (
-        <LoginWall message="Sign in to receive your Divya Upay" />
+        <LoginWall message="Sign in to receive your Divya Upay" onClose={() => setShowPayGate(false)} />
       )}
 
       {showPayGate === 'pay' && (

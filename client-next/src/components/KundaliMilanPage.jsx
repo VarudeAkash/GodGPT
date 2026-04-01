@@ -41,6 +41,10 @@ function KundaliMilanPage({ user }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (user && showPayGate === 'login') setShowPayGate(false);
+  }, [user, showPayGate]);
+
   const handleChange1 = (e) => setPerson1(p => ({ ...p, [e.target.name]: e.target.value }));
   const handleChange2 = (e) => setPerson2(p => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -127,7 +131,7 @@ function KundaliMilanPage({ user }) {
       </div>
 
       {showPayGate === 'login' && (
-        <LoginWall message="Sign in to get your Kundali Milan report" />
+        <LoginWall message="Sign in to get your Kundali Milan report" onClose={() => setShowPayGate(false)} />
       )}
 
       {showPayGate === 'pay' && (

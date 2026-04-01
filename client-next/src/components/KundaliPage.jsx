@@ -100,6 +100,10 @@ function KundaliPage({ user }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user && showPayGate === 'login') setShowPayGate(false);
+  }, [user, showPayGate]);
+
   // Close suggestions when clicking outside
   useEffect(() => {
     const handler = (e) => {
@@ -248,7 +252,7 @@ function KundaliPage({ user }) {
       </div>
 
       {showPayGate === 'login' && (
-        <LoginWall message="Sign in to get your Kundali reading" />
+        <LoginWall message="Sign in to get your Kundali reading" onClose={() => setShowPayGate(false)} />
       )}
 
       {showPayGate === 'pay' && (

@@ -1,15 +1,26 @@
 import { useState } from 'react';
+import Login from './Login.jsx';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 // Login wall — shown when user is not signed in
-export function LoginWall({ message = 'Sign in to continue' }) {
+export function LoginWall({ message = 'Sign in to continue', onClose }) {
+  const { user } = useAuth();
+
   return (
-    <div className="paygate-wall">
-      <div className="paygate-icon">ॐ</div>
-      <h3>{message}</h3>
-      <p>This feature is available to signed-in users.</p>
-      <p className="paygate-hint">Use the Login button in the top navigation to sign in with Google.</p>
+    <div className="paygate-modal-overlay" onClick={onClose}>
+      <div className="paygate-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="paygate-modal-close" onClick={onClose} aria-label="Close sign in popup">x</button>
+        <div className="paygate-wall paygate-wall-modal">
+          <div className="paygate-icon">ॐ</div>
+          <h3>{message}</h3>
+          <p>This feature is available to signed-in users.</p>
+          <div className="paygate-login-wrap">
+            <Login user={user} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

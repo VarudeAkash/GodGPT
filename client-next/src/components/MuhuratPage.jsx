@@ -48,6 +48,10 @@ function MuhuratPage({ user }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (user && showPayGate === 'login') setShowPayGate(false);
+  }, [user, showPayGate]);
+
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = (e) => {
@@ -109,7 +113,7 @@ function MuhuratPage({ user }) {
       </div>
 
       {showPayGate === 'login' && (
-        <LoginWall message="Sign in to find your auspicious Muhurat" />
+        <LoginWall message="Sign in to find your auspicious Muhurat" onClose={() => setShowPayGate(false)} />
       )}
 
       {showPayGate === 'pay' && (

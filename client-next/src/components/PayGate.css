@@ -95,3 +95,47 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.paygate-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 2200;
+  backdrop-filter: blur(2px);
+}
+
+.paygate-modal {
+  position: relative;
+  width: min(540px, 96vw);
+}
+
+.paygate-wall-modal {
+  margin: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+  background: linear-gradient(180deg, rgba(37, 16, 4, 0.96), rgba(22, 10, 2, 0.96));
+}
+
+.paygate-modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  border: 1px solid rgba(230, 211, 179, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  color: #e6d3b3;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.paygate-modal-close:hover {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.paygate-login-wrap {
+  margin-top: 0.8rem;
+}

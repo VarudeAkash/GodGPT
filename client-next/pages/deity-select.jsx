@@ -6,6 +6,7 @@ import { useChat } from '../src/context/ChatContext';
 import DeityIcon from '../src/components/DeityIcon';
 import BuyMoreModal from '../src/components/BuyMoreModal';
 import PremiumModal from '../src/components/PremiumModal';
+import { LoginWall } from '../src/components/PayGate.jsx';
 import { loadChatFromCloud, loadUserData, initKrishnaIfNeeded, savePremiumPurchase } from '../src/utils/cloudSave.js';
 import { loadDeityMemory } from '../src/utils/deityMemory.js';
 
@@ -20,12 +21,13 @@ export default function DeitySelect() {
   const [selectedDeityForPremium, setSelectedDeityForPremium] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const paymentTimeoutRef = useRef(null);
 
   const selectDeity = async (deity) => {
     // All deity chats require login
     if (!user) {
-      alert('Please sign in to chat with the deities.');
+      setShowLoginModal(true);
       return;
     }
 
@@ -293,6 +295,13 @@ export default function DeitySelect() {
           deity={null}
           onBuyMore={handleBuyMoreMessages}
         />
+
+        {showLoginModal && (
+          <LoginWall
+            message="Sign in to chat with the deities"
+            onClose={() => setShowLoginModal(false)}
+          />
+        )}
 
         <PremiumModal
           isOpen={showPremiumModal}
