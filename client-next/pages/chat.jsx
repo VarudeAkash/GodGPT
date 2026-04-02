@@ -465,6 +465,24 @@ export default function Chat() {
         <title>{`Chat with ${selectedDeity?.name} — Astravedam`}</title>
       </Head>
       <div className={`app chat-screen ${selectedDeity?.theme || 'default'}`}>
+        <div className="chat-ambient-particles">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            <span
+              key={i}
+              className="cap"
+              style={{
+                left: `${8 + i * 10}%`,
+                width: `${4 + (i % 3) * 2}px`,
+                height: `${4 + (i % 3) * 2}px`,
+                background: selectedDeity.color,
+                animationDuration: `${11 + (i % 4) * 2}s`,
+                animationDelay: `${i * 0.55}s`,
+                '--drift': `${(i % 2 === 0 ? 1 : -1) * (20 + i * 4)}px`
+              }}
+            />
+          ))}
+        </div>
+
         <BuyMoreModal
           isOpen={showBuyMoreModal}
           onClose={() => setShowBuyMoreModal(false)}
@@ -492,7 +510,9 @@ export default function Chat() {
 
             {/* Center: deity identity */}
             <div className="deity-header-info">
-              <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
+              <div className="deity-icon-chat-wrap" style={{ '--deity-color': selectedDeity.color }}>
+                <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
+              </div>
               <div className="deity-chat-info">
                 <h2>{selectedDeity.name}</h2>
                 <p>{selectedDeity.description}</p>

@@ -6,6 +6,7 @@ import { useChat } from '../src/context/ChatContext';
 import DeityIcon from '../src/components/DeityIcon';
 import BuyMoreModal from '../src/components/BuyMoreModal';
 import PremiumModal from '../src/components/PremiumModal';
+import DeityTransition from '../src/components/DeityTransition';
 import { LoginWall } from '../src/components/PayGate.jsx';
 import { loadChatFromCloud, loadUserData, initKrishnaIfNeeded, savePremiumPurchase } from '../src/utils/cloudSave.js';
 import { loadDeityMemory } from '../src/utils/deityMemory.js';
@@ -22,7 +23,20 @@ export default function DeitySelect() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showBuyMoreModal, setShowBuyMoreModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDeity, setTransitionDeity] = useState(null);
   const paymentTimeoutRef = useRef(null);
+
+  const startCinematicTransition = (deity) => {
+    setTransitionDeity(deity);
+    setIsTransitioning(true);
+  };
+
+  const handleTransitionComplete = () => {
+    setIsTransitioning(false);
+    setTransitionDeity(null);
+    router.push('/chat');
+  };
 
   const selectDeity = async (deity) => {
     // All deity chats require login
@@ -81,7 +95,7 @@ export default function DeitySelect() {
       if (cloudMessages && cloudMessages.length > 0) {
         setMessages(cloudMessages);
         localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
-        router.push('/chat');
+        startCinematicTransition(deity);
         return;
       }
     }
@@ -103,7 +117,7 @@ export default function DeitySelect() {
       localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
     }
 
-    router.push('/chat');
+    startCinematicTransition(deity);
   };
 
   const handlePurchase = async () => {
@@ -248,7 +262,7 @@ export default function DeitySelect() {
           if (cloudMessages && cloudMessages.length > 0) {
             setMessages(cloudMessages);
             localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
-            router.push('/chat');
+            startCinematicTransition(deity);
             return;
           }
         }
@@ -261,7 +275,7 @@ export default function DeitySelect() {
         };
         setMessages([welcomeMessage]);
         localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
-        router.push('/chat');
+        startCinematicTransition(deity);
       } else {
         throw new Error('Payment verification failed');
       }
@@ -289,6 +303,10 @@ export default function DeitySelect() {
         <meta property="og:image" content="https://astravedam.com/logo.png" />
       </Head>
       <div className="app deity-select-screen">
+        {isTransitioning && transitionDeity && (
+          <DeityTransition deity={transitionDeity} onComplete={handleTransitionComplete} />
+        )}
+
         <BuyMoreModal
           isOpen={showBuyMoreModal}
           onClose={() => setShowBuyMoreModal(false)}
@@ -326,10 +344,18 @@ export default function DeitySelect() {
               <div
                 key={deity.id}
                 className="deity-card-select"
+                style={{ '--deity-color': deity.color }}
                 onClick={() => selectDeity(deity)}
               >
                 <div className="deity-glow" style={{ background: deity.color }}></div>
-                <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
+                <div className="deity-particles">
+                  {[0, 1, 2, 3, 4, 5].map(i => (
+                    <span key={i} className="dp" style={{ '--i': i }} />
+                  ))}
+                </div>
+                <div className="deity-icon-wrap">
+                  <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
+                </div>
                 <div className="deity-info-select">
                   <h3>{deity.name}</h3>
                   <p>{deity.description}</p>
