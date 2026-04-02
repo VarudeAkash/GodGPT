@@ -10,13 +10,30 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [deityMemory, setDeityMemory] = useState(null);
 
+  const DEFAULT_AVATAR_PATHS = {
+    krishna: '/deities/krishna.webp',
+    shiva: '/deities/shiva.webp',
+    lakshmi: '/deities/lakshmi.webp',
+    hanuman: '/deities/hanuman.webp',
+    saraswati: '/deities/saraswati.webp',
+    ganesha: '/deities/ganesha.webp',
+  };
+
   useEffect(() => {
     fetchDeities();
     // Restore selected deity from localStorage on mount
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('selectedDeity');
       if (saved) {
-        try { setSelectedDeity(JSON.parse(saved)); } catch { /* ignore */ }
+        try {
+          const parsed = JSON.parse(saved);
+          const enriched = {
+            ...parsed,
+            avatarUrl: parsed.avatarUrl || DEFAULT_AVATAR_PATHS[parsed.id] || parsed.avatarUrl
+          };
+          setSelectedDeity(enriched);
+          localStorage.setItem('selectedDeity', JSON.stringify(enriched));
+        } catch { /* ignore */ }
       }
     }
   }, []);
@@ -26,16 +43,19 @@ export function ChatProvider({ children }) {
       const response = await fetch(`${API_URL}/api/deities`);
       if (!response.ok) throw new Error(`Failed to fetch deities: ${response.status}`);
       const data = await response.json();
-      setDeities(data.deities);
+      setDeities((data.deities || []).map((d) => ({
+        ...d,
+        avatarUrl: d.avatarUrl || DEFAULT_AVATAR_PATHS[d.id] || d.avatarUrl
+      })));
     } catch (error) {
       // Fallback deities
       setDeities([
-        { id: 'krishna', name: 'Lord Krishna', emoji: 'कृ', color: '#FF6B35', theme: 'krishna', description: 'Divine Mentor & Compassionate Guide', blessing: 'May you find wisdom in every challenge' },
-        { id: 'shiva', name: 'Lord Shiva', emoji: 'ॐ', color: '#8B5CF6', theme: 'shiva', description: 'The Eternal Yogi & Destroyer of Illusions', blessing: 'May you find peace in meditation' },
-        { id: 'lakshmi', name: 'Goddess Lakshmi', emoji: 'श्रीं', color: '#F59E0B', theme: 'lakshma', description: 'Goddess of Prosperity & Spiritual Wealth', blessing: 'May abundance flow through your life' },
-        { id: 'hanuman', name: 'Lord Hanuman', emoji: 'हं', color: '#FF6B6B', theme: 'hanuman', description: 'Embodiment of Devotion & Strength', blessing: 'May courage guide your path' },
-        { id: 'saraswati', name: 'Goddess Saraswati', emoji: 'ऐं', color: '#4ECDC4', theme: 'saraswati', description: 'Goddess of Knowledge & Creative Wisdom', blessing: 'May wisdom illuminate your journey' },
-        { id: 'ganesha', name: 'Lord Ganesha', emoji: 'गं', color: '#45B7D1', theme: 'ganesha', description: 'Remover of Obstacles & Lord of Beginnings', blessing: 'May your path be clear of obstacles' },
+        { id: 'krishna', name: 'Lord Krishna', emoji: 'कृ', color: '#FF6B35', theme: 'krishna', description: 'Divine Mentor & Compassionate Guide', blessing: 'May you find wisdom in every challenge', avatarUrl: '/deities/krishna.webp' },
+        { id: 'shiva', name: 'Lord Shiva', emoji: 'ॐ', color: '#8B5CF6', theme: 'shiva', description: 'The Eternal Yogi & Destroyer of Illusions', blessing: 'May you find peace in meditation', avatarUrl: '/deities/shiva.webp' },
+        { id: 'lakshmi', name: 'Goddess Lakshmi', emoji: 'श्रीं', color: '#F59E0B', theme: 'lakshma', description: 'Goddess of Prosperity & Spiritual Wealth', blessing: 'May abundance flow through your life', avatarUrl: '/deities/lakshmi.webp' },
+        { id: 'hanuman', name: 'Lord Hanuman', emoji: 'हं', color: '#FF6B6B', theme: 'hanuman', description: 'Embodiment of Devotion & Strength', blessing: 'May courage guide your path', avatarUrl: '/deities/hanuman.webp' },
+        { id: 'saraswati', name: 'Goddess Saraswati', emoji: 'ऐं', color: '#4ECDC4', theme: 'saraswati', description: 'Goddess of Knowledge & Creative Wisdom', blessing: 'May wisdom illuminate your journey', avatarUrl: '/deities/saraswati.webp' },
+        { id: 'ganesha', name: 'Lord Ganesha', emoji: 'गं', color: '#45B7D1', theme: 'ganesha', description: 'Remover of Obstacles & Lord of Beginnings', blessing: 'May your path be clear of obstacles', avatarUrl: '/deities/ganesha.webp' },
       ]);
     }
   };

@@ -180,11 +180,20 @@ function DeitySvgAvatar({ id, uid }) {
   return <AvatarKrishna uid={uid} />;
 }
 
+const DEFAULT_AVATAR_PATHS = {
+  krishna: '/deities/krishna.webp',
+  shiva: '/deities/shiva.webp',
+  lakshmi: '/deities/lakshmi.webp',
+  hanuman: '/deities/hanuman.webp',
+  saraswati: '/deities/saraswati.webp',
+  ganesha: '/deities/ganesha.webp',
+};
+
 function DeityIcon({ id, color, size = 80, borderRadius = 20, imageUrl = '' }) {
   const uidRaw = useId();
   const uid = `deity-${String(uidRaw).replace(/:/g, '')}`;
   const [imageFailed, setImageFailed] = useState(false);
-  const resolvedImage = imageUrl && !imageUrl.startsWith('/deities/') ? imageUrl : '';
+  const resolvedImage = imageUrl || DEFAULT_AVATAR_PATHS[id] || '';
   const showImage = Boolean(resolvedImage) && !imageFailed;
 
   return (
