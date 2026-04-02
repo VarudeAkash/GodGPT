@@ -1,233 +1,217 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
-// Custom SVG deity icons — authentic Hindu symbols, modern execution
-// Krishna: Morpankh (Peacock Feather) · Shiva: Trishul · Lakshmi: Lotus
-// Hanuman: Gada (Mace) · Saraswati: Hamsa (Swan) · Ganesha: Ganesha face
-
-const svgIcons = {
-
-  krishna: (
-    // Morpankh — Krishna's peacock feather, most iconic symbol
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Spine */}
-      <path d="M26 44 Q24 34 22 24 Q20 16 22 6" stroke="rgba(255,255,255,0.95)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      {/* Left vanes */}
-      <path d="M23 40 Q18 38 14 35" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M23 34 Q17 31 13 27" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M22 28 Q16 24 14 19" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M22 22 Q17 18 17 13" stroke="rgba(255,255,255,0.55)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      {/* Right vanes */}
-      <path d="M24 38 Q29 37 33 35" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M23 32 Q28 29 32 26" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M22 26 Q27 22 31 18" stroke="rgba(255,255,255,0.6)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      <path d="M22 20 Q26 16 28 11" stroke="rgba(255,255,255,0.55)" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      {/* Eye — outermost ring */}
-      <ellipse cx="22" cy="7" rx="7.5" ry="5.5" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-      {/* Eye — middle ring */}
-      <ellipse cx="22" cy="7" rx="5" ry="3.5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.75)" strokeWidth="1.2"/>
-      {/* Eye — inner filled circle */}
-      <circle cx="22" cy="7" r="2.4" fill="rgba(255,255,255,0.95)"/>
-      {/* Eye — pupil */}
-      <circle cx="22" cy="7" r="1" fill="rgba(0,0,0,0.3)"/>
+function AvatarKrishna({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#8fd2ff" />
+          <stop offset="60%" stopColor="#3e7fdc" />
+          <stop offset="100%" stopColor="#234b8f" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.22)" />
+      <circle cx="50" cy="50" r="31" fill="rgba(255,255,255,0.08)" />
+      <path d="M52 84 C49 70,45 53,44 37 C43 27,45 18,50 12" stroke="#f5fbff" strokeWidth="4" fill="none" strokeLinecap="round" />
+      <path d="M46 71 C36 68,29 63,23 57" stroke="rgba(245,251,255,0.72)" strokeWidth="2.7" fill="none" strokeLinecap="round" />
+      <path d="M46 59 C34 54,26 47,22 39" stroke="rgba(245,251,255,0.72)" strokeWidth="2.7" fill="none" strokeLinecap="round" />
+      <path d="M46 47 C35 42,28 35,26 27" stroke="rgba(245,251,255,0.66)" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <path d="M48 67 C60 64,69 58,76 52" stroke="rgba(245,251,255,0.72)" strokeWidth="2.7" fill="none" strokeLinecap="round" />
+      <path d="M47 55 C60 50,70 43,77 35" stroke="rgba(245,251,255,0.72)" strokeWidth="2.7" fill="none" strokeLinecap="round" />
+      <path d="M47 43 C58 38,67 30,72 21" stroke="rgba(245,251,255,0.66)" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <ellipse cx="48" cy="16" rx="16" ry="11" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.62)" strokeWidth="2" />
+      <ellipse cx="48" cy="16" rx="10" ry="7" fill="rgba(255,255,255,0.24)" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" />
+      <circle cx="48" cy="16" r="4.2" fill="#f5fbff" />
+      <circle cx="48" cy="16" r="1.8" fill="#2f4c87" />
     </svg>
-  ),
+  );
+}
 
-  shiva: (
-    // Trishul — Shiva's trident, the most powerful symbol
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Staff */}
-      <line x1="24" y1="44" x2="24" y2="22" stroke="rgba(255,255,255,0.9)" strokeWidth="3" strokeLinecap="round"/>
-      {/* Center prong — tallest */}
-      <path d="M24 8 L24 23" stroke="rgba(255,255,255,0.95)" strokeWidth="3" strokeLinecap="round"/>
-      {/* Left prong */}
-      <path d="M24 20 Q20 16 17 9" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Right prong */}
-      <path d="M24 20 Q28 16 31 9" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Prong tips — filled diamond shapes */}
-      <ellipse cx="24" cy="7" rx="2.5" ry="3" fill="white"/>
-      <ellipse cx="16.5" cy="8" rx="2" ry="2.5" fill="rgba(255,255,255,0.9)" transform="rotate(-10 16.5 8)"/>
-      <ellipse cx="31.5" cy="8" rx="2" ry="2.5" fill="rgba(255,255,255,0.9)" transform="rotate(10 31.5 8)"/>
-      {/* Crossbar */}
-      <path d="M16 28 Q24 26 32 28" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Crossbar end knobs */}
-      <circle cx="15.5" cy="28" r="2" fill="rgba(255,255,255,0.8)"/>
-      <circle cx="32.5" cy="28" r="2" fill="rgba(255,255,255,0.8)"/>
-      {/* Base knob */}
-      <circle cx="24" cy="43.5" r="2.5" fill="rgba(255,255,255,0.85)"/>
-      {/* Small ring on staff */}
-      <ellipse cx="24" cy="36" rx="3.5" ry="1.5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none"/>
+function AvatarShiva({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="32%" r="72%">
+          <stop offset="0%" stopColor="#a58aff" />
+          <stop offset="62%" stopColor="#6f4ee5" />
+          <stop offset="100%" stopColor="#3b2b8a" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.2)" />
+      <circle cx="50" cy="50" r="31" fill="rgba(255,255,255,0.08)" />
+      <line x1="50" y1="86" x2="50" y2="43" stroke="#f4f3ff" strokeWidth="5" strokeLinecap="round" />
+      <line x1="50" y1="43" x2="50" y2="16" stroke="#f8f7ff" strokeWidth="5.5" strokeLinecap="round" />
+      <path d="M50 40 C43 31,39 24,35 16" stroke="#f5f3ff" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+      <path d="M50 40 C57 31,61 24,65 16" stroke="#f5f3ff" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+      <ellipse cx="50" cy="14.5" rx="4.8" ry="5.8" fill="#f8f7ff" />
+      <ellipse cx="34.5" cy="15.8" rx="4.1" ry="5.1" fill="#f4f3ff" />
+      <ellipse cx="65.5" cy="15.8" rx="4.1" ry="5.1" fill="#f4f3ff" />
+      <path d="M33 57 C43 54,57 54,67 57" stroke="rgba(248,247,255,0.92)" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+      <circle cx="33" cy="57" r="3.3" fill="rgba(248,247,255,0.75)" />
+      <circle cx="67" cy="57" r="3.3" fill="rgba(248,247,255,0.75)" />
+      <ellipse cx="50" cy="77" rx="7" ry="2.8" fill="none" stroke="rgba(248,247,255,0.6)" strokeWidth="2" />
     </svg>
-  ),
+  );
+}
 
-  lakshmi: (
-    // Lotus — Lakshmi's sacred flower, symbol of purity and prosperity
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Back row petals (smaller, behind) */}
-      <ellipse cx="24" cy="11" rx="3.5" ry="7.5" fill="rgba(255,255,255,0.35)"/>
-      <ellipse cx="11" cy="24" rx="7.5" ry="3.5" fill="rgba(255,255,255,0.35)"/>
-      <ellipse cx="37" cy="24" rx="7.5" ry="3.5" fill="rgba(255,255,255,0.35)"/>
-      <ellipse cx="24" cy="37" rx="3.5" ry="7.5" fill="rgba(255,255,255,0.35)"/>
-      {/* Diagonal back petals */}
-      <ellipse cx="33" cy="15" rx="3" ry="7" transform="rotate(45 33 15)" fill="rgba(255,255,255,0.28)"/>
-      <ellipse cx="15" cy="15" rx="3" ry="7" transform="rotate(-45 15 15)" fill="rgba(255,255,255,0.28)"/>
-      <ellipse cx="33" cy="33" rx="3" ry="7" transform="rotate(-45 33 33)" fill="rgba(255,255,255,0.28)"/>
-      <ellipse cx="15" cy="33" rx="3" ry="7" transform="rotate(45 15 33)" fill="rgba(255,255,255,0.28)"/>
-      {/* Front row petals (larger, in front) */}
-      <ellipse cx="24" cy="13" rx="4" ry="8" fill="rgba(255,255,255,0.8)"/>
-      <ellipse cx="13" cy="24" rx="8" ry="4" fill="rgba(255,255,255,0.8)"/>
-      <ellipse cx="35" cy="24" rx="8" ry="4" fill="rgba(255,255,255,0.8)"/>
-      <ellipse cx="24" cy="35" rx="4" ry="8" fill="rgba(255,255,255,0.8)"/>
-      {/* Diagonal front petals */}
-      <ellipse cx="34" cy="14" rx="3.5" ry="7.5" transform="rotate(45 34 14)" fill="rgba(255,255,255,0.7)"/>
-      <ellipse cx="14" cy="14" rx="3.5" ry="7.5" transform="rotate(-45 14 14)" fill="rgba(255,255,255,0.7)"/>
-      <ellipse cx="34" cy="34" rx="3.5" ry="7.5" transform="rotate(-45 34 34)" fill="rgba(255,255,255,0.7)"/>
-      <ellipse cx="14" cy="34" rx="3.5" ry="7.5" transform="rotate(45 14 34)" fill="rgba(255,255,255,0.7)"/>
-      {/* Center */}
-      <circle cx="24" cy="24" r="7" fill="white"/>
-      {/* Stamen ring */}
-      <circle cx="24" cy="24" r="4.5" stroke="rgba(0,0,0,0.12)" strokeWidth="1" fill="none"/>
-      {/* Stamen dots */}
-      <circle cx="24" cy="20.5" r="1.2" fill="rgba(0,0,0,0.18)"/>
-      <circle cx="27" cy="26" r="1.2" fill="rgba(0,0,0,0.18)"/>
-      <circle cx="21" cy="26" r="1.2" fill="rgba(0,0,0,0.18)"/>
+function AvatarLakshmi({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#ffd26d" />
+          <stop offset="60%" stopColor="#f3a61a" />
+          <stop offset="100%" stopColor="#b46d11" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.22)" />
+      <circle cx="50" cy="50" r="30" fill="rgba(255,255,255,0.08)" />
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = (Math.PI * 2 * i) / 12;
+        const cx = 50 + Math.cos(a) * 19;
+        const cy = 50 + Math.sin(a) * 19;
+        return <ellipse key={i} cx={cx} cy={cy} rx="7.8" ry="13" transform={`rotate(${(i * 30) + 6} ${cx} ${cy})`} fill="rgba(255,255,255,0.84)" />;
+      })}
+      <circle cx="50" cy="50" r="11.5" fill="#fff7df" stroke="rgba(187,121,29,0.35)" strokeWidth="1.8" />
+      <circle cx="50" cy="44.8" r="2.3" fill="rgba(178,116,27,0.48)" />
+      <circle cx="55.2" cy="52.8" r="2.2" fill="rgba(178,116,27,0.48)" />
+      <circle cx="44.6" cy="52.8" r="2.2" fill="rgba(178,116,27,0.48)" />
     </svg>
-  ),
+  );
+}
 
-  hanuman: (
-    // Gada — Hanuman's sacred mace, symbol of strength and devotion
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Handle — tapered */}
-      <path d="M24 44 L24 22" stroke="rgba(255,255,255,0.9)" strokeWidth="3" strokeLinecap="round"/>
-      {/* Handle grip rings */}
-      <ellipse cx="24" cy="38" rx="4" ry="1.8" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8"/>
-      <ellipse cx="24" cy="33" rx="3.5" ry="1.5" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"/>
-      <ellipse cx="24" cy="28" rx="3" ry="1.2" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
-      {/* Gada head — filled circle with depth */}
-      <circle cx="24" cy="14" r="12" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" strokeWidth="2.5"/>
-      <circle cx="24" cy="14" r="9" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-      {/* Head texture — radial lines */}
-      <line x1="24" y1="3" x2="24" y2="6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="33" y1="6" x2="31" y2="8" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="36" y1="14" x2="33" y2="14" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="33" y1="22" x2="31" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="15" y1="6" x2="17" y2="8" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="12" y1="14" x2="15" y2="14" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="15" y1="22" x2="17" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* Center jewel */}
-      <circle cx="24" cy="14" r="3.5" fill="rgba(255,255,255,0.9)"/>
-      <circle cx="24" cy="14" r="1.5" fill="rgba(0,0,0,0.2)"/>
-      {/* Base cap */}
-      <circle cx="24" cy="44" r="2.5" fill="rgba(255,255,255,0.85)"/>
+function AvatarHanuman({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#ff8d72" />
+          <stop offset="60%" stopColor="#ea373e" />
+          <stop offset="100%" stopColor="#9f191e" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.2)" />
+      <circle cx="50" cy="50" r="31" fill="rgba(255,255,255,0.08)" />
+      <line x1="50" y1="86" x2="50" y2="44" stroke="#fff5f2" strokeWidth="5.2" strokeLinecap="round" />
+      <ellipse cx="50" cy="30" rx="18" ry="16.5" fill="rgba(255,255,255,0.2)" stroke="#fff5f2" strokeWidth="3.2" />
+      <ellipse cx="50" cy="30" rx="13.3" ry="12.5" fill="rgba(255,255,255,0.12)" stroke="rgba(255,245,242,0.5)" strokeWidth="1.8" />
+      {Array.from({ length: 8 }).map((_, i) => {
+        const a = (Math.PI * 2 * i) / 8;
+        const x1 = 50 + Math.cos(a) * 12.5;
+        const y1 = 30 + Math.sin(a) * 12.5;
+        const x2 = 50 + Math.cos(a) * 16;
+        const y2 = 30 + Math.sin(a) * 16;
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,245,242,0.62)" strokeWidth="2.1" />;
+      })}
+      <circle cx="50" cy="30" r="4.4" fill="#fff5f2" />
+      <circle cx="50" cy="30" r="1.9" fill="rgba(122,31,27,0.45)" />
+      <ellipse cx="50" cy="70" rx="8" ry="3.1" fill="none" stroke="rgba(255,245,242,0.62)" strokeWidth="2.1" />
+      <ellipse cx="50" cy="77.5" rx="6.2" ry="2.5" fill="none" stroke="rgba(255,245,242,0.44)" strokeWidth="1.8" />
     </svg>
-  ),
+  );
+}
 
-  saraswati: (
-    // Hamsa — Saraswati's sacred swan, symbol of wisdom, grace and discernment
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Body */}
-      <ellipse cx="27" cy="32" rx="13" ry="9" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.9)" strokeWidth="2"/>
-      {/* Neck — graceful S-curve */}
-      <path d="M16 28 Q12 22 14 15 Q16 9 21 7" stroke="rgba(255,255,255,0.9)" strokeWidth="3" strokeLinecap="round" fill="none"/>
-      {/* Head */}
-      <circle cx="23" cy="6" r="5" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.9)" strokeWidth="2"/>
-      {/* Beak */}
-      <path d="M27 5.5 L33 6 L27 8" fill="rgba(255,255,255,0.8)" stroke="rgba(255,255,255,0.6)" strokeWidth="0.5"/>
-      {/* Eye */}
-      <circle cx="24" cy="5" r="1.5" fill="white"/>
-      <circle cx="24.5" cy="5" r="0.6" fill="rgba(0,0,0,0.4)"/>
-      {/* Wing feathers — layered */}
-      <path d="M15 34 Q22 27 34 30" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      <path d="M14 37 Q21 31 35 34" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      {/* Tail */}
-      <path d="M38 30 Q44 25 43 20" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      <path d="M39 33 Q46 30 46 24" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      {/* Lotus beneath — small */}
-      <ellipse cx="27" cy="43" rx="9" ry="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-      <path d="M20 43 Q24 38 27 43 Q30 38 34 43" stroke="rgba(255,255,255,0.5)" strokeWidth="1" fill="none"/>
+function AvatarSaraswati({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#73d9cf" />
+          <stop offset="60%" stopColor="#179f91" />
+          <stop offset="100%" stopColor="#0d645c" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.2)" />
+      <circle cx="50" cy="52" r="30" fill="rgba(255,255,255,0.08)" />
+      <ellipse cx="56" cy="63" rx="24" ry="14" fill="rgba(244,251,255,0.18)" stroke="rgba(244,251,255,0.88)" strokeWidth="3" />
+      <path d="M36 59 C29 49,28 39,35 29 C39 22,47 20,53 23" stroke="#f4fbff" strokeWidth="4.8" fill="none" strokeLinecap="round" />
+      <circle cx="58" cy="22.5" r="8" fill="rgba(244,251,255,0.16)" stroke="#f4fbff" strokeWidth="3" />
+      <path d="M64 22 L75 23.2 L64 27" fill="rgba(244,251,255,0.85)" />
+      <circle cx="59.7" cy="21.4" r="1.5" fill="#f4fbff" />
+      <circle cx="60.4" cy="21.6" r="0.7" fill="rgba(22,101,94,0.52)" />
+      <path d="M34 67 C43 58,58 57,74 62" stroke="rgba(244,251,255,0.58)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+      <path d="M33 73 C44 64,60 63,77 69" stroke="rgba(244,251,255,0.46)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <path d="M78 58 C88 51,90 42,88 34" stroke="rgba(244,251,255,0.72)" strokeWidth="3.1" fill="none" strokeLinecap="round" />
+      <path d="M80 64 C91 58,94 50,93 42" stroke="rgba(244,251,255,0.55)" strokeWidth="2.3" fill="none" strokeLinecap="round" />
     </svg>
-  ),
+  );
+}
 
-  ganesha: (
-    // Ganesha — beloved remover of obstacles, stylised divine face
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      {/* Left ear — very large, fan-shaped */}
-      <ellipse cx="8" cy="21" rx="6.5" ry="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.8)" strokeWidth="1.8"/>
-      <ellipse cx="8" cy="21" rx="4" ry="7" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.35)" strokeWidth="1"/>
-      {/* Right ear */}
-      <ellipse cx="40" cy="21" rx="6.5" ry="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.8)" strokeWidth="1.8"/>
-      <ellipse cx="40" cy="21" rx="4" ry="7" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.35)" strokeWidth="1"/>
-      {/* Head — large dome */}
-      <ellipse cx="24" cy="20" rx="14" ry="15" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" strokeWidth="2.2"/>
-      {/* Crown */}
-      <path d="M15 10 Q20 5 24 8 Q28 5 33 10" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      <circle cx="24" cy="7" r="2" fill="rgba(255,255,255,0.9)"/>
-      <circle cx="16" cy="11" r="1.5" fill="rgba(255,255,255,0.7)"/>
-      <circle cx="32" cy="11" r="1.5" fill="rgba(255,255,255,0.7)"/>
-      {/* Eyes — kind, large */}
-      <circle cx="19" cy="18" r="3.5" fill="white"/>
-      <circle cx="29" cy="18" r="3.5" fill="white"/>
-      <circle cx="19.5" cy="18.5" r="1.5" fill="rgba(0,0,0,0.45)"/>
-      <circle cx="29.5" cy="18.5" r="1.5" fill="rgba(0,0,0,0.45)"/>
-      <circle cx="19" cy="17.5" r="0.6" fill="white"/>
-      <circle cx="29" cy="17.5" r="0.6" fill="white"/>
-      {/* Trunk — auspicious right-curling */}
-      <path d="M24 26 Q19 32 20 38 Q21 42 25 41 Q28 40 27 37" stroke="rgba(255,255,255,0.9)" strokeWidth="3" strokeLinecap="round" fill="none"/>
-      {/* Trunk tip ring */}
-      <circle cx="26.5" cy="37.5" r="1.5" fill="rgba(255,255,255,0.7)"/>
-      {/* Single right tusk */}
-      <path d="M30 26 Q36 30 34 36" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      {/* Broken left tusk — short */}
-      <path d="M18 26 Q14 28 15 30" stroke="rgba(255,255,255,0.55)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      {/* Third eye dot — Tilak */}
-      <circle cx="24" cy="13" r="1.5" fill="rgba(255,255,255,0.8)"/>
+function AvatarGanesha({ uid }) {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${uid}-bg`} cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#83dcff" />
+          <stop offset="60%" stopColor="#30afd9" />
+          <stop offset="100%" stopColor="#167aa5" />
+        </radialGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill={`url(#${uid}-bg)`} />
+      <rect x="1.5" y="1.5" width="97" height="97" rx="24" fill="none" stroke="rgba(255,255,255,0.2)" />
+      <circle cx="50" cy="51" r="31" fill="rgba(255,255,255,0.08)" />
+      <ellipse cx="24" cy="48" rx="12.2" ry="18.5" fill="rgba(241,250,255,0.15)" stroke="rgba(241,250,255,0.82)" strokeWidth="2.8" />
+      <ellipse cx="76" cy="48" rx="12.2" ry="18.5" fill="rgba(241,250,255,0.15)" stroke="rgba(241,250,255,0.82)" strokeWidth="2.8" />
+      <ellipse cx="50" cy="44" rx="24" ry="27" fill="rgba(241,250,255,0.14)" stroke="#f1faff" strokeWidth="3" />
+      <circle cx="41" cy="36.5" r="5.3" fill="#f1faff" />
+      <circle cx="59" cy="36.5" r="5.3" fill="#f1faff" />
+      <circle cx="41.7" cy="37.1" r="2" fill="rgba(19,106,145,0.45)" />
+      <circle cx="59.7" cy="37.1" r="2" fill="rgba(19,106,145,0.45)" />
+      <path d="M50 53 C42 62,42 76,50 80 C56 83,63 80,62 73" stroke="#f1faff" strokeWidth="5.2" fill="none" strokeLinecap="round" />
+      <ellipse cx="61.5" cy="73.2" rx="2.3" ry="2" fill="rgba(241,250,255,0.74)" />
+      <path d="M62 52 C70 56,74 62,72 68" stroke="#f1faff" strokeWidth="3.3" fill="none" strokeLinecap="round" />
+      <path d="M38 52 C32 54,29 57,30 60" stroke="rgba(241,250,255,0.58)" strokeWidth="2.8" fill="none" strokeLinecap="round" />
+      <circle cx="50" cy="26.5" r="2.4" fill="rgba(241,250,255,0.9)" />
     </svg>
-  ),
-};
+  );
+}
+
+function DeitySvgAvatar({ id, uid }) {
+  if (id === 'shiva') return <AvatarShiva uid={uid} />;
+  if (id === 'lakshmi') return <AvatarLakshmi uid={uid} />;
+  if (id === 'hanuman') return <AvatarHanuman uid={uid} />;
+  if (id === 'saraswati') return <AvatarSaraswati uid={uid} />;
+  if (id === 'ganesha') return <AvatarGanesha uid={uid} />;
+  return <AvatarKrishna uid={uid} />;
+}
 
 function DeityIcon({ id, color, size = 80, borderRadius = 20, imageUrl = '' }) {
+  const uidRaw = useId();
+  const uid = `deity-${String(uidRaw).replace(/:/g, '')}`;
   const [imageFailed, setImageFailed] = useState(false);
-  const fallbackSvg = svgIcons[id] || svgIcons.krishna;
   const resolvedImage = imageUrl && !imageUrl.startsWith('/deities/') ? imageUrl : '';
   const showImage = Boolean(resolvedImage) && !imageFailed;
 
   return (
-    <div style={{
-      width: size,
-      height: size,
-      borderRadius,
-      background: color,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-      overflow: 'hidden',
-      position: 'relative',
-      boxShadow: '0 8px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)',
-      padding: showImage ? 0 : size * 0.12,
-    }}>
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius,
+        background: color,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        overflow: 'hidden',
+        position: 'relative',
+        boxShadow: '0 8px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+      }}
+    >
       {showImage ? (
-        <>
-          <img
-            src={resolvedImage}
-            alt={`${id} avatar`}
-            onError={() => setImageFailed(true)}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              display: 'block',
-            }}
-          />
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.22))',
-            pointerEvents: 'none',
-          }} />
-        </>
+        <img
+          src={resolvedImage}
+          alt={`${id} avatar`}
+          onError={() => setImageFailed(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+        />
       ) : (
-        fallbackSvg
+        <DeitySvgAvatar id={id} uid={uid} />
       )}
     </div>
   );
