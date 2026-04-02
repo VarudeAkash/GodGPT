@@ -12,7 +12,7 @@ function PremiumModal({ isOpen, onClose, deity, onPurchase, isProcessingPayment 
 
         <div className="premium-content">
           <div className="deity-premium-preview">
-            <DeityIcon id={deity.id} color={deity.color} size={64} borderRadius={16} />
+            <DeityIcon id={deity.id} color={deity.color} imageUrl={deity.avatarUrl} size={64} borderRadius={16} />
             <h3>Chat with {deity.name}</h3>
             <p>{deity.description}</p>
           </div>

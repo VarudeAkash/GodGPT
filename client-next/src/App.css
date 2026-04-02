@@ -775,9 +775,13 @@ body {
 }
 
 .chat-welcome-icon {
-  font-size: 4rem;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 1.5rem;
-  opacity: 0.8;
 }
 
 .chat-welcome h3 {

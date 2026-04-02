@@ -13,7 +13,7 @@ function BuyMoreModal({ isOpen, onClose, deity, onBuyMore }) {
 
         <div className="premium-content">
           <div className="deity-premium-preview">
-            <DeityIcon id={deity.id} color={deity.color} size={64} borderRadius={16} />
+            <DeityIcon id={deity.id} color={deity.color} imageUrl={deity.avatarUrl} size={64} borderRadius={16} />
             <h3>Continue with {deity.name}</h3>
             <p>You've used all your divine messages. Purchase 50 more to continue your spiritual journey.</p>
           </div>

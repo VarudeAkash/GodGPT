@@ -354,7 +354,7 @@ export default function DeitySelect() {
                   ))}
                 </div>
                 <div className="deity-icon-wrap">
-                  <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
+                  <DeityIcon id={deity.id} color={deity.color} imageUrl={deity.avatarUrl} size={80} borderRadius={20} />
                 </div>
                 <div className="deity-info-select">
                   <h3>{deity.name}</h3>

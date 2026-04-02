@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 // Custom SVG deity icons — authentic Hindu symbols, modern execution
 // Krishna: Morpankh (Peacock Feather) · Shiva: Trishul · Lakshmi: Lotus
 // Hanuman: Gada (Mace) · Saraswati: Hamsa (Swan) · Ganesha: Ganesha face
@@ -182,21 +184,62 @@ const svgIcons = {
   ),
 };
 
-const DeityIcon = ({ id, color, size = 80, borderRadius = 20 }) => (
-  <div style={{
-    width: size,
-    height: size,
-    borderRadius,
-    background: color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    boxShadow: `0 8px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)`,
-    padding: size * 0.12,
-  }}>
-    {svgIcons[id] || svgIcons.krishna}
-  </div>
-);
+const DEFAULT_AVATAR_PATHS = {
+  krishna: '/deities/krishna.webp',
+  shiva: '/deities/shiva.webp',
+  lakshmi: '/deities/lakshmi.webp',
+  hanuman: '/deities/hanuman.webp',
+  saraswati: '/deities/saraswati.webp',
+  ganesha: '/deities/ganesha.webp',
+};
+
+function DeityIcon({ id, color, size = 80, borderRadius = 20, imageUrl = '' }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const fallbackSvg = svgIcons[id] || svgIcons.krishna;
+  const resolvedImage = imageUrl || DEFAULT_AVATAR_PATHS[id] || '';
+  const showImage = Boolean(resolvedImage) && !imageFailed;
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius,
+      background: color,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+      overflow: 'hidden',
+      position: 'relative',
+      boxShadow: '0 8px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)',
+      padding: showImage ? 0 : size * 0.12,
+    }}>
+      {showImage ? (
+        <>
+          <img
+            src={resolvedImage}
+            alt={`${id} avatar`}
+            onError={() => setImageFailed(true)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.22))',
+            pointerEvents: 'none',
+          }} />
+        </>
+      ) : (
+        fallbackSvg
+      )}
+    </div>
+  );
+}
 
 export default DeityIcon;

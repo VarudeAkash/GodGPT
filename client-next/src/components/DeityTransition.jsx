@@ -29,7 +29,7 @@ function DeityTransition({ deity, onComplete }) {
       <div className="dt-center">
         <div className="dt-icon-glow" style={{ background: `radial-gradient(circle, ${deity.color}60 0%, transparent 65%)` }} />
         <div className="dt-icon">
-          <DeityIcon id={deity.id} color={deity.color} size={130} borderRadius={32} />
+          <DeityIcon id={deity.id} color={deity.color} imageUrl={deity.avatarUrl} size={130} borderRadius={32} />
         </div>
         <div className="dt-name">{deity.name}</div>
         <div className="dt-blessing">{deity.blessing}</div>

@@ -511,7 +511,7 @@ export default function Chat() {
             {/* Center: deity identity */}
             <div className="deity-header-info">
               <div className="deity-icon-chat-wrap" style={{ '--deity-color': selectedDeity.color }}>
-                <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
+                <DeityIcon id={selectedDeity.id} color={selectedDeity.color} imageUrl={selectedDeity.avatarUrl} size={48} borderRadius={14} />
               </div>
               <div className="deity-chat-info">
                 <h2>{selectedDeity.name}</h2>
@@ -549,7 +549,9 @@ export default function Chat() {
           <div className="messages-area-chat">
             {messages.length === 0 ? (
               <div className="chat-welcome">
-                <div className="chat-welcome-icon">{selectedDeity.emoji}</div>
+                <div className="chat-welcome-icon">
+                  <DeityIcon id={selectedDeity.id} color={selectedDeity.color} imageUrl={selectedDeity.avatarUrl} size={92} borderRadius={24} />
+                </div>
                 <h3>Welcome to {selectedDeity.name}'s Sanctuary</h3>
                 <p>{selectedDeity.blessing}</p>
                 <div className="suggested-questions-chat">
@@ -574,7 +576,7 @@ export default function Chat() {
                     <div className="message-bubble-chat">
                       {message.sender === 'deity' && (
                         <div className="message-header">
-                          <DeityIcon id={message.deity?.id} color={message.deity?.color} size={28} borderRadius={8} />
+                          <DeityIcon id={message.deity?.id} color={message.deity?.color} imageUrl={message.deity?.avatarUrl} size={28} borderRadius={8} />
                           <span className="deity-name-chat">{message.deity.name}</span>
                         </div>
                       )}
@@ -588,7 +590,7 @@ export default function Chat() {
                   <div className="message-chat deity">
                     <div className="message-bubble-chat">
                       <div className="message-header">
-                        <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={28} borderRadius={8} />
+                        <DeityIcon id={selectedDeity.id} color={selectedDeity.color} imageUrl={selectedDeity.avatarUrl} size={28} borderRadius={8} />
                         <span className="deity-name-chat">{selectedDeity.name}</span>
                       </div>
                       <div className="typing-indicator">
