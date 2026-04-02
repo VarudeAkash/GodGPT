@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import Header from './components/header.jsx';
 import Footer from './components/Footer.jsx';
 import DeityIcon from './components/DeityIcon.jsx';
+import DeityTransition from './components/DeityTransition.jsx';
 
 const About        = lazy(() => import('./components/About.jsx'));
 const Contact      = lazy(() => import('./components/Contact.jsx'));
@@ -52,6 +53,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [deityMemory, setDeityMemory] = useState(null);
   const memoryDebounceRef = useRef(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDeity, setTransitionDeity] = useState(null);
 
   const navigateTo = (screen, hash) => {
     window.history.pushState({}, '', `#${hash || screen}`);
@@ -313,37 +316,26 @@ function App() {
     }
 
     setRemainingMessages(freshCount);
-  
-    // 🆕 CHECK if we're selecting the SAME deity that has existing chat
+
     const savedDeity = localStorage.getItem('selectedDeity');
     const savedMessages = localStorage.getItem('chatMessages');
     let isSameDeity = false;
     try { isSameDeity = savedDeity && JSON.parse(savedDeity).id === deity.id; } catch { /* ignore */ }
-    
-    // Load deity memory for logged-in users
-    if (user) {
-      loadDeityMemory(user.uid, deity.id).then(mem => setDeityMemory(mem));
-    } else {
-      setDeityMemory(null);
-    }
 
+    loadDeityMemory(user.uid, deity.id).then(mem => setDeityMemory(mem));
     localStorage.setItem('selectedDeity', JSON.stringify(deity));
-    window.history.pushState({}, '', '#chat');
-
     setSelectedDeity(deity);
-    setCurrentScreen('chat');
-    
-    // Load chat history — prefer Firestore (cross-device), fall back to localStorage
-    if (user) {
-      const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
-      if (cloudMessages && cloudMessages.length > 0) {
-        setMessages(cloudMessages);
-        localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
-        return;
-      }
-    }
-    // No cloud history — use localStorage if same deity, else show welcome
-    if (isSameDeity && savedMessages) {
+
+    // Start cinematic transition — navigation to chat happens in handleTransitionComplete
+    setTransitionDeity(deity);
+    setIsTransitioning(true);
+
+    // Load chat history while transition plays
+    const cloudMessages = await loadChatFromCloud(user.uid, deity.id);
+    if (cloudMessages && cloudMessages.length > 0) {
+      setMessages(cloudMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(cloudMessages));
+    } else if (isSameDeity && savedMessages) {
       try { setMessages(JSON.parse(savedMessages)); } catch { setMessages([]); }
     } else {
       const welcomeMessage = {
@@ -358,6 +350,13 @@ function App() {
       setMessages([welcomeMessage]);
       localStorage.setItem('chatMessages', JSON.stringify([welcomeMessage]));
     }
+  };
+
+  const handleTransitionComplete = () => {
+    setIsTransitioning(false);
+    setTransitionDeity(null);
+    window.history.pushState({}, '', '#chat');
+    setCurrentScreen('chat');
   };
   
   // === MODIFIED: goBackToSelection ===
@@ -717,6 +716,12 @@ function App() {
   return (
     <>
     <Header user={user} navigateTo={navigateTo} currentScreen={currentScreen} />
+
+    {/* Cinematic entry transition — shown above everything */}
+    {isTransitioning && transitionDeity && (
+      <DeityTransition deity={transitionDeity} onComplete={handleTransitionComplete} />
+    )}
+
     <div className="main-content">
       <BuyMoreModal
         isOpen={showBuyMoreModal}
@@ -915,10 +920,19 @@ function App() {
                 <div
                   key={deity.id}
                   className="deity-card-select"
+                  style={{ '--deity-color': deity.color }}
                   onClick={() => selectDeity(deity)}
                 >
                   <div className="deity-glow" style={{ background: deity.color }}></div>
-                  <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
+                  {/* Hover particles */}
+                  <div className="deity-particles">
+                    {[0,1,2,3,4,5].map(i => (
+                      <span key={i} className="dp" style={{ '--i': i, width: i % 2 === 0 ? '7px' : '5px', height: i % 2 === 0 ? '7px' : '5px' }} />
+                    ))}
+                  </div>
+                  <div className="deity-icon-wrap" style={{ '--deity-color': deity.color }}>
+                    <DeityIcon id={deity.id} color={deity.color} size={80} borderRadius={20} />
+                  </div>
                   <div className="deity-info-select">
                     <h3>{deity.name}</h3>
                     <p>{deity.description}</p>
@@ -983,6 +997,22 @@ function App() {
 
         <div className="chat-background"></div>
         <div className="floating-om">ॐ</div>
+
+        {/* Cinemagraph ambient particles — deity-color specific */}
+        <div className="chat-ambient-particles">
+          {[0,1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="cap" style={{
+              '--deity-color': selectedDeity.color,
+              background: selectedDeity.color,
+              left: `${i * 11 + 3}%`,
+              width:  i % 3 === 0 ? '8px' : i % 2 === 0 ? '5px' : '4px',
+              height: i % 3 === 0 ? '8px' : i % 2 === 0 ? '5px' : '4px',
+              animationDuration: `${7 + i * 1.4}s`,
+              animationDelay: `${i * 0.9}s`,
+              '--drift': `${(i % 3 - 1) * 45}px`,
+            }} />
+          ))}
+        </div>
         
         <div className="chat-layout">
           <div className="chat-header">
@@ -993,7 +1023,9 @@ function App() {
 
             {/* Center: deity identity */}
             <div className="deity-header-info">
-              <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
+              <div className="deity-icon-chat-wrap" style={{ '--deity-color': selectedDeity.color }}>
+                <DeityIcon id={selectedDeity.id} color={selectedDeity.color} size={48} borderRadius={14} />
+              </div>
               <div className="deity-chat-info">
                 <h2>{selectedDeity.name}</h2>
                 <p>{selectedDeity.description}</p>
