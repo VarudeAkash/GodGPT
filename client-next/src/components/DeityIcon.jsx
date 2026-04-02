@@ -184,19 +184,10 @@ const svgIcons = {
   ),
 };
 
-const DEFAULT_AVATAR_PATHS = {
-  krishna: '/deities/krishna.webp',
-  shiva: '/deities/shiva.webp',
-  lakshmi: '/deities/lakshmi.webp',
-  hanuman: '/deities/hanuman.webp',
-  saraswati: '/deities/saraswati.webp',
-  ganesha: '/deities/ganesha.webp',
-};
-
 function DeityIcon({ id, color, size = 80, borderRadius = 20, imageUrl = '' }) {
   const [imageFailed, setImageFailed] = useState(false);
   const fallbackSvg = svgIcons[id] || svgIcons.krishna;
-  const resolvedImage = imageUrl || DEFAULT_AVATAR_PATHS[id] || '';
+  const resolvedImage = imageUrl && !imageUrl.startsWith('/deities/') ? imageUrl : '';
   const showImage = Boolean(resolvedImage) && !imageFailed;
 
   return (
